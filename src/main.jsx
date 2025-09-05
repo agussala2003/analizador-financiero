@@ -1,0 +1,67 @@
+// src/main.jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+// Providers y Lógica
+import { AuthProvider } from './context/AuthContext';
+import { DashboardProvider } from './context/DashboardContext';
+import { ErrorProvider } from './context/ErrorContext.jsx';
+import ErrorModal from './components/ui/ErrorModal.jsx';
+
+// Páginas y Layouts
+import App from './App.jsx'; // Nuestro layout principal
+import DashboardPage from './pages/DashboardPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import AdminPage from './pages/AdminPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import UpdatePasswordPage from './pages/UpdatePasswordPage.jsx';
+import NewsPage from './pages/NewsPage.jsx';
+import SuggestionsPage from './pages/SuggestionPage.jsx';
+import DividendosPage from './pages/DividendosPage.jsx';
+import VerifyEmailPage from './pages/VerifyEmailPage.jsx';
+import PublicRoute from './components/protected/PublicRoute.jsx';
+import ProtectedRoute from './components/protected/ProtectedRoute.jsx';
+import AdminProtectedRoute from './components/protected/AdminProtectedRoute.jsx';
+import AppErrorBoundary, { AppErrorBridge } from './components/protected/AppErrorBoundary.jsx';
+import InfoPage from './pages/InfoPage.jsx';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />, // App.jsx ahora es el layout que envuelve a TODAS las rutas hijas
+    children: [
+      // --- Rutas Públicas (solo para visitantes) ---
+      { path: '/login', element: <PublicRoute><LoginPage /></PublicRoute> },
+      { path: '/register', element: <PublicRoute><RegisterPage /></PublicRoute> },
+      { path: '/forgot-password', element: <PublicRoute><ForgotPasswordPage /></PublicRoute> },
+      { path: '/update-password', element: <UpdatePasswordPage /> },
+      { path: '/verify-email', element: <VerifyEmailPage /> },
+
+      // --- Rutas Privadas (solo para usuarios logueados) ---
+      { index: true, element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
+      { path: 'admin', element: <ProtectedRoute><AdminProtectedRoute><AdminPage /></AdminProtectedRoute></ProtectedRoute> },
+      { path: 'news', element: <ProtectedRoute><NewsPage /></ProtectedRoute> },
+      { path: 'suggestions', element: <ProtectedRoute><SuggestionsPage /></ProtectedRoute> },
+      { path: 'dividends', element: <ProtectedRoute><DividendosPage /></ProtectedRoute> },
+      { path: 'info', element: <ProtectedRoute><InfoPage /></ProtectedRoute> }, // Página de información pública
+    ],
+  },
+]);
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <ErrorProvider>
+      <AppErrorBoundary>
+        <AuthProvider>
+          <DashboardProvider>
+            <RouterProvider router={router} />
+            <AppErrorBridge />
+            <ErrorModal />
+          </DashboardProvider>
+        </AuthProvider>
+      </AppErrorBoundary>
+    </ErrorProvider>
+  </React.StrictMode>
+);
