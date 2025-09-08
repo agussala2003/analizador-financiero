@@ -16,8 +16,6 @@ import RadarComparison from '../components/dashboard/RadarComparison';
 import RiskReturnScatterPlot from '../components/dashboard/RiskReturnScatterPlot';
 import KeyMetricsBarChart from '../components/dashboard/KeyMetricsBarChart';
 import InfoIcon from '../components/dashboard/InfoIcon';
-import SEO from '../components/SEO';
-import { useConfig } from '../context/ConfigContext';
 
 
 export default function DashboardPage() {
@@ -26,7 +24,6 @@ export default function DashboardPage() {
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
   const { addTicker, removeTicker, selectedTickers, loading } = useDashboard();
   const { showError } = useError();
-  const config = useConfig();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,11 +47,6 @@ export default function DashboardPage() {
 
   return (
     <div className='pb-4' aria-busy={loading ? "true" : "false"} aria-live="polite">
-      <SEO
-              title={config.app.name}
-              description={config.infoPage.hero.subtitle}
-              noindex
-            />
       <Header />
       <div className="card bg-gray-800/50 p-4 w-11/12 sm:p-6 rounded-xl shadow-lg sm:w-full max-w-7xl mx-auto mb-14 pb-4">
         <section className={`${selectedTickers.length > 0 ? 'mb-6' : ''}`} aria-busy={loading}>

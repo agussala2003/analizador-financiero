@@ -6,12 +6,11 @@ import SuggestionCardSkeleton from '../components/suggestion/SuggestionCardSkele
 import SuggestionCard from '../components/suggestion/SuggestionCard';
 import { logger } from '../lib/logger';
 import { useConfig } from '../context/ConfigContext';
-import SEO from '../components/SEO';
 
 const SuggestionsPage = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [newSuggestion, setNewSuggestion] = useState('');
-
+  
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
 
@@ -73,9 +72,9 @@ const SuggestionsPage = () => {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      setError('Debes iniciar sesión para enviar una sugerencia.');
-      setFormLoading(false);
-      return;
+        setError('Debes iniciar sesión para enviar una sugerencia.');
+        setFormLoading(false);
+        return;
     }
 
     const { data, error: insertError } = await supabase
@@ -99,11 +98,6 @@ const SuggestionsPage = () => {
 
   return (
     <div className="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
-      <SEO
-        title={config.app.name}
-        description={config.infoPage.hero.subtitle}
-        noindex
-      />
       <Header />
       <main className="flex-grow">
         <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 mb-14">
@@ -145,9 +139,9 @@ const SuggestionsPage = () => {
                   <SuggestionCard key={suggestion.id} suggestion={suggestion} />
                 ))
               ) : (
-                <div className="md:col-span-2 lg:col-span-3 text-center text-gray-400 bg-gray-800 p-6 rounded-lg">
-                  <p>{error ? error : "Aún no has enviado ninguna sugerencia. ¡Anímate a compartir tus ideas!"}</p>
-                </div>
+                 <div className="md:col-span-2 lg:col-span-3 text-center text-gray-400 bg-gray-800 p-6 rounded-lg">
+                    <p>{error ? error : "Aún no has enviado ninguna sugerencia. ¡Anímate a compartir tus ideas!"}</p>
+                 </div>
               )}
             </div>
           </div>
