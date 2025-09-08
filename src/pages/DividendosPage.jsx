@@ -9,7 +9,6 @@ import DividendCalculatorModal from "../components/dividendos/DividendCalculator
 import MobileDividendCard from "../components/dividendos/MobileDividendCard";
 import CalculatorIcon from "../components/dividendos/CalculatorIcon";
 import { useConfig } from "../context/ConfigContext";
-import SEO from "../components/SEO";
 
 export default function DividendosPage() {
   const [loading, setLoading] = useState(true);
@@ -129,11 +128,6 @@ export default function DividendosPage() {
 
   return (
     <div className="pb-4" aria-busy={loading ? "true" : "false"} aria-live="polite">
-      <SEO
-              title={config.app.name}
-              description={config.infoPage.hero.subtitle}
-              noindex
-            />
       <Header />
 
       <div className="card bg-gray-800/50 p-4 sm:p-6 rounded-xl shadow-lg w-11/12 sm:w-full max-w-7xl mx-auto mb-14 pb-4">

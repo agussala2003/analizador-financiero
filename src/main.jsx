@@ -2,7 +2,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
 
 // Providers y Lógica
 import { AuthProvider } from './context/AuthContext';
@@ -56,7 +55,6 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <HelmetProvider>
     <ConfigProvider> {/* 👈 Envolver aquí */}
       <ErrorProvider>
         <AppErrorBoundary>
@@ -70,6 +68,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </AppErrorBoundary>
       </ErrorProvider>
     </ConfigProvider> {/* 👈 Cerrar aquí */}
-    </HelmetProvider>
   </React.StrictMode>
 );
