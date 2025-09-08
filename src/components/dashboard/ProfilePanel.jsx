@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
-import { ROLE_LIMITS } from "../../utils/financial";
+import { useConfig } from "../../context/ConfigContext";
 
 const TZ = 'America/Argentina/Buenos_Aires';
 
@@ -28,6 +28,7 @@ export default function ProfilePanel(){
   const [limit, setLimit] = useState(null);
   const [timer, setTimer] = useState(timeToMidnightTZ());
   const [loading, setLoading] = useState(true);
+  const config = useConfig();
 
   useEffect(()=>{
     let mounted=true;
@@ -42,10 +43,10 @@ export default function ProfilePanel(){
         if(!mounted) return;
         if(!error && data){
           setApiCalls(data.api_calls_made ?? 0);
-          setLimit(ROLE_LIMITS[data.role] ?? ROLE_LIMITS.basico);
+          setLimit(config.plans.roleLimits[data.role] ?? config.plans.roleLimits.basico);
         } else {
           setApiCalls(0);
-          setLimit(ROLE_LIMITS[(profile?.role || 'basico')]);
+          setLimit(config.plans.roleLimits[(profile?.role || 'basico')]);
         }
       } finally {
         setLoading(false);

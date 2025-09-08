@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { useError } from '../context/ErrorContext'; // 👈 Importamos el hook
 import { logger } from '../lib/logger';
+import SEO from '../components/SEO';
+import { useConfig } from '../context/ConfigContext';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false); // 👈 Añadimos estado de carga
   const [message, setMessage] = useState('');
   const { showError } = useError();
+  const config = useConfig();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -34,6 +37,11 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      <SEO
+        title={config.app.name}
+        description={config.infoPage.hero.subtitle}
+        noindex
+      />
       <div className="max-w-md w-full border border-gray-700 bg-gray-800/50 backdrop-blur-lg p-8 rounded-xl shadow-lg">
         <h2 className="text-2xl font-bold text-center text-white mb-6">Crear una Cuenta</h2>
         <form onSubmit={handleRegister} className="space-y-4">

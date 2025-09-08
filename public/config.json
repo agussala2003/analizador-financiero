@@ -1,0 +1,124 @@
+{
+  "app": {
+    "name": "Análisis Financiero Pro",
+    "version": "1.0",
+    "contactEmail": "agussala2003@gmail.com"
+  },
+  "api": {
+    "fmpProxyEndpoints": {
+      "profile": "stable/profile",
+      "keyMetrics": "stable/key-metrics-ttm",
+      "quote": "stable/quote",
+      "historical": "stable/historical-price-eod/full",
+      "priceTarget": "stable/price-target-summary",
+      "newsPriceTarget": "stable/price-target-latest-news",
+      "newsGrades": "stable/grades-latest-news",
+      "dividendsCalendar": "stable/dividends-calendar"
+    }
+  },
+  "plans": {
+    "roleLimits": {
+      "basico": 5,
+      "plus": 25,
+      "premium": 50,
+      "administrador": 100000 
+    },
+    "freeTierSymbols": [
+      "AAPL", "TSLA", "AMZN", "MSFT", "NVDA", "GOOGL", "META", "NFLX", "JPM", "V",
+      "BAC", "AMD", "PYPL", "DIS", "T", "PFE", "COST", "INTC", "KO", "TGT", "NKE",
+      "SPY", "BA", "BABA", "XOM", "WMT", "GE", "CSCO", "VZ", "JNJ", "CVX", "PLTR",
+      "SQ", "SHOP", "SBUX", "SOFI", "HOOD", "RBLX", "SNAP", "UBER", "FDX", "ABBV",
+      "ETSY", "MRNA", "LMT", "GM", "F", "RIVN", "LCID", "CCL", "DAL", "UAL", "AAL",
+      "TSM", "SONY", "ET", "NOK", "MRO", "COIN", "SIRI", "RIOT", "CPRX", "VWO",
+      "SPYG", "ROKU", "VIAC", "ATVI", "BIDU", "DOCU", "ZM", "PINS", "TLRY", "WBA",
+      "MGM", "NIO", "C", "GS", "WFC", "ADBE", "PEP", "UNH", "CARR", "FUBO", "HCA",
+      "TWTR", "BILI", "RKT"
+    ]
+  },
+  "dashboard": {
+    "maxTickersToCompare": 10
+  },
+  "news": {
+    "pageSize": 10,
+    "defaultLimit": 10
+  },
+  "suggestions": {
+    "minLength": 10
+  },
+  "admin": {
+    "pageSizeOptions": [2, 5, 10]
+  },
+  "dividends":{
+    "pageSizeOptions": [10, 20, 50]
+  },
+  "infoPage": {
+    "hero": {
+      "title": "Análisis Financiero Inteligente.",
+      "subtitle": "Visualiza el mercado, compara activos y toma decisiones informadas con herramientas de nivel profesional, diseñadas para ser intuitivas.",
+      "cta": {
+        "loggedIn": "Ir al Dashboard",
+        "loggedOut": "Comenzar Gratis"
+      }
+    },
+    "features": {
+      "title": "Una plataforma, infinitas posibilidades",
+      "items": [
+        {
+          "title": "Análisis Fundamental",
+          "description": "Decenas de indicadores de valoración, rentabilidad y salud financiera para un análisis exhaustivo."
+        },
+        {
+          "title": "Visualizaciones Clave",
+          "description": "Matriz de correlación y gráficos de radar para una comparativa visual e instantánea de activos."
+        },
+        {
+          "title": "Reportes Profesionales",
+          "description": "Exporta tus análisis a PDF, CSV o Excel. Perfecto para informes o para compartir tus hallazgos."
+        },
+        {
+          "title": "Datos de Mercado",
+          "description": "Calendario de dividendos interactivo y noticias financieras para no perderte ninguna oportunidad."
+        }
+      ]
+    },
+    "testimonial": {
+      "title": "La herramienta que los inversores aman",
+      "quote": "Esta plataforma transformó mi manera de analizar acciones. Los datos son claros, las visualizaciones son potentes y he podido tomar decisiones mucho más seguras. Imprescindible.",
+      "author": "Alex G. - Inversor Particular"
+    },
+    "finalCta": {
+      "title": "Lleva tu análisis al siguiente nivel.",
+      "subtitle": "Únete a miles de inversores que ya toman decisiones más inteligentes. Es gratis para empezar.",
+      "cta": {
+        "loggedIn": "Volver al Dashboard",
+        "loggedOut": "Crear Cuenta Gratis"
+      }
+    }
+  },
+  "authPages": {
+    "login": {
+      "title": "Inicia sesión en tu cuenta",
+      "subtitle": "Bienvenido de nuevo, por favor ingresa tus credenciales.",
+      "emailPlaceholder": "Correo electrónico",
+      "passwordPlaceholder": "Contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Regístrate aquí"
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Únete a nosotros y comienza tu viaje financiero.",
+      "emailPlaceholder": "Correo electrónico",
+      "passwordPlaceholder": "Contraseña",
+      "confirmPasswordPlaceholder": "Confirma tu contraseña",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "login": "Inicia sesión aquí"
+    },
+    "resetPassword": {
+      "title": "Restablece tu contraseña",
+      "subtitle": "Ingresa tu correo electrónico para recibir instrucciones.",
+      "emailPlaceholder": "Correo electrónico",
+      "backToLogin": "Volver al inicio de sesión"
+    }
+  }
+}

@@ -1,14 +1,15 @@
 import { useAuth } from "../../context/AuthContext";
-import { ROLE_LIMITS } from "../../utils/financial";
+import { useConfig } from "../../context/ConfigContext";
 
 export default function Plans(){
   const { profile } = useAuth();
   const current = (profile?.role || 'basico').toLowerCase();
+  const config = useConfig();
 
   const plans = [
-    { key: 'basico',   name: 'Básico',   uses: ROLE_LIMITS.basico,   features: ['Indicadores fundamentales', 'Matriz de correlación', 'Exportación a PDF'] },
-    { key: 'plus',     name: 'Plus',     uses: ROLE_LIMITS.plus,     features: ['Todo lo de Básico', 'Soporte prioritario', 'Históricos extendidos'] },
-    { key: 'premium',  name: 'Premium',  uses: ROLE_LIMITS.premium,  features: ['Todo lo de Plus', 'Análisis avanzado y comparativas'] },
+    { key: 'basico',   name: 'Básico',   uses: config.plans.roleLimits.basico,   features: ['Indicadores fundamentales', 'Matriz de correlación', 'Exportación a PDF'] },
+    { key: 'plus',     name: 'Plus',     uses: config.plans.roleLimits.plus,     features: ['Todo lo de Básico', 'Soporte prioritario', 'Históricos extendidos'] },
+    { key: 'premium',  name: 'Premium',  uses: config.plans.roleLimits.premium,  features: ['Todo lo de Plus', 'Análisis avanzado y comparativas'] },
   ];
 
   return (

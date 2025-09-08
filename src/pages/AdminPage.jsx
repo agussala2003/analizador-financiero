@@ -7,6 +7,8 @@ import AdminUsersModule from "../components/admin/AdminUsersModule";
 import AdminSuggestionsModule from "../components/admin/AdminSuggestionModule";
 import AdminLogsModule from "../components/admin/AdminLogsModule";
 import AdminStatsModule from "../components/admin/AdminStatsModule";
+import SEO from "../components/SEO";
+import { useConfig } from "../context/ConfigContext";
 
 function getNavButtonClass(active, viewName) {
   const isActive = active === viewName;
@@ -24,9 +26,15 @@ function getNavButtonClass(active, viewName) {
 
 export default function AdminLanding() {
   const [activeView, setActiveView] = useState("usuarios");
+  const config = useConfig();
 
   return (
     <div aria-live="polite" className="pb-4">
+      <SEO
+              title={config.app.name}
+              description={config.infoPage.hero.subtitle}
+              noindex
+            />
       <Header />
 
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mb-14">

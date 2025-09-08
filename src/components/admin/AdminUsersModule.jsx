@@ -4,8 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
 import { useError } from "../../context/ErrorContext";
 import SkeletonRow from "../../components/ui/SkeletonRow";
-
-const PAGE_SIZE_OPTIONS = [5, 10, 20];
+import { useConfig } from "../../context/ConfigContext";
 
 const ROLES = [
   { value: "basico", label: "Básico" },
@@ -50,6 +49,8 @@ export default function AdminUsersModule() {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const config = useConfig();
+  const PAGE_SIZE_OPTIONS = config.admin.pageSizeOptions
 
   const { showError } = useError();
 

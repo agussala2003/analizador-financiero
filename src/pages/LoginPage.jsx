@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
 import { useError } from '../context/ErrorContext'; // 👈 1. Importamos el hook de errores
 import { logger } from '../lib/logger';
+import SEO from '../components/SEO';
+import { useConfig } from '../context/ConfigContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false); // 👈 2. Añadimos el estado de carga
   const navigate = useNavigate();
   const { showError } = useError(); // Obtenemos la función para mostrar el modal
+  const config = useConfig();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -32,6 +35,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      <SEO
+        title={config.app.name}
+        description={config.infoPage.hero.subtitle}
+        noindex
+      />
       <div className="max-w-md w-full border border-gray-700 bg-gray-800/50 backdrop-blur-lg p-8 rounded-xl shadow-lg">
         <h2 className="text-2xl font-bold text-center text-white mb-6">Iniciar Sesión</h2>
         <form onSubmit={handleLogin} className="space-y-4">

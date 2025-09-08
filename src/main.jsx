@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Providers y Lógica
 import { AuthProvider } from './context/AuthContext';
@@ -26,6 +27,8 @@ import ProtectedRoute from './components/protected/ProtectedRoute.jsx';
 import AdminProtectedRoute from './components/protected/AdminProtectedRoute.jsx';
 import AppErrorBoundary, { AppErrorBridge } from './components/protected/AppErrorBoundary.jsx';
 import InfoPage from './pages/InfoPage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
+import { ConfigProvider } from './context/ConfigContext.jsx';
 
 const router = createBrowserRouter([
   {
@@ -40,28 +43,33 @@ const router = createBrowserRouter([
       { path: '/verify-email', element: <VerifyEmailPage /> },
 
       // --- Rutas Privadas (solo para usuarios logueados) ---
-      { index: true, element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
+      { index: true, element: <InfoPage /> }, // Página de información pública como principal
+      { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
       { path: 'admin', element: <ProtectedRoute><AdminProtectedRoute><AdminPage /></AdminProtectedRoute></ProtectedRoute> },
       { path: 'news', element: <ProtectedRoute><NewsPage /></ProtectedRoute> },
       { path: 'suggestions', element: <ProtectedRoute><SuggestionsPage /></ProtectedRoute> },
       { path: 'dividends', element: <ProtectedRoute><DividendosPage /></ProtectedRoute> },
-      { path: 'info', element: <ProtectedRoute><InfoPage /></ProtectedRoute> }, // Página de información pública
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ErrorProvider>
-      <AppErrorBoundary>
-        <AuthProvider>
-          <DashboardProvider>
-            <RouterProvider router={router} />
-            <AppErrorBridge />
-            <ErrorModal />
-          </DashboardProvider>
-        </AuthProvider>
-      </AppErrorBoundary>
-    </ErrorProvider>
+    <HelmetProvider>
+    <ConfigProvider> {/* 👈 Envolver aquí */}
+      <ErrorProvider>
+        <AppErrorBoundary>
+          <AuthProvider>
+            <DashboardProvider>
+              <RouterProvider router={router} />
+              <AppErrorBridge />
+              <ErrorModal />
+            </DashboardProvider>
+          </AuthProvider>
+        </AppErrorBoundary>
+      </ErrorProvider>
+    </ConfigProvider> {/* 👈 Cerrar aquí */}
+    </HelmetProvider>
   </React.StrictMode>
 );
