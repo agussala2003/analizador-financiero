@@ -1,7 +1,6 @@
 // src/components/ui/AvailableSymbolsModal.jsx
 import { useAuth } from '../../context/AuthContext';
-import { FREE_TIER_SYMBOLS } from '../../utils/financial'; // Importamos la lista de símbolos
-
+import { useConfig } from '../../context/ConfigContext';
 // Ícono simple para el botón de cierre
 function XIcon(props) {
   return (
@@ -16,12 +15,13 @@ export default function AvailableSymbolsModal({ isOpen, onClose }) {
   const { profile } = useAuth();
   const role = profile?.role || 'basico';
   const isBasicPlan = role === 'basico';
+  const config = useConfig();
 
   // Si no está abierto, no renderizamos nada
   if (!isOpen) return null;
 
   // Convertimos el Set a un Array para poder mapearlo
-  const freeSymbolsArray = [...FREE_TIER_SYMBOLS].sort();
+  const freeSymbolsArray = [...config.plans.freeTierSymbols].sort();
 
   return (
     // Fondo oscuro semi-transparente que cierra el modal al hacer clic

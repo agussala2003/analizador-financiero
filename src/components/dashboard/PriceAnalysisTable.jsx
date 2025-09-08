@@ -148,7 +148,7 @@ export default function PriceAnalysisTable() {
       <button
         type="button"
         onClick={() => setSort(prev => ({ key: sKey, dir: prev.key === sKey && prev.dir === 'asc' ? 'desc' : 'asc' }))}
-        className="inline-flex items-center gap-1 hover:underline"
+        className="cursor-pointer inline-flex items-center gap-1 hover:underline"
       >
         {children}
         <span className="text-[10px] opacity-70">{sort.key === sKey ? (sort.dir === 'asc' ? '▲' : '▼') : ''}</span>
@@ -167,13 +167,13 @@ export default function PriceAnalysisTable() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-base sm:text-lg md:text-xl font-bold text-white">Precios y Volatilidad</h2>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={handleExportCSV} className="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors">
+            <button onClick={handleExportCSV} className="cursor-pointer px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors">
               Exportar CSV
             </button>
-            <button onClick={handleExportXLSX} className="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors">
+            <button onClick={handleExportXLSX} className="cursor-pointer px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors">
               Exportar Excel
             </button>
-            <button onClick={handleExportPDF} className="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors">
+            <button onClick={handleExportPDF} className="cursor-pointer px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors">
               Exportar PDF
             </button>
             {loading && <div className="text-xs text-gray-400">Cargando datos…</div>}
@@ -208,7 +208,7 @@ export default function PriceAnalysisTable() {
                     <button
                       type="button"
                       onClick={() => setOpenInfoFor(r.ticker)}
-                      className="p-1 rounded hover:bg-gray-700 transition-colors text-gray-300 hover:text-white"
+                      className="cursor-pointer p-1 rounded hover:bg-gray-700 transition-colors text-gray-300 hover:text-white"
                       title="Información de la empresa"
                       aria-label="Información de la empresa"
                     >
@@ -287,7 +287,7 @@ export default function PriceAnalysisTable() {
                         <button
                           type="button"
                           onClick={() => setOpenInfoFor(r.ticker)}
-                          className="p-1 rounded hover:bg-gray-700 transition-colors text-gray-300 hover:text-white"
+                          className="cursor-pointer p-1 rounded hover:bg-gray-700 transition-colors text-gray-300 hover:text-white"
                           title="Información de la empresa"
                           aria-label="Información de la empresa"
                         >

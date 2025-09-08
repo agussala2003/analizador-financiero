@@ -7,12 +7,15 @@ import { useResponsiveValue } from '../hooks/useResponsiveValuse';
 import PaginationControls from '../components/news/PaginationControls';
 import { Loader } from '../components/news/Loader';
 import { logger } from '../lib/logger';
+import { useConfig } from '../context/ConfigContext';
+import SEO from '../components/SEO';
 
 const NewsPage = () => {
   const [allNews, setAllNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0); 
+  const config = useConfig();
 
   // Paginación adaptativa
   const itemsPerPage = useResponsiveValue({ mobile: 4, tablet: 6, desktop: 8 }, 8);
@@ -24,8 +27,11 @@ const NewsPage = () => {
       
       try {
         // 1. Definimos los endpoints que queremos llamar
-        const limit = 10;
-        const endpoints = [`stable/price-target-latest-news?page=0&limit=${limit}`, `stable/grades-latest-news?page=0&limit=${limit}`];
+        const limit = config.news.defaultLimit;
+        const endpoints = [
+          `${config.api.fmpProxyEndpoints.newsPriceTarget}?page=0&limit=${limit}`,
+          `${config.api.fmpProxyEndpoints.newsGrades}?page=0&limit=${limit}`
+        ];
 
         // 2. Invocamos la Edge Function para cada endpoint en paralelo
         const promises = endpoints.map(endpointPath => 
@@ -69,7 +75,7 @@ const NewsPage = () => {
     };
 
     fetchAllNews();
-  }, []);
+  }, [config]);
 
   const { currentNewsItems, totalPages } = useMemo(() => {
     const startIndex = currentPage * itemsPerPage;
@@ -86,6 +92,11 @@ const NewsPage = () => {
 
   return (
     <div aria-busy={loading ? "true" : "false"} aria-live="polite" className="flex flex-col min-h-screen bg-gray-900">
+      <SEO
+        title={config.app.name}
+        description={config.infoPage.hero.subtitle}
+        noindex
+      />
       <Header />
       <main className="flex-grow">
         <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 mb-14">

@@ -16,6 +16,8 @@ import RadarComparison from '../components/dashboard/RadarComparison';
 import RiskReturnScatterPlot from '../components/dashboard/RiskReturnScatterPlot';
 import KeyMetricsBarChart from '../components/dashboard/KeyMetricsBarChart';
 import InfoIcon from '../components/dashboard/InfoIcon';
+import SEO from '../components/SEO';
+import { useConfig } from '../context/ConfigContext';
 
 
 export default function DashboardPage() {
@@ -24,6 +26,7 @@ export default function DashboardPage() {
   const [isInfoModalOpen, setInfoModalOpen] = useState(false);
   const { addTicker, removeTicker, selectedTickers, loading } = useDashboard();
   const { showError } = useError();
+  const config = useConfig();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +42,7 @@ export default function DashboardPage() {
   };
 
   const getNavButtonClass = (viewName) =>
-    `py-2 px-4 rounded-t-lg transition-colors text-sm font-medium whitespace-nowrap ${
+    `cursor-pointer py-2 px-4 rounded-t-lg transition-colors text-sm font-medium whitespace-nowrap ${
       activeView === viewName
         ? 'bg-gray-700 text-white border-b-2 border-blue-500'
         : 'text-gray-400 hover:bg-gray-800'
@@ -47,6 +50,11 @@ export default function DashboardPage() {
 
   return (
     <div className='pb-4' aria-busy={loading ? "true" : "false"} aria-live="polite">
+      <SEO
+              title={config.app.name}
+              description={config.infoPage.hero.subtitle}
+              noindex
+            />
       <Header />
       <div className="card bg-gray-800/50 p-4 w-11/12 sm:p-6 rounded-xl shadow-lg sm:w-full max-w-7xl mx-auto mb-14 pb-4">
         <section className={`${selectedTickers.length > 0 ? 'mb-6' : ''}`} aria-busy={loading}>
@@ -67,15 +75,15 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setInfoModalOpen(true)}
-                className="p-2.5 text-gray-400 hover:text-white bg-gray-700 rounded-lg"
+                className="cursor-pointer p-2.5 text-gray-400 hover:text-white bg-gray-700 rounded-lg"
                 title="Ver símbolos disponibles"
               >
-                <InfoIcon className="w-5 h-5" />
+                <InfoIcon className="w-6 h-6" />
               </button>
               <button
                 type="submit"
                 disabled={loading || !tickerInput}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg disabled:bg-gray-500"
+                className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg disabled:bg-gray-500"
               >
                 {loading ? <Loader size="4" message="" /> : 'Agregar'}
               </button>
@@ -97,7 +105,7 @@ export default function DashboardPage() {
               {selectedTickers.map((ticker) => (
                 <div key={ticker} className="bg-gray-600 text-white text-sm font-medium px-3 py-1.5 rounded-full flex items-center gap-2 animate-fade-in">
                   <span>{ticker}</span>
-                  <button onClick={() => removeTicker(ticker)} className="text-gray-300 hover:text-white" title="Quitar">&times;</button>
+                  <button onClick={() => removeTicker(ticker)} className="cursor-pointer text-gray-300 hover:text-white" title="Quitar">&times;</button>
                 </div>
               ))}
             </div>

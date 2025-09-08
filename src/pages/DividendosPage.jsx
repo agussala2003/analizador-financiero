@@ -8,14 +8,16 @@ import { fmtDate, pct } from "../utils/financial";
 import DividendCalculatorModal from "../components/dividendos/DividendCalculatorModal";
 import MobileDividendCard from "../components/dividendos/MobileDividendCard";
 import CalculatorIcon from "../components/dividendos/CalculatorIcon";
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50];
+import { useConfig } from "../context/ConfigContext";
+import SEO from "../components/SEO";
 
 export default function DividendosPage() {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
   const [calculatorItem, setCalculatorItem] = useState(null);
+  const config = useConfig();
+  const PAGE_SIZE_OPTIONS = config.dividends.pageSizeOptions;
 
   // Filtros
   const [q, setQ] = useState(""); // símbolo
@@ -127,6 +129,11 @@ export default function DividendosPage() {
 
   return (
     <div className="pb-4" aria-busy={loading ? "true" : "false"} aria-live="polite">
+      <SEO
+              title={config.app.name}
+              description={config.infoPage.hero.subtitle}
+              noindex
+            />
       <Header />
 
       <div className="card bg-gray-800/50 p-4 sm:p-6 rounded-xl shadow-lg w-11/12 sm:w-full max-w-7xl mx-auto mb-14 pb-4">
@@ -147,7 +154,7 @@ export default function DividendosPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Ej: AAPL"
-                className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="cursor-pointer bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -156,7 +163,7 @@ export default function DividendosPage() {
               <select
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value)}
-                className="bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {frequencyOptions.map((opt) => (
                   <option key={opt} value={opt}>
@@ -172,7 +179,7 @@ export default function DividendosPage() {
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -182,7 +189,7 @@ export default function DividendosPage() {
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -192,7 +199,7 @@ export default function DividendosPage() {
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="bg-gray-700 border border-gray-600 text-white rounded-md px-2 py-2 text-sm"
+              className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-2 py-2 text-sm"
               title="Resultados por página"
             >
               {PAGE_SIZE_OPTIONS.map((n) => (
@@ -257,7 +264,7 @@ export default function DividendosPage() {
                     <td className="px-4 py-3 font-medium text-white">
                         <div className="flex items-center gap-2">
                            <span>{r.symbol}</span>
-                           <button onClick={() => setCalculatorItem(r)} className="text-blue-400 hover:text-blue-300" title="Calcular dividendo">
+                           <button onClick={() => setCalculatorItem(r)} className="cursor-pointer text-blue-400 hover:text-blue-300" title="Calcular dividendo">
                              <CalculatorIcon className="w-4 h-4" />
                            </button>
                         </div>
@@ -284,14 +291,14 @@ export default function DividendosPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="px-3 py-1.5 rounded-md bg-gray-700 text-gray-200 disabled:opacity-50"
+              className="cursor-pointer px-3 py-1.5 rounded-md bg-gray-700 text-gray-200 disabled:opacity-50"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={clampedPage <= 1}
             >
               Anterior
             </button>
             <button
-              className="px-3 py-1.5 rounded-md bg-gray-700 text-gray-200 disabled:opacity-50"
+              className="cursor-pointer px-3 py-1.5 rounded-md bg-gray-700 text-gray-200 disabled:opacity-50"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={clampedPage >= totalPages}
             >

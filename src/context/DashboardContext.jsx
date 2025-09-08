@@ -3,8 +3,9 @@ import { createContext, useContext, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { useError } from './ErrorContext';
-import { computeSharpe, computeStdDevPct, findCloseByDate, FREE_TIER_SYMBOLS, getFirstPresent, indicatorConfig, meanArr, ROLE_LIMITS, sharpeFromReturns, stdDevArr, toNumber } from '../utils/financial';
+import { computeSharpe, computeStdDevPct, findCloseByDate, getFirstPresent, indicatorConfig, meanArr, sharpeFromReturns, stdDevArr, toNumber } from '../utils/financial';
 import { logger } from '../lib/logger';
+import { useConfig } from './ConfigContext';
 
 const DashboardContext = createContext(null);
 
@@ -15,6 +16,7 @@ export function DashboardProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { showError } = useError();
+  const config = useConfig()
 
   // --- Límite diario de API por plan (tabla profiles)
   const checkApiLimit = async () => {
@@ -32,7 +34,7 @@ export function DashboardProvider({ children }) {
     }
 
     const role = prof.role || profile?.role || 'basico';
-    const limit = ROLE_LIMITS[role] ?? ROLE_LIMITS.basico;
+    const limit = config.plans.roleLimits[role] ?? config.plans.roleLimits.basico;
 
     let calls = prof.api_calls_made ?? 0;
     let lastDate = prof.last_api_call_date ?? null;
@@ -66,7 +68,13 @@ export function DashboardProvider({ children }) {
     const allowed = await checkApiLimit();
     if (!allowed) return null;
 
-    const endpointTemplates = [`stable/profile`,`stable/key-metrics-ttm`,`stable/quote`,`stable/historical-price-eod/full`, `stable/price-target-summary`];
+    const endpointTemplates = [
+      config.api.fmpProxyEndpoints.profile,
+      config.api.fmpProxyEndpoints.keyMetrics,
+      config.api.fmpProxyEndpoints.quote,
+      config.api.fmpProxyEndpoints.historical,
+      config.api.fmpProxyEndpoints.priceTarget
+    ];
 
     const endpoints = endpointTemplates.map(path => `${path}?symbol=${ticker}`);
 
@@ -283,7 +291,8 @@ export function DashboardProvider({ children }) {
     if (!ticker) return;
 
     // ✅ Nueva validación
-    if (profile?.role === 'basico' && !FREE_TIER_SYMBOLS.has(ticker)) {
+    const freeSymbolsSet = new Set(config.plans.freeTierSymbols);
+    if (profile?.role === 'basico' && !freeSymbolsSet.has(ticker)) {
       showError(`El símbolo ${ticker} no está disponible en el plan Básico.`, { title: 'Función Premium' });
       return;
     }
@@ -291,8 +300,8 @@ export function DashboardProvider({ children }) {
     // reset de error previo
     setError('');
 
-    if (selectedTickers.length >= 10) {
-      const msg = 'Puedes comparar hasta 10 activos a la vez.';
+    if (selectedTickers.length >= config.dashboard.maxTickersToCompare) {
+      const msg = `Puedes comparar hasta ${config.dashboard.maxTickersToCompare} activos a la vez.`;
       setError(msg);
       showError(msg);
       return;

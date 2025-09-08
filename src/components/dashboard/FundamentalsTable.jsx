@@ -99,19 +99,21 @@ function AccordionSection({ title, subtitle, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <section className="bg-gray-800/50 rounded-xl shadow-lg overflow-hidden">
-      <header className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-700">
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 text-left text-white/90 hover:text-white focus:outline-none w-full"
-          aria-expanded={open}
-        >
+      <header 
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-700 cursor-pointer"
+        aria-expanded={open}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setOpen(!open)}
+      >
+        <div className="flex items-center gap-2 text-left text-white/90">
           <Chevron open={open} />
           <div>
             <h2 className="text-base sm:text-lg font-semibold">{title}</h2>
             {subtitle && <p className="text-[11px] sm:text-xs text-gray-400">{subtitle}</p>}
           </div>
-        </button>
+        </div>
       </header>
       <div
         className={`transition-[max-height,opacity] duration-300 ease-out ${open ? "opacity-100" : "opacity-0"}`}
@@ -385,15 +387,15 @@ const handleExportPDF = () => {
             <label className="flex items-center gap-2 text-[12px] sm:text-xs text-gray-300">
               <input
                 type="checkbox"
-                className="accent-indigo-500"
+                className="accent-indigo-500 cursor-pointer"
                 checked={hideNA}
                 onChange={() => setHideNA(!hideNA)}
               />
               Ocultar filas N/A
             </label>
-            <button onClick={handleExportCSV} className="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-[12px] sm:text-xs">Exportar CSV</button>
-            <button onClick={handleExportXLSX} className="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-[12px] sm:text-xs">Exportar Excel</button>
-            <button onClick={handleExportPDF} className="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-[12px] sm:text-xs">Exportar PDF</button>
+            <button onClick={handleExportCSV} className="cursor-pointer px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-[12px] sm:text-xs">Exportar CSV</button>
+            <button onClick={handleExportXLSX} className="cursor-pointer px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-[12px] sm:text-xs">Exportar Excel</button>
+            <button onClick={handleExportPDF} className="cursor-pointer px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-[12px] sm:text-xs">Exportar PDF</button>
           </div>
         </div>
 

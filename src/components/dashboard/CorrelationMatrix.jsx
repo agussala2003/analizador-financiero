@@ -126,7 +126,7 @@ export default function CorrelationMatrix() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportPDF}
-              className="px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors"
+              className="cursor-pointer px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-xs transition-colors"
             >
               Exportar PDF
             </button>

@@ -1,18 +1,6 @@
 // src/utils/financial.js
 
 // Pega aquí tu objeto indicatorConfig completo
-export const FREE_TIER_SYMBOLS = new Set([
-  'AAPL', 'TSLA', 'AMZN', 'MSFT', 'NVDA', 'GOOGL', 'META', 'NFLX', 'JPM', 'V',
-  'BAC', 'AMD', 'PYPL', 'DIS', 'T', 'PFE', 'COST', 'INTC', 'KO', 'TGT', 'NKE',
-  'SPY', 'BA', 'BABA', 'XOM', 'WMT', 'GE', 'CSCO', 'VZ', 'JNJ', 'CVX', 'PLTR',
-  'SQ', 'SHOP', 'SBUX', 'SOFI', 'HOOD', 'RBLX', 'SNAP', 'UBER', 'FDX', 'ABBV',
-  'ETSY', 'MRNA', 'LMT', 'GM', 'F', 'RIVN', 'LCID', 'CCL', 'DAL', 'UAL', 'AAL',
-  'TSM', 'SONY', 'ET', 'NOK', 'MRO', 'COIN', 'SIRI', 'RIOT', 'CPRX', 'VWO',
-  'SPYG', 'ROKU', 'VIAC', 'ATVI', 'BIDU', 'DOCU', 'ZM', 'PINS', 'TLRY', 'WBA',
-  'MGM', 'NIO', 'C', 'GS', 'WFC', 'ADBE', 'PEP', 'UNH', 'CARR', 'FUBO', 'HCA',
-  'TWTR', 'BILI', 'RKT'
-]);
-
 
 export const indicatorConfig = {
   // ——— Valoración
@@ -259,10 +247,7 @@ export const indicatorConfig = {
   },
 };
 
-
-export const RISK_FREE_RATE = 0.02;
-
-export const ROLE_LIMITS = { basico: 5, plus: 25, premium: 50, administrador: Infinity };
+export const RISK_FREE_RATE = 0.02
 
 export const calculateMean = (data) => data.reduce((a, b) => a + b, 0) / data.length;
 

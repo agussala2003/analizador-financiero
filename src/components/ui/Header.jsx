@@ -2,13 +2,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ROLE_LIMITS } from '../../utils/financial';
 import XIcon from '../svg/x';
 import BurgerIcon from '../svg/burguer';
+import { useConfig } from '../../context/ConfigContext';
 
 function Header() {
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
+  const config = useConfig();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -19,7 +20,7 @@ function Header() {
 
   const [usage, setUsage] = useState(0);
 
-  const planLimit = ROLE_LIMITS[role] ? (role === 'administrador' ? Infinity : ROLE_LIMITS[role]) : 0;
+  const planLimit = config.plans.roleLimits[role] ? (role === 'administrador' ? Infinity : config.plans.roleLimits[role]) : 0;
 
   const remainingRaw = planLimit === Infinity ? Infinity : Math.max(planLimit - usage, 0);
 
@@ -92,9 +93,11 @@ function Header() {
             {/* Navegación desktop */}
             <nav className="hidden md:flex items-center space-x-2">
               <NavLink to="/" className={navLinkClass} end>
+                Información
+              </NavLink>
+              <NavLink to="/dashboard" className={navLinkClass}>
                 Dashboard
               </NavLink>
-
               <NavLink to="/news" className={navLinkClass}>
                 Noticias
               </NavLink>
@@ -103,9 +106,6 @@ function Header() {
               </NavLink>
               <NavLink to="/suggestions" className={navLinkClass}>
                 Sugerencias
-              </NavLink>
-              <NavLink to="/info" className={navLinkClass}>
-                Información
               </NavLink>
               {isAdmin && (
                 <NavLink to="/admin" className={navLinkClass}>
@@ -183,21 +183,20 @@ function Header() {
           <div className="md:hidden" ref={mobileMenuRef}>
             <nav className="space-y-1 pb-4 pt-2">
               <MobileLink to="/" end>
+                Información
+              </MobileLink>
+              <MobileLink to="/dashboard">
                 Dashboard
               </MobileLink>
-
               <MobileLink to="/news">
                 Noticias
               </MobileLink>
-
               <MobileLink to="/dividends">
                 Dividendos
               </MobileLink>
-
               <MobileLink to="/suggestions">
                 Sugerencias
               </MobileLink>
-
               <MobileLink to="/info">
                 Información
               </MobileLink>

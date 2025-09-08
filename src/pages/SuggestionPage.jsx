@@ -5,16 +5,19 @@ import Footer from '../components/ui/Footer';
 import SuggestionCardSkeleton from '../components/suggestion/SuggestionCardSkeleton';
 import SuggestionCard from '../components/suggestion/SuggestionCard';
 import { logger } from '../lib/logger';
+import { useConfig } from '../context/ConfigContext';
+import SEO from '../components/SEO';
 
 const SuggestionsPage = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [newSuggestion, setNewSuggestion] = useState('');
-  
+
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
 
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const config = useConfig();
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -60,20 +63,19 @@ const SuggestionsPage = () => {
 
   const handleSubmitSuggestion = async (e) => {
     e.preventDefault();
-    if (newSuggestion.trim().length < 10) {
-      setError('Tu sugerencia es muy corta. ¡Por favor, danos más detalles!');
+    if (newSuggestion.trim().length < config.suggestions.minLength) {
+      setError(`Tu sugerencia debe tener al menos ${config.suggestions.minLength} caracteres.`);
       return;
     }
-
     setFormLoading(true);
     setError(null);
     setSuccessMessage('');
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        setError('Debes iniciar sesión para enviar una sugerencia.');
-        setFormLoading(false);
-        return;
+      setError('Debes iniciar sesión para enviar una sugerencia.');
+      setFormLoading(false);
+      return;
     }
 
     const { data, error: insertError } = await supabase
@@ -97,6 +99,11 @@ const SuggestionsPage = () => {
 
   return (
     <div className="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
+      <SEO
+        title={config.app.name}
+        description={config.infoPage.hero.subtitle}
+        noindex
+      />
       <Header />
       <main className="flex-grow">
         <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 mb-14">
@@ -118,7 +125,7 @@ const SuggestionsPage = () => {
               <button
                 type="submit"
                 disabled={formLoading || newSuggestion.trim().length < 10}
-                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed transition-all duration-200"
+                className="cursor-pointer w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {formLoading ? 'Enviando...' : 'Enviar mi Sugerencia'}
               </button>
@@ -138,9 +145,9 @@ const SuggestionsPage = () => {
                   <SuggestionCard key={suggestion.id} suggestion={suggestion} />
                 ))
               ) : (
-                 <div className="md:col-span-2 lg:col-span-3 text-center text-gray-400 bg-gray-800 p-6 rounded-lg">
-                    <p>{error ? error : "Aún no has enviado ninguna sugerencia. ¡Anímate a compartir tus ideas!"}</p>
-                 </div>
+                <div className="md:col-span-2 lg:col-span-3 text-center text-gray-400 bg-gray-800 p-6 rounded-lg">
+                  <p>{error ? error : "Aún no has enviado ninguna sugerencia. ¡Anímate a compartir tus ideas!"}</p>
+                </div>
               )}
             </div>
           </div>
