@@ -1,5 +1,6 @@
-import { useAuth } from "../../context/AuthContext";
-import { useConfig } from "../../context/ConfigContext";
+import { useAuth } from "../../hooks/useAuth";
+import { useConfig } from "../../hooks/useConfig";
+
 
 export default function Plans(){
   const { profile } = useAuth();

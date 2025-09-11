@@ -7,7 +7,7 @@ import { useResponsiveValue } from '../hooks/useResponsiveValuse';
 import PaginationControls from '../components/news/PaginationControls';
 import { Loader } from '../components/news/Loader';
 import { logger } from '../lib/logger';
-import { useConfig } from '../context/ConfigContext';
+import { useConfig } from '../hooks/useConfig';
 
 const NewsPage = () => {
   const [allNews, setAllNews] = useState([]);
@@ -85,6 +85,13 @@ const NewsPage = () => {
   }, [currentPage, itemsPerPage, allNews]);
   
   const handlePageChange = (page) => {
+    logger.info('NEWS_PAGE_CHANGED', 'Usuario cambió página de noticias', {
+      fromPage: currentPage,
+      toPage: page,
+      totalPages: totalPages,
+      itemsPerPage: itemsPerPage,
+      totalNews: allNews.length
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentPage(page);
   };

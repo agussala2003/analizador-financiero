@@ -4,8 +4,9 @@ import Header from '../components/ui/Header';
 import Footer from '../components/ui/Footer';
 import SuggestionCardSkeleton from '../components/suggestion/SuggestionCardSkeleton';
 import SuggestionCard from '../components/suggestion/SuggestionCard';
+import Loader from '../components/ui/Loader';
 import { logger } from '../lib/logger';
-import { useConfig } from '../context/ConfigContext';
+import { useConfig } from '../hooks/useConfig';
 
 const SuggestionsPage = () => {
   const [suggestions, setSuggestions] = useState([]);
@@ -63,15 +64,26 @@ const SuggestionsPage = () => {
   const handleSubmitSuggestion = async (e) => {
     e.preventDefault();
     if (newSuggestion.trim().length < config.suggestions.minLength) {
+      logger.warn('SUGGESTION_VALIDATION_FAILED', 'Sugerencia muy corta', {
+        currentLength: newSuggestion.trim().length,
+        minLength: config.suggestions.minLength
+      });
       setError(`Tu sugerencia debe tener al menos ${config.suggestions.minLength} caracteres.`);
       return;
     }
+    
+    logger.info('SUGGESTION_SUBMISSION_START', 'Usuario iniciando envío de sugerencia', {
+      suggestionLength: newSuggestion.trim().length,
+      userSuggestionsCount: suggestions.length
+    });
+    
     setFormLoading(true);
     setError(null);
     setSuccessMessage('');
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+        logger.warn('SUGGESTION_SUBMISSION_UNAUTHORIZED', 'Usuario no autenticado intentando enviar sugerencia');
         setError('Debes iniciar sesión para enviar una sugerencia.');
         setFormLoading(false);
         return;
@@ -84,11 +96,20 @@ const SuggestionsPage = () => {
       .single();
 
     if (insertError) {
-      logger.error('SUGGESTION_SUBMISSION_FAILED', 'Failed to submit user suggestion', { errorMessage: insertError.message });
+      logger.error('SUGGESTION_SUBMISSION_FAILED', 'Error al enviar sugerencia del usuario', { 
+        errorMessage: insertError.message,
+        userId: user.id,
+        suggestionLength: newSuggestion.trim().length
+      });
       console.error('Error submitting suggestion:', insertError);
       setError('Hubo un problema al enviar tu sugerencia. Inténtalo de nuevo.');
     } else {
-      logger.info('SUGGESTION_SUBMITTED', 'User suggestion submitted successfully');
+      logger.info('SUGGESTION_SUBMITTED', 'Sugerencia del usuario enviada exitosamente', {
+        suggestionId: data.id,
+        userId: user.id,
+        suggestionLength: newSuggestion.trim().length,
+        totalUserSuggestions: suggestions.length + 1
+      });
       setSuggestions([data, ...suggestions]);
       setNewSuggestion('');
       setSuccessMessage('¡Gracias! Tu sugerencia ha sido enviada con éxito.');
@@ -121,7 +142,7 @@ const SuggestionsPage = () => {
                 disabled={formLoading || newSuggestion.trim().length < 10}
                 className="cursor-pointer w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed transition-all duration-200"
               >
-                {formLoading ? 'Enviando...' : 'Enviar mi Sugerencia'}
+                {formLoading ? <Loader variant="spin" size="sm" color="white" message="Enviando..." /> : 'Enviar mi Sugerencia'}
               </button>
               {error && <p className="text-red-400 text-sm mt-3 text-center" role="alert">{error}</p>}
               {successMessage && <p className="text-green-400 text-sm mt-3 text-center" role="status">{successMessage}</p>}

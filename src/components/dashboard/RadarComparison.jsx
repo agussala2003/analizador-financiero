@@ -1,7 +1,7 @@
 // src/components/dashboard/RadarComparison.jsx
 import { useMemo } from "react";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../hooks/useDashboard";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 const radarKeys = ['netDebtToEBITDA', 'roic', 'evToEbitda', 'beta', 'PER', 'fcfYield'];
@@ -102,7 +102,7 @@ export default function RadarComparison() {
                   borderRadius: '0.5rem',
                 }}
                 formatter={(_, __, props) => {
-                  const k = props?.payload?._key;
+                  // const k = props?.payload?._key; // Removed unused variable
                   const v = props?.payload?.originalValue ?? 'N/A';
                   return [`Valor original: ${v}`, null];
                 }}

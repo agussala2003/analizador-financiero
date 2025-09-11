@@ -7,11 +7,12 @@ import AdminUsersModule from "../components/admin/AdminUsersModule";
 import AdminSuggestionsModule from "../components/admin/AdminSuggestionModule";
 import AdminLogsModule from "../components/admin/AdminLogsModule";
 import AdminStatsModule from "../components/admin/AdminStatsModule";
+import AdminBlogsModule from "../components/admin/AdminBlogsModule";
 
 function getNavButtonClass(active, viewName) {
   const isActive = active === viewName;
   return [
-    "whitespace-nowrap",
+    "whitespace-nowrap cursor-pointer",
     "py-2 px-3 sm:px-4",
     "rounded-t-lg",
     "text-sm sm:text-[0.95rem] font-medium",
@@ -41,6 +42,7 @@ export default function AdminLanding() {
             <div className="overflow-x-auto no-scrollbar px-3 sm:px-0">
               <div className="inline-flex min-w-full sm:min-w-0 border-b border-gray-600 gap-2 sm:gap-0">
                 <button onClick={() => setActiveView("usuarios")} className={getNavButtonClass(activeView, "usuarios")}>Usuarios</button>
+                <button onClick={() => setActiveView("blogs")} className={getNavButtonClass(activeView, "blogs")}>Blogs</button>
                 <button onClick={() => setActiveView("sugerencias")} className={getNavButtonClass(activeView, "sugerencias")}>Sugerencias</button>
                 <button onClick={() => setActiveView("logs")} className={getNavButtonClass(activeView, "logs")}>Logs</button>
                 <button onClick={() => setActiveView("stats")} className={getNavButtonClass(activeView, "stats")}>Estadísticas</button>
@@ -50,6 +52,7 @@ export default function AdminLanding() {
 
           <main className="mt-4 sm:mt-6">
             {activeView === "usuarios" && <AdminUsersModule />}
+            {activeView === "blogs" && <AdminBlogsModule />}
             {activeView === "sugerencias" && <AdminSuggestionsModule />}
             {activeView === "logs" && <AdminLogsModule />}
             {activeView === "stats" && <AdminStatsModule />}

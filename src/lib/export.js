@@ -45,7 +45,8 @@ export async function exportToXLSX({ filename = 'export.xlsx', sheets }) {
     });
 
     XLSX.writeFile(wb, filename);
-  } catch (e) {
+  } catch (error) {
+    console.error('Error exportando a Excel:', error);
     throw new Error('Para exportar a Excel necesitás instalar la dependencia "xlsx".');
   }
 }

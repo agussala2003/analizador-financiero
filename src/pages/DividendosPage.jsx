@@ -8,7 +8,7 @@ import { fmtDate, pct } from "../utils/financial";
 import DividendCalculatorModal from "../components/dividendos/DividendCalculatorModal";
 import MobileDividendCard from "../components/dividendos/MobileDividendCard";
 import CalculatorIcon from "../components/dividendos/CalculatorIcon";
-import { useConfig } from "../context/ConfigContext";
+import { useConfig } from "../hooks/useConfig";
 
 export default function DividendosPage() {
   const [loading, setLoading] = useState(true);
@@ -118,8 +118,18 @@ export default function DividendosPage() {
   }, [q, frequency, from, to, pageSize, sortKey, sortDir]);
 
   const toggleSort = (key) => {
+    const newSortDir = sortKey === key ? (sortDir === "asc" ? "desc" : "asc") : "asc";
+    
+    logger.info('DIVIDENDS_SORT_CHANGED', 'Usuario modificó ordenamiento de dividendos', {
+      previousSortKey: sortKey,
+      previousSortDir: sortDir,
+      newSortKey: key,
+      newSortDir: newSortDir,
+      totalRecords: filtered.length
+    });
+    
     if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      setSortDir(newSortDir);
     } else {
       setSortKey(key);
       setSortDir("asc");
@@ -146,7 +156,17 @@ export default function DividendosPage() {
               <label className="text-xs text-gray-400 mb-1">Símbolo</label>
               <input
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setQ(newValue);
+                  if (newValue !== q) {
+                    logger.info('DIVIDENDS_FILTER_SYMBOL_CHANGED', 'Usuario modificó filtro de símbolo', {
+                      previousValue: q,
+                      newValue: newValue,
+                      currentRecords: filtered.length
+                    });
+                  }
+                }}
                 placeholder="Ej: AAPL"
                 className="cursor-pointer bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -156,7 +176,15 @@ export default function DividendosPage() {
               <label className="text-xs text-gray-400 mb-1">Frecuencia</label>
               <select
                 value={frequency}
-                onChange={(e) => setFrequency(e.target.value)}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  logger.info('DIVIDENDS_FILTER_FREQUENCY_CHANGED', 'Usuario modificó filtro de frecuencia', {
+                    previousValue: frequency,
+                    newValue: newValue,
+                    availableOptions: frequencyOptions
+                  });
+                  setFrequency(newValue);
+                }}
                 className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {frequencyOptions.map((opt) => (
@@ -172,7 +200,14 @@ export default function DividendosPage() {
               <input
                 type="date"
                 value={from}
-                onChange={(e) => setFrom(e.target.value)}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  logger.info('DIVIDENDS_FILTER_DATE_FROM_CHANGED', 'Usuario modificó fecha desde', {
+                    previousValue: from,
+                    newValue: newValue
+                  });
+                  setFrom(newValue);
+                }}
                 className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -182,7 +217,14 @@ export default function DividendosPage() {
               <input
                 type="date"
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  logger.info('DIVIDENDS_FILTER_DATE_TO_CHANGED', 'Usuario modificó fecha hasta', {
+                    previousValue: to,
+                    newValue: newValue
+                  });
+                  setTo(newValue);
+                }}
                 className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -192,7 +234,16 @@ export default function DividendosPage() {
           <div className="flex items-center gap-2">
             <select
               value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
+              onChange={(e) => {
+                const newPageSize = Number(e.target.value);
+                logger.info('DIVIDENDS_PAGE_SIZE_CHANGED', 'Usuario modificó tamaño de página', {
+                  previousPageSize: pageSize,
+                  newPageSize: newPageSize,
+                  totalRecords: filtered.length,
+                  newTotalPages: Math.ceil(filtered.length / newPageSize)
+                });
+                setPageSize(newPageSize);
+              }}
               className="cursor-pointer bg-gray-700 border border-gray-600 text-white rounded-md px-2 py-2 text-sm"
               title="Resultados por página"
             >

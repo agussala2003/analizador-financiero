@@ -1,7 +1,5 @@
-// src/context/ConfigContext.jsx
-import { createContext, useContext, useState, useEffect } from 'react';
-
-const ConfigContext = createContext(null);
+import { useEffect, useState } from "react";
+import { ConfigContext } from "../context/configContext";
 
 export function ConfigProvider({ children }) {
   const [config, setConfig] = useState(null);
@@ -23,8 +21,4 @@ export function ConfigProvider({ children }) {
       {children}
     </ConfigContext.Provider>
   );
-}
-
-export function useConfig() {
-  return useContext(ConfigContext);
 }

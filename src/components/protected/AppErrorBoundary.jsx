@@ -1,6 +1,6 @@
 // src/components/AppErrorBoundary.jsx
 import React from 'react';
-import { useError } from '../../context/ErrorContext';
+import { useError } from '../../hooks/useError';
 
 export default class AppErrorBoundary extends React.Component {
   static contextType = React.createContext(null);
