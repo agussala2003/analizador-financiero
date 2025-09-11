@@ -18,6 +18,7 @@ function Header() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false); // ✅ NUEVO: Estado para prevenir múltiples clicks
 
   const role = (profile?.role || 'basico').toLowerCase();
   const isAdmin = role === 'administrador';
@@ -42,10 +43,41 @@ function Header() {
     setUsage(Number(profile?.api_calls_made ?? 0));
   }, [profile?.api_calls_made]);
 
+  // ✅ CRÍTICO: useEffect para manejar clicks fuera del dropdown (ESTE FALTABA)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserOpen(false);
+      }
+    };
+
+    const handleTouchOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserOpen(false);
+      }
+    };
+
+    // Solo agregar listeners si el menú está abierto
+    if (userOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleTouchOutside, { passive: false });
+      
+      // ✅ NUEVO: También escuchar eventos de scroll para cerrar en móviles
+      document.addEventListener('scroll', () => setUserOpen(false), { passive: true });
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleTouchOutside);
+      document.removeEventListener('scroll', () => setUserOpen(false));
+    };
+  }, [userOpen]);
+
   // Este useEffect cierra los menús cuando navegas a otra página
   useEffect(() => {
     setMobileOpen(false);
     setUserOpen(false);
+    setIsSigningOut(false); // ✅ Reset el estado de signing out
   }, [location.pathname]);
 
   const navLinkClass = ({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`;
@@ -59,26 +91,29 @@ function Header() {
   }, [user?.email]);
 
   // ✅ MEJORADO: Handler más robusto para cerrar sesión
-  const handleSignOut = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    logger.info('HEADER_SIGNOUT_CLICKED', 'Usuario cerrando sesión desde header', {
-      userId: user?.id,
-      userEmail: user?.email,
-      currentPath: location.pathname,
-      isMobile: window.innerWidth <= 768
+  const handleSignOut = async (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  
+  if (isSigningOut) {
+    logger.warn('HEADER_SIGNOUT_ALREADY_IN_PROGRESS', 'Intento de cerrar sesión múltiple ignorado');
+    return;
+  }
+  
+  setIsSigningOut(true);
+  setUserOpen(false); // Cerrar dropdown inmediatamente
+  
+  try {
+    await signOut();
+    // El redirect se maneja en el AuthProvider
+  } catch (error) {
+    logger.error('HEADER_SIGNOUT_ERROR', 'Error en header al cerrar sesión', { 
+      error: error.message 
     });
-    
-    // Cerramos el menú inmediatamente
-    setUserOpen(false);
-    
-    // Pequeño delay para asegurar que el estado se actualice
-    setTimeout(() => {
-      signOut();
-      logger.info('HEADER_SIGNOUT_COMPLETED', 'Usuario ha cerrado sesión', { userId: user?.id, userEmail: user?.email });
-    }, 100);
-  };
+    // El AuthProvider ya maneja el redirect de fallback
+  }
+  // No necesitamos setIsSigningOut(false) porque habrá redirect
+};
 
   // ✅ MEJORADO: Handler para toggle del menú de usuario
   const handleUserMenuToggle = (event) => {
@@ -184,10 +219,11 @@ function Header() {
             {/* ✅ AÑADIDO: ref para el menú de usuario */}
             <div className="relative" data-tour="user-profile" ref={userMenuRef}>
               <button
-                onClick={handleUserMenuToggle} // ✅ Usar el nuevo handler
+                onClick={handleUserMenuToggle}
                 className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-gray-700 focus:outline-none"
                 aria-haspopup="menu"
                 aria-expanded={userOpen}
+                style={{ touchAction: 'manipulation' }} // ✅ AÑADIDO
               >
                 <div className="hidden sm:flex flex-col text-right">
                   <span className="text-sm font-semibold leading-4">{displayName}</span>
@@ -199,31 +235,49 @@ function Header() {
 
               {/* ✅ MEJORADO: Dropdown con mejor z-index y manejo de eventos */}
               {userOpen && (
-                <div 
-                  role="menu" 
-                  className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-[9999]"
-                  onClick={(e) => e.stopPropagation()} // ✅ Prevenir propagación
-                >
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-medium truncate">{user?.email}</p>
-                    <p className="text-xs text-gray-500 capitalize">Plan: {role}</p>
+                <>
+                  {/* ✅ NUEVO: Overlay para cerrar en móviles */}
+                  <div 
+                    className="fixed inset-0 z-[9998] md:hidden" 
+                    onClick={() => setUserOpen(false)}
+                    onTouchStart={() => setUserOpen(false)}
+                  />
+                  
+                  <div 
+                    role="menu" 
+                    className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-[9999]"
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()} // ✅ AÑADIDO
+                  >
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-medium truncate">{user?.email}</p>
+                      <p className="text-xs text-gray-500 capitalize">Plan: {role}</p>
+                    </div>
+                    <div className="px-4 py-3 grid grid-cols-3 gap-3 text-center">
+                      <Stat label="Límite" value={planLimit === Infinity ? '∞' : planLimit} />
+                      <Stat label="Usadas" value={usage} />
+                      <Stat label="Restantes" value={remainingLabel} strong />
+                    </div>
+                    <div className="p-2 border-t border-gray-100">
+                      <button
+                        onClick={handleSignOut}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          handleSignOut(e);
+                        }} // ✅ MEJORADO: Manejo específico de touchEnd
+                        disabled={isSigningOut} // ✅ NUEVO: Deshabilitar durante el proceso
+                        className={`cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-white text-sm font-medium touch-manipulation ${
+                          isSigningOut 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : 'bg-red-600 hover:bg-red-700 active:bg-red-800'
+                        }`}
+                        style={{ touchAction: 'manipulation' }}
+                      >
+                        {isSigningOut ? 'Cerrando...' : 'Cerrar sesión'}
+                      </button>
+                    </div>
                   </div>
-                  <div className="px-4 py-3 grid grid-cols-3 gap-3 text-center">
-                    <Stat label="Límite" value={planLimit === Infinity ? '∞' : planLimit} />
-                    <Stat label="Usadas" value={usage} />
-                    <Stat label="Restantes" value={remainingLabel} strong />
-                  </div>
-                  <div className="p-2 border-t border-gray-100">
-                    <button
-                      onClick={handleSignOut} // ✅ Usar el handler mejorado
-                      onTouchEnd={handleSignOut} // ✅ AÑADIDO: Soporte para touch en móviles
-                      className="cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700 active:bg-red-800 touch-manipulation"
-                      style={{ touchAction: 'manipulation' }} // ✅ Mejor manejo de touch
-                    >
-                      Cerrar sesión
-                    </button>
-                  </div>
-                </div>
+                </>
               )}
             </div>
           </div>
