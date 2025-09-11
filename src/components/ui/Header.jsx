@@ -42,31 +42,6 @@ function Header() {
     setUsage(Number(profile?.api_calls_made ?? 0));
   }, [profile?.api_calls_made]);
 
-  // ✅ AÑADIDO: Manejo de clicks fuera del dropdown para móviles
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setUserOpen(false);
-      }
-    };
-
-    const handleTouchOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setUserOpen(false);
-      }
-    };
-
-    if (userOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleTouchOutside); // ✅ Para móviles
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleTouchOutside);
-    };
-  }, [userOpen]);
-
   // Este useEffect cierra los menús cuando navegas a otra página
   useEffect(() => {
     setMobileOpen(false);
@@ -101,6 +76,7 @@ function Header() {
     // Pequeño delay para asegurar que el estado se actualice
     setTimeout(() => {
       signOut();
+      logger.info('HEADER_SIGNOUT_COMPLETED', 'Usuario ha cerrado sesión', { userId: user?.id, userEmail: user?.email });
     }, 100);
   };
 
