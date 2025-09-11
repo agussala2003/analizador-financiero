@@ -51,7 +51,7 @@ function Header() {
   // Cerrar menús al click afuera / tecla Esc
   useEffect(() => {
     function onClickOutside(e) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+      if (userMenuRef.current && !userMenu-ref.current.contains(e.target)) {
         setUserOpen(false);
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
@@ -139,28 +139,30 @@ function Header() {
   return (
     <header className="bg-gray-800 text-white shadow-md mb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top bar */}
+        {/* --- Top bar --- */}
         <div className="flex items-center justify-between h-16">
-          {/* Izquierda: brand + nav (desktop) */}
-          <div className="flex items-center gap-2">
-            {/* Botón hamburguesa (mobile) */}
-            <button
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white md:hidden"
-              aria-label="Abrir menú"
-              aria-expanded={mobileOpen}
-              onClick={() => {
-                logger.info('HEADER_MOBILE_MENU_TOGGLED', 'Usuario abriendo/cerrando menú móvil', {
-                  isOpening: !mobileOpen,
-                  currentPath: location.pathname,
-                  userId: user?.id
-                });
-                setMobileOpen(v => !v);
-              }}
-            >
-              {mobileOpen ? ( <XIcon className="h-6 w-6" /> ) : ( <BurgerIcon className="h-6 w-6" /> )}
-            </button>
+          {/* --- Contenedor Izquierdo: Agrupa el menú móvil y la navegación de escritorio --- */}
+          <div className="flex items-center">
+            {/* Botón hamburguesa (solo visible en móvil) */}
+            <div className="flex-shrink-0 md:hidden">
+              <button
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
+                aria-label="Abrir menú"
+                aria-expanded={mobileOpen}
+                onClick={() => {
+                  logger.info('HEADER_MOBILE_MENU_TOGGLED', 'Usuario abriendo/cerrando menú móvil', {
+                    isOpening: !mobileOpen,
+                    currentPath: location.pathname,
+                    userId: user?.id
+                  });
+                  setMobileOpen(v => !v);
+                }}
+              >
+                {mobileOpen ? <XIcon className="h-6 w-6" /> : <BurgerIcon className="h-6 w-6" />}
+              </button>
+            </div>
 
-            {/* Navegación desktop */}
+            {/* Navegación desktop (solo visible en escritorio) */}
             <nav className="hidden md:flex items-center space-x-2" data-tour="navigation">
               <NavLink to="/" className={navLinkClass} end>
                 Información
@@ -196,7 +198,7 @@ function Header() {
             </nav>
           </div>
 
-          {/* Derecha: tour + usuario */}
+          {/* --- Contenedor Derecho: Ayuda y menú de usuario (siempre visible) --- */}
           <div className="flex items-center space-x-4">
             {/* Tour button, solo debe aparecer en desktop */}
             <div className='hidden md:block' data-tour="help-button">
@@ -210,80 +212,81 @@ function Header() {
             <div className="relative" ref={userMenuRef} data-tour="user-profile">
               <button
                 onClick={() => {
-                logger.info('HEADER_USER_MENU_TOGGLED', 'Usuario abriendo/cerrando menú de usuario', {
-                  isOpening: !userOpen,
-                  userId: user?.id,
-                  currentPath: location.pathname
-                });
-                setUserOpen(v => !v);
-              }}
-              className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-gray-700 focus:outline-none "
-              aria-haspopup="menu"
-              aria-expanded={userOpen}
-            >
-              {/* Email + plan (oculto en xs) */}
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-semibold leading-4">
-                  {displayName}
-                </span>
-                <span className="text-[11px] text-gray-300 leading-4 capitalize">
-                  Plan: {role}
-                </span>
-              </div>
-
-              {/* Avatar circular con iniciales */}
-              <div className="h-9 w-9 rounded-full bg-gray-600 grid place-items-center text-sm font-bold">
-                {initials}
-              </div>
-
-              {/* Chevron */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`h-4 w-4 transition-transform ${userOpen ? 'rotate-180' : ''}`}
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  logger.info('HEADER_USER_MENU_TOGGLED', 'Usuario abriendo/cerrando menú de usuario', {
+                    isOpening: !userOpen,
+                    userId: user?.id,
+                    currentPath: location.pathname
+                  });
+                  setUserOpen(v => !v);
+                }}
+                className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-gray-700 focus:outline-none "
+                aria-haspopup="menu"
+                aria-expanded={userOpen}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-
-            {/* Dropdown */}
-            {userOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-50"
-              >
-                <div className="px-4 py-3 border-b border-gray-100">
-                  <p className="text-sm font-medium truncate">{user?.email}</p>
-                  <p className="text-xs text-gray-500 capitalize">Plan: {role}</p>
+                {/* Email + plan (oculto en xs) */}
+                <div className="hidden sm:flex flex-col text-right">
+                  <span className="text-sm font-semibold leading-4">
+                    {displayName}
+                  </span>
+                  <span className="text-[11px] text-gray-300 leading-4 capitalize">
+                    Plan: {role}
+                  </span>
                 </div>
 
-                <div className="px-4 py-3 grid grid-cols-3 gap-3 text-center">
-                  <Stat label="Límite" value={planLimit === Infinity ? '∞' : planLimit} />
-                  <Stat label="Usadas" value={usage} />
-                  <Stat label="Restantes" value={remainingLabel} strong />
+                {/* Avatar circular con iniciales */}
+                <div className="h-9 w-9 rounded-full bg-gray-600 grid place-items-center text-sm font-bold">
+                  {initials}
                 </div>
 
-                <div className="p-2 border-t border-gray-100">
-                  <button
-                    onClick={() => {
-                      logger.info('HEADER_SIGNOUT_CLICKED', 'Usuario cerrando sesión desde header', {
-                        userId: user?.id,
-                        userEmail: user?.email,
-                        currentPath: location.pathname
-                      });
-                      signOut();
-                    }}
-                    className="cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700"
-                  >
-                    Cerrar sesión
-                  </button>
+                {/* Chevron */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 transition-transform ${userOpen ? 'rotate-180' : ''}`}
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+
+              {/* Dropdown */}
+              {userOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-50"
+                >
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium truncate">{user?.email}</p>
+                    <p className="text-xs text-gray-500 capitalize">Plan: {role}</p>
+                  </div>
+
+                  <div className="px-4 py-3 grid grid-cols-3 gap-3 text-center">
+                    <Stat label="Límite" value={planLimit === Infinity ? '∞' : planLimit} />
+                    <Stat label="Usadas" value={usage} />
+                    <Stat label="Restantes" value={remainingLabel} strong />
+                  </div>
+
+                  <div className="p-2 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        logger.info('HEADER_SIGNOUT_CLICKED', 'Usuario cerrando sesión desde header', {
+                          userId: user?.id,
+                          userEmail: user?.email,
+                          currentPath: location.pathname
+                        });
+                        signOut();
+                      }}
+                      className="cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Menú mobile desplegable */}
+        {/* --- Menú mobile desplegable --- */}
         {mobileOpen && (
           <div className="md:hidden" ref={mobileMenuRef}>
             <nav className="space-y-1 pb-4 pt-2">
@@ -313,7 +316,6 @@ function Header() {
                   Mis Publicaciones
                 </MobileLink>
               )}
-
               {isAdmin && (
                 <MobileLink to="/admin">
                   Admin
@@ -322,7 +324,6 @@ function Header() {
             </nav>
           </div>
         )}
-      </div>
       </div>
     </header>
   );
