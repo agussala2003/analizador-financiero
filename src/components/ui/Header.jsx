@@ -64,10 +64,16 @@ function Header() {
         setMobileOpen(false);
       }
     }
+
+    // ✅ CORRECCIÓN: Escuchamos ambos eventos para máxima compatibilidad
     document.addEventListener('mousedown', onClickOutside);
+    document.addEventListener('touchstart', onClickOutside);
     document.addEventListener('keydown', onEsc);
+
     return () => {
+      // ✅ CORRECCIÓN: Removemos ambos listeners
       document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('touchstart', onClickOutside);
       document.removeEventListener('keydown', onEsc);
     };
   }, []);
