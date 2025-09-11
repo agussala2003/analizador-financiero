@@ -1,6 +1,6 @@
 // src/context/ErrorProvider.jsx
 import { useState } from 'react';
-import { ErrorContext } from '../context/ErrorContext';
+import { ErrorContext } from '../context/errorContext';
 
 export default function ErrorProvider({ children }) {
   const [toast, setToast] = useState(null);
