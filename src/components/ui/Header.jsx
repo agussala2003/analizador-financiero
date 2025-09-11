@@ -12,6 +12,9 @@ function Header() {
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
   const config = useConfig();
+  
+  // ✅ AÑADIDO: Ref para detectar clicks fuera del dropdown
+  const userMenuRef = useRef(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -39,17 +42,38 @@ function Header() {
     setUsage(Number(profile?.api_calls_made ?? 0));
   }, [profile?.api_calls_made]);
 
-  const navLinkClass = ({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`;
+  // ✅ AÑADIDO: Manejo de clicks fuera del dropdown para móviles
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserOpen(false);
+      }
+    };
 
-  // ✅ CORRECCIÓN: Se elimina el useEffect complejo para 'onClickOutside'.
-  // El cierre del menú ahora se maneja directamente por los clics en los botones
-  // y por el cambio de ruta.
+    const handleTouchOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserOpen(false);
+      }
+    };
 
-  // Este useEffect sí es útil: cierra el menú móvil cuando navegas a otra página.
+    if (userOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleTouchOutside); // ✅ Para móviles
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleTouchOutside);
+    };
+  }, [userOpen]);
+
+  // Este useEffect cierra los menús cuando navegas a otra página
   useEffect(() => {
     setMobileOpen(false);
-    setUserOpen(false); // <-- AÑADIDO: También cerramos el menú de usuario al navegar.
+    setUserOpen(false);
   }, [location.pathname]);
+
+  const navLinkClass = ({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`;
 
   const initials = useMemo(() => {
     const email = user?.email || '';
@@ -59,15 +83,38 @@ function Header() {
     return (local[0] || 'U').toUpperCase();
   }, [user?.email]);
 
-  const handleSignOut = () => {
+  // ✅ MEJORADO: Handler más robusto para cerrar sesión
+  const handleSignOut = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
     logger.info('HEADER_SIGNOUT_CLICKED', 'Usuario cerrando sesión desde header', {
       userId: user?.id,
       userEmail: user?.email,
-      currentPath: location.pathname
+      currentPath: location.pathname,
+      isMobile: window.innerWidth <= 768
     });
-    // ✅ CORRECCIÓN: Cerramos el menú explícitamente ANTES de llamar a signOut.
+    
+    // Cerramos el menú inmediatamente
     setUserOpen(false);
-    signOut();
+    
+    // Pequeño delay para asegurar que el estado se actualice
+    setTimeout(() => {
+      signOut();
+    }, 100);
+  };
+
+  // ✅ MEJORADO: Handler para toggle del menú de usuario
+  const handleUserMenuToggle = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    logger.info('HEADER_USER_MENU_TOGGLED', 'Usuario abriendo/cerrando menú de usuario', { 
+      isOpening: !userOpen,
+      isMobile: window.innerWidth <= 768
+    });
+    
+    setUserOpen(v => !v);
   };
   
   const headerTourSteps = [
@@ -158,12 +205,10 @@ function Header() {
             <div className='hidden md:block' data-tour="help-button">
               <TourButton tourSteps={headerTourSteps} label="Ayuda" />
             </div>
-            <div className="relative" data-tour="user-profile">
+            {/* ✅ AÑADIDO: ref para el menú de usuario */}
+            <div className="relative" data-tour="user-profile" ref={userMenuRef}>
               <button
-                onClick={() => {
-                  logger.info('HEADER_USER_MENU_TOGGLED', 'Usuario abriendo/cerrando menú de usuario', { isOpening: !userOpen });
-                  setUserOpen(v => !v);
-                }}
+                onClick={handleUserMenuToggle} // ✅ Usar el nuevo handler
                 className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-gray-700 focus:outline-none"
                 aria-haspopup="menu"
                 aria-expanded={userOpen}
@@ -176,9 +221,13 @@ function Header() {
                 <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${userOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" /></svg>
               </button>
 
-              {/* Dropdown */}
+              {/* ✅ MEJORADO: Dropdown con mejor z-index y manejo de eventos */}
               {userOpen && (
-                <div role="menu" className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-50">
+                <div 
+                  role="menu" 
+                  className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-[9999]"
+                  onClick={(e) => e.stopPropagation()} // ✅ Prevenir propagación
+                >
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-medium truncate">{user?.email}</p>
                     <p className="text-xs text-gray-500 capitalize">Plan: {role}</p>
@@ -190,8 +239,10 @@ function Header() {
                   </div>
                   <div className="p-2 border-t border-gray-100">
                     <button
-                      onClick={handleSignOut} // ✅ CORRECCIÓN: Usamos el nuevo handler
-                      className="cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700"
+                      onClick={handleSignOut} // ✅ Usar el handler mejorado
+                      onTouchEnd={handleSignOut} // ✅ AÑADIDO: Soporte para touch en móviles
+                      className="cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700 active:bg-red-800 touch-manipulation"
+                      style={{ touchAction: 'manipulation' }} // ✅ Mejor manejo de touch
                     >
                       Cerrar sesión
                     </button>
