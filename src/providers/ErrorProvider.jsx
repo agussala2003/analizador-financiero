@@ -22,7 +22,7 @@ export default function ErrorProvider({ children }) {
 
   return (
     <ErrorContext.Provider value={{ showError, showSuccess, showInfo }}>
-      {children}
+      {children} 
       {toast && (
         <div className={`fixed bottom-5 right-5 p-4 rounded-lg shadow-xl text-white z-50
           ${toast.type === 'error' ? 'bg-red-600' :
