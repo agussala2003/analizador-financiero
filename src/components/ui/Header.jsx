@@ -51,7 +51,7 @@ function Header() {
   // Cerrar menús al click afuera / tecla Esc
   useEffect(() => {
     function onClickOutside(e) {
-      if (userMenuRef.current && !userMenu-ref.current.contains(e.target)) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
         setUserOpen(false);
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
