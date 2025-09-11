@@ -1,4 +1,4 @@
-// src/components/Header.jsx
+// src/components/ui/Header.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation} from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -22,9 +22,7 @@ function Header() {
   const [usage, setUsage] = useState(0);
 
   const planLimit = config.plans.roleLimits[role] ? (role === 'administrador' ? Infinity : config.plans.roleLimits[role]) : 0;
-
   const remainingRaw = planLimit === Infinity ? Infinity : Math.max(planLimit - usage, 0);
-
   const remainingLabel = remainingRaw === Infinity ? '∞' : String(remainingRaw);
 
   const displayName = useMemo(() => {
@@ -37,49 +35,20 @@ function Header() {
     return user?.email || '';
   }, [user, profile]);
 
-  // Sincroniza cuando cambie el perfil desde el backend
   useEffect(() => {
     setUsage(Number(profile?.api_calls_made ?? 0));
   }, [profile?.api_calls_made]);
 
-  // ---- UX: clases de NavLink, cierre en navegación, click afuera, ESC ----
   const navLinkClass = ({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`;
 
-  const userMenuRef = useRef(null);
-  const mobileMenuRef = useRef(null);
+  // ✅ CORRECCIÓN: Se elimina el useEffect complejo para 'onClickOutside'.
+  // El cierre del menú ahora se maneja directamente por los clics en los botones
+  // y por el cambio de ruta.
 
-  // Cerrar menús al click afuera / tecla Esc
-  useEffect(() => {
-    function onClickOutside(e) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setUserOpen(false);
-      }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
-        // el botón hamburguesa maneja su propio toggle
-      }
-    }
-    function onEsc(e) {
-      if (e.key === 'Escape') {
-        setUserOpen(false);
-        setMobileOpen(false);
-      }
-    }
-
-    // ✅ CORRECCIÓN: Escuchamos ambos eventos para máxima compatibilidad
-    document.addEventListener('mousedown', onClickOutside);
-    document.addEventListener('touchstart', onClickOutside);
-    document.addEventListener('keydown', onEsc);
-
-    return () => {
-      // ✅ CORRECCIÓN: Removemos ambos listeners
-      document.removeEventListener('mousedown', onClickOutside);
-      document.removeEventListener('touchstart', onClickOutside);
-      document.removeEventListener('keydown', onEsc);
-    };
-  }, []);
-
+  // Este useEffect sí es útil: cierra el menú móvil cuando navegas a otra página.
   useEffect(() => {
     setMobileOpen(false);
+    setUserOpen(false); // <-- AÑADIDO: También cerramos el menú de usuario al navegar.
   }, [location.pathname]);
 
   const initials = useMemo(() => {
@@ -90,7 +59,17 @@ function Header() {
     return (local[0] || 'U').toUpperCase();
   }, [user?.email]);
 
-  // Tours disponibles
+  const handleSignOut = () => {
+    logger.info('HEADER_SIGNOUT_CLICKED', 'Usuario cerrando sesión desde header', {
+      userId: user?.id,
+      userEmail: user?.email,
+      currentPath: location.pathname
+    });
+    // ✅ CORRECCIÓN: Cerramos el menú explícitamente ANTES de llamar a signOut.
+    setUserOpen(false);
+    signOut();
+  };
+  
   const headerTourSteps = [
     {
       selector: '[data-tour="navigation"]',
@@ -145,142 +124,73 @@ function Header() {
   return (
     <header className="bg-gray-800 text-white shadow-md mb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* --- Top bar --- */}
         <div className="flex items-center justify-between h-16">
-          {/* --- Contenedor Izquierdo: Agrupa el menú móvil y la navegación de escritorio --- */}
+          {/* Contenedor Izquierdo */}
           <div className="flex items-center">
-            {/* Botón hamburguesa (solo visible en móvil) */}
             <div className="flex-shrink-0 md:hidden">
               <button
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
                 aria-label="Abrir menú"
                 aria-expanded={mobileOpen}
                 onClick={() => {
-                  logger.info('HEADER_MOBILE_MENU_TOGGLED', 'Usuario abriendo/cerrando menú móvil', {
-                    isOpening: !mobileOpen,
-                    currentPath: location.pathname,
-                    userId: user?.id
-                  });
+                  logger.info('HEADER_MOBILE_MENU_TOGGLED', 'Usuario abriendo/cerrando menú móvil', { isOpening: !mobileOpen });
                   setMobileOpen(v => !v);
                 }}
               >
                 {mobileOpen ? <XIcon className="h-6 w-6" /> : <BurgerIcon className="h-6 w-6" />}
               </button>
             </div>
-
-            {/* Navegación desktop (solo visible en escritorio) */}
             <nav className="hidden md:flex items-center space-x-2" data-tour="navigation">
-              <NavLink to="/" className={navLinkClass} end>
-                Información
-              </NavLink>
-              <NavLink data-tour="dashboard" to="/dashboard" className={navLinkClass}>
-                Dashboard
-              </NavLink>
-              <NavLink data-tour="latest-news" to="/news" className={navLinkClass}>
-                Noticias
-              </NavLink>
-              <NavLink data-tour="our-blog" to="/blogs" className={navLinkClass} end>
-                Blogs
-              </NavLink>
-              <NavLink data-tour="dividends" to="/dividends" className={navLinkClass}>
-                Dividendos
-              </NavLink>
-              <NavLink data-tour="suggestions" to="/suggestions" className={navLinkClass}>
-                Sugerencias
-              </NavLink>
-              <NavLink to="/profile" className={navLinkClass}>
-                Perfil
-              </NavLink>
-              {profile?.can_upload_blog && (
-                <NavLink to="/blogs/my-posts" className={navLinkClass}>
-                  Mis Publicaciones
-                </NavLink>
-              )}
-              {isAdmin && (
-                <NavLink to="/admin" className={navLinkClass}>
-                  Admin
-                </NavLink>
-              )}
+              <NavLink to="/" className={navLinkClass} end>Información</NavLink>
+              <NavLink data-tour="dashboard" to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
+              <NavLink data-tour="latest-news" to="/news" className={navLinkClass}>Noticias</NavLink>
+              <NavLink data-tour="our-blog" to="/blogs" className={navLinkClass} end>Blogs</NavLink>
+              <NavLink data-tour="dividends" to="/dividends" className={navLinkClass}>Dividendos</NavLink>
+              <NavLink data-tour="suggestions" to="/suggestions" className={navLinkClass}>Sugerencias</NavLink>
+              <NavLink to="/profile" className={navLinkClass}>Perfil</NavLink>
+              {profile?.can_upload_blog && (<NavLink to="/blogs/my-posts" className={navLinkClass}>Mis Publicaciones</NavLink>)}
+              {isAdmin && (<NavLink to="/admin" className={navLinkClass}>Admin</NavLink>)}
             </nav>
           </div>
 
-          {/* --- Contenedor Derecho: Ayuda y menú de usuario (siempre visible) --- */}
+          {/* Contenedor Derecho */}
           <div className="flex items-center space-x-4">
-            {/* Tour button, solo debe aparecer en desktop */}
             <div className='hidden md:block' data-tour="help-button">
-              <TourButton
-                tourSteps={headerTourSteps}
-                label="Ayuda"
-              />
+              <TourButton tourSteps={headerTourSteps} label="Ayuda" />
             </div>
-
-            {/* Menú de usuario */}
-            <div className="relative" ref={userMenuRef} data-tour="user-profile">
+            <div className="relative" data-tour="user-profile">
               <button
                 onClick={() => {
-                  logger.info('HEADER_USER_MENU_TOGGLED', 'Usuario abriendo/cerrando menú de usuario', {
-                    isOpening: !userOpen,
-                    userId: user?.id,
-                    currentPath: location.pathname
-                  });
+                  logger.info('HEADER_USER_MENU_TOGGLED', 'Usuario abriendo/cerrando menú de usuario', { isOpening: !userOpen });
                   setUserOpen(v => !v);
                 }}
-                className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-gray-700 focus:outline-none "
+                className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-gray-700 focus:outline-none"
                 aria-haspopup="menu"
                 aria-expanded={userOpen}
               >
-                {/* Email + plan (oculto en xs) */}
                 <div className="hidden sm:flex flex-col text-right">
-                  <span className="text-sm font-semibold leading-4">
-                    {displayName}
-                  </span>
-                  <span className="text-[11px] text-gray-300 leading-4 capitalize">
-                    Plan: {role}
-                  </span>
+                  <span className="text-sm font-semibold leading-4">{displayName}</span>
+                  <span className="text-[11px] text-gray-300 leading-4 capitalize">Plan: {role}</span>
                 </div>
-
-                {/* Avatar circular con iniciales */}
-                <div className="h-9 w-9 rounded-full bg-gray-600 grid place-items-center text-sm font-bold">
-                  {initials}
-                </div>
-
-                {/* Chevron */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 w-4 transition-transform ${userOpen ? 'rotate-180' : ''}`}
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-                </svg>
+                <div className="h-9 w-9 rounded-full bg-gray-600 grid place-items-center text-sm font-bold">{initials}</div>
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${userOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" /></svg>
               </button>
 
               {/* Dropdown */}
               {userOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-50"
-                >
+                <div role="menu" className="absolute right-0 mt-2 w-72 origin-top-right rounded-lg bg-white text-gray-900 shadow-lg ring-1 ring-black/5 z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-medium truncate">{user?.email}</p>
                     <p className="text-xs text-gray-500 capitalize">Plan: {role}</p>
                   </div>
-
                   <div className="px-4 py-3 grid grid-cols-3 gap-3 text-center">
                     <Stat label="Límite" value={planLimit === Infinity ? '∞' : planLimit} />
                     <Stat label="Usadas" value={usage} />
                     <Stat label="Restantes" value={remainingLabel} strong />
                   </div>
-
                   <div className="p-2 border-t border-gray-100">
                     <button
-                      onClick={() => {
-                        logger.info('HEADER_SIGNOUT_CLICKED', 'Usuario cerrando sesión desde header', {
-                          userId: user?.id,
-                          userEmail: user?.email,
-                          currentPath: location.pathname
-                        });
-                        signOut();
-                      }}
+                      onClick={handleSignOut} // ✅ CORRECCIÓN: Usamos el nuevo handler
                       className="cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700"
                     >
                       Cerrar sesión
@@ -292,41 +202,19 @@ function Header() {
           </div>
         </div>
 
-        {/* --- Menú mobile desplegable --- */}
+        {/* Menú mobile desplegable */}
         {mobileOpen && (
-          <div className="md:hidden" ref={mobileMenuRef}>
+          <div className="md:hidden">
             <nav className="space-y-1 pb-4 pt-2">
-              <MobileLink to="/" end>
-                Información
-              </MobileLink>
-              <MobileLink to="/dashboard">
-                Dashboard
-              </MobileLink>
-              <MobileLink to="/news">
-                Noticias
-              </MobileLink>
-              <MobileLink to="/blogs" end>
-                Blogs
-              </MobileLink>
-              <MobileLink to="/dividends">
-                Dividendos
-              </MobileLink>
-              <MobileLink to="/suggestions">
-                Sugerencias
-              </MobileLink>
-              <MobileLink to="/profile">
-                Perfil
-              </MobileLink>
-              {profile?.can_upload_blog && (
-                <MobileLink to="/blogs/my-posts">
-                  Mis Publicaciones
-                </MobileLink>
-              )}
-              {isAdmin && (
-                <MobileLink to="/admin">
-                  Admin
-                </MobileLink>
-              )}
+              <MobileLink to="/" end>Información</MobileLink>
+              <MobileLink to="/dashboard">Dashboard</MobileLink>
+              <MobileLink to="/news">Noticias</MobileLink>
+              <MobileLink to="/blogs" end>Blogs</MobileLink>
+              <MobileLink to="/dividends">Dividendos</MobileLink>
+              <MobileLink to="/suggestions">Sugerencias</MobileLink>
+              <MobileLink to="/profile">Perfil</MobileLink>
+              {profile?.can_upload_blog && (<MobileLink to="/blogs/my-posts">Mis Publicaciones</MobileLink>)}
+              {isAdmin && (<MobileLink to="/admin">Admin</MobileLink>)}
             </nav>
           </div>
         )}
