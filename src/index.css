@@ -71,13 +71,3 @@ body {
     }
   }
 }
-
-/* Mejorar el comportamiento táctil en móviles */
-button, [role="button"] {
-  touch-action: manipulation;
-}
-
-/* Asegurar que los dropdowns estén por encima de todo */
-[role="menu"] {
-  z-index: 9999 !important;
-}

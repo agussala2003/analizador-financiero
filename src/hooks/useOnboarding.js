@@ -1,170 +1,154 @@
 // src/hooks/useOnboarding.js
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { logger } from '../lib/logger';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './useAuth';
 
 /**
  * Hook para gestión del sistema de onboarding
  */
 export function useOnboarding(options = {}) {
-  const {
-    storageKey = 'onboarding_progress',
-    autoStart = true,
-    enableAnalytics = true
-  } = options;
+  const { autoStart = true, enableAnalytics = true } = options;
+  const { user, profile, refreshProfile } = useAuth(); // Usamos el perfil del contexto de Auth
 
+  // El estado inicial ahora se deriva del perfil del usuario
   const [isActive, setIsActive] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState(new Set());
-  const [onboardingData, setOnboardingData] = useState({});
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [userProfile, setUserProfile] = useState({
+  const [currentStep, setCurrentStep] = useState(profile?.onboarding_step || 0);
+  const [isCompleted, setIsCompleted] = useState(profile?.onboarding_completed || false);
+  const [userProfile, setUserProfile] = useState(profile?.onboarding_profile || {
     type: null,
     interests: [],
     goals: []
   });
 
-  // ✅ CORRECCIÓN: Cargar progreso del onboarding UNA SOLA VEZ al montar.
-  // Se eliminó `userProfile` del array de dependencias para evitar el bucle infinito.
+  const debounceTimeoutRef = useRef(null);
+
+  // Cargar el estado inicial del onboarding desde el perfil del usuario
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const data = JSON.parse(saved);
-        setCompletedSteps(new Set(data.completedSteps || []));
-        setOnboardingData(data.onboardingData || {});
-        setIsCompleted(data.isCompleted || false);
-        // Inicializamos el userProfile desde el guardado si existe
-        setUserProfile(prevProfile => ({ ...prevProfile, ...(data.userProfile || {}) }));
-        
-        if (!data.isCompleted && !data.hasBeenShown && autoStart) {
-          setIsActive(true);
-          setCurrentStep(data.currentStep || 0);
-        }
-      } else if (autoStart) {
+    if (profile) {
+      const completed = profile.onboarding_completed || false;
+      setIsCompleted(completed);
+      setCurrentStep(profile.onboarding_step || 0);
+      setUserProfile(profile.onboarding_profile || { type: null, interests: [], goals: [] });
+      
+      // Iniciar automáticamente solo si no está completo y el usuario está cargado
+      if (autoStart && !completed && user) {
         setIsActive(true);
       }
-    } catch (error) {
-      logger.error('ONBOARDING_LOAD_ERROR', 'Error cargando progreso', { error: error.message });
     }
-  }, [storageKey, autoStart]);
+  }, [profile, autoStart, user]);
 
+  // Función para guardar el progreso en la base de datos con debounce
+  const saveProgressToDB = useCallback((progress) => {
+    if (!user) return;
 
-  // Guardar progreso
-  const saveProgress = useCallback(() => {
-    try {
-      const data = {
-        currentStep,
-        completedSteps: Array.from(completedSteps),
-        onboardingData,
+    // Cancelar el guardado anterior si se llama de nuevo rápidamente
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(async () => {
+      logger.info('ONBOARDING_SAVE_START', 'Guardando progreso del onboarding en DB', { userId: user.id, ...progress });
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: progress.isCompleted,
+          onboarding_step: progress.currentStep,
+          onboarding_profile: progress.userProfile,
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        logger.error('ONBOARDING_SAVE_ERROR', 'Error guardando progreso en DB', { userId: user.id, error: error.message });
+      } else {
+        logger.info('ONBOARDING_SAVE_SUCCESS', 'Progreso guardado exitosamente en DB');
+        // Opcional: refrescar el perfil global para que otros componentes tengan los datos actualizados
+        if (refreshProfile) {
+          refreshProfile();
+        }
+      }
+    }, 1000); // Espera 1 segundo antes de guardar para evitar escrituras excesivas
+  }, [user, refreshProfile]);
+
+  // Cada vez que un estado relevante cambia, preparamos el guardado
+  useEffect(() => {
+    // No guardar si el onboarding no está activo para evitar escrituras innecesarias al cargar
+    if (isActive) {
+      saveProgressToDB({
         isCompleted,
-        hasBeenShown: true,
+        currentStep,
         userProfile,
-        lastUpdated: new Date().toISOString()
-      };
-      localStorage.setItem(storageKey, JSON.stringify(data));
-    } catch (error) {
-      logger.error('ONBOARDING_SAVE_ERROR', 'Error guardando progreso', { error: error.message });
+      });
     }
-  }, [storageKey, currentStep, completedSteps, onboardingData, isCompleted, userProfile]);
+  }, [isCompleted, currentStep, userProfile, isActive, saveProgressToDB]);
 
-  // Avanzar al siguiente paso
-  const nextStep = useCallback((stepData = {}) => {
-    setCompletedSteps(prev => new Set([...prev, currentStep]));
-    setOnboardingData(prev => ({ ...prev, ...stepData }));
+
+  const nextStep = useCallback(() => {
     setCurrentStep(prev => prev + 1);
-
     if (enableAnalytics) {
       logger.info('ONBOARDING_STEP_COMPLETED', `Paso ${currentStep} completado`);
     }
   }, [currentStep, enableAnalytics]);
 
-  // Retroceder al paso anterior
   const previousStep = useCallback(() => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
-      if (enableAnalytics) {
-        logger.info('ONBOARDING_STEP_BACK', `Retroceso a paso ${currentStep - 1}`);
-      }
     }
-  }, [currentStep, enableAnalytics]);
+  }, [currentStep]);
 
-  // Saltar paso
-  const skipStep = useCallback((reason = 'user_skip') => {
-    setCompletedSteps(prev => new Set([...prev, currentStep]));
-    setCurrentStep(prev => prev + 1);
-
-    if (enableAnalytics) {
-      logger.info('ONBOARDING_STEP_SKIPPED', `Paso ${currentStep} saltado`, { reason });
-    }
-  }, [currentStep, enableAnalytics]);
-
-  // Ir a un paso específico
-  const goToStep = useCallback((stepIndex) => {
-    setCurrentStep(stepIndex);
-  }, []);
-
-  // Completar onboarding
   const completeOnboarding = useCallback((finalData = {}) => {
+    const finalProfile = { ...userProfile, ...finalData };
+    setUserProfile(finalProfile);
     setIsCompleted(true);
     setIsActive(false);
-    setOnboardingData(prev => ({ ...prev, ...finalData }));
     
     if (enableAnalytics) {
-      logger.info('ONBOARDING_COMPLETED', 'Onboarding completado', { userProfile });
+      logger.info('ONBOARDING_COMPLETED', 'Onboarding completado', { userProfile: finalProfile });
     }
-  }, [userProfile, enableAnalytics]);
+    
+    // Forzar el guardado inmediato al completar
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    saveProgressToDB({ 
+      isCompleted: true, 
+      currentStep: currentStep, // Guardamos el último paso también
+      userProfile: finalProfile 
+    });
+  }, [userProfile, enableAnalytics, currentStep, saveProgressToDB]);
 
-  // Cerrar onboarding permanentemente
   const dismissOnboarding = useCallback(() => {
     setIsActive(false);
-    const data = {
-      currentStep,
-      completedSteps: Array.from(completedSteps),
-      onboardingData,
-      isCompleted: false,
-      hasBeenShown: true,
-      userProfile,
-      lastUpdated: new Date().toISOString()
-    };
-    localStorage.setItem(storageKey, JSON.stringify(data));
-    
+    // Marcamos como completo para que no vuelva a aparecer
+    setIsCompleted(true); 
     if (enableAnalytics) {
       logger.info('ONBOARDING_DISMISSED', 'Onboarding cerrado sin completar');
     }
-  }, [storageKey, currentStep, completedSteps, onboardingData, userProfile, enableAnalytics]);
+     // Forzar el guardado inmediato al descartar
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    saveProgressToDB({ isCompleted: true, currentStep, userProfile });
+  }, [enableAnalytics, currentStep, userProfile, saveProgressToDB]);
 
-  // Reiniciar onboarding
-  const resetOnboarding = useCallback(() => {
+  const resetOnboarding = useCallback(async () => {
+    const initialProfile = { type: null, interests: [], goals: [] };
     setIsActive(true);
     setCurrentStep(0);
-    setCompletedSteps(new Set());
-    setOnboardingData({});
     setIsCompleted(false);
-    localStorage.removeItem(storageKey);
+    setUserProfile(initialProfile);
+    // Forzar guardado inmediato del reseteo
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    saveProgressToDB({ isCompleted: false, currentStep: 0, userProfile: initialProfile });
+
     if (enableAnalytics) {
       logger.info('ONBOARDING_RESET', 'Onboarding reiniciado');
     }
-  }, [storageKey, enableAnalytics]);
-
-  // Actualizar perfil de usuario
+  }, [enableAnalytics, saveProgressToDB]);
+  
   const updateUserProfile = useCallback((updates) => {
     setUserProfile(prev => ({ ...prev, ...updates }));
-    // El log aquí puede ser muy ruidoso, es mejor que se loguee al final
   }, []);
 
-  // Pausar/reanudar onboarding
-  const pauseOnboarding = useCallback(() => {
-    setIsActive(false);
-  }, []);
+  const pauseOnboarding = useCallback(() => setIsActive(false), []);
+  const resumeOnboarding = useCallback(() => setIsActive(true), []);
 
-  const resumeOnboarding = useCallback(() => {
-    setIsActive(true);
-  }, []);
-
-  // Guardar progreso automáticamente cuando algo relevante cambia
-  useEffect(() => {
-    saveProgress();
-  }, [saveProgress]);
 
   return {
     isActive,
@@ -173,8 +157,8 @@ export function useOnboarding(options = {}) {
     userProfile,
     nextStep,
     previousStep,
-    skipStep,
-    goToStep,
+    skipStep: nextStep, // Saltar simplemente avanza al siguiente paso
+    goToStep: setCurrentStep,
     completeOnboarding,
     dismissOnboarding,
     resetOnboarding,
@@ -191,7 +175,6 @@ export function useOnboarding(options = {}) {
  */
 export function useFinancialOnboarding() {
   const onboarding = useOnboarding({
-    storageKey: 'financial_onboarding',
     autoStart: true,
     enableAnalytics: true
   });

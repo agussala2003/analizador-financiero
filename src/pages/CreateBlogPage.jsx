@@ -10,7 +10,6 @@ import BlogEditorForm from '../components/blogs/BlogEditorForm'; // 👈 Importa
 import { logger } from '../lib/logger';
 
 const generateSlug = (title) => {
-  
   return title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
 };
 

@@ -13,10 +13,8 @@ import Plans from '../components/dashboard/Plans';
 import Loader from '../components/ui/Loader';
 import Footer from '../components/ui/Footer';
 import RadarComparison from '../components/dashboard/RadarComparison';
-import RiskReturnScatterPlot from '../components/dashboard/RiskReturnScatterPlot';
-import KeyMetricsBarChart from '../components/dashboard/KeyMetricsBarChart';
 import InfoIcon from '../components/dashboard/InfoIcon';
-import { AutoDashboardTour, TourButton } from '../components/onboarding/TooltipSystem';
+import { TourButton } from '../components/onboarding/TooltipSystem';
 
 const dashboardPageTourSteps = [
   {
@@ -90,7 +88,6 @@ export default function DashboardPage() {
   return (
     <div className='pb-4' aria-busy={loading ? "true" : "false"} aria-live="polite">
       <Header />
-      <AutoDashboardTour tourSteps={dashboardPageTourSteps} />
       <div className="card bg-gray-800/50 p-4 w-11/12 sm:p-6 rounded-xl shadow-lg sm:w-full max-w-7xl mx-auto mb-14 pb-4">
         <section data-tour="ticker-form" className={`${selectedTickers.length > 0 ? 'mb-6' : ''}`} aria-busy={loading}>
           <form
@@ -223,8 +220,6 @@ export default function DashboardPage() {
                 >
                   Comparativa
                 </button>
-                {/* <button onClick={() => setActiveView('risk-return')} className={getNavButtonClass('risk-return')}>Riesgo/Retorno</button> */}
-                {/* <button onClick={() => setActiveView('key-metrics')} className={getNavButtonClass('key-metrics')}>Métricas Clave</button> */}
                 <button 
                   onClick={() => {
                     logger.info('DASHBOARD_VIEW_CHANGED', 'Usuario cambiando vista del dashboard', {
@@ -253,7 +248,7 @@ export default function DashboardPage() {
                 </button>
                 {/* Solo debe verse en pantallas grandes */}
                 <div className="hidden md:block md:ml-auto">
-                 <TourButton tourSteps={dashboardPageTourSteps} label="Ver Tour de Página" className="ml-auto" />
+                 <TourButton tourSteps={dashboardPageTourSteps} label="Ver Tour de Página" className="ml-auto md:cursor-pointer" />
                 </div>
               </nav>
             </div>
@@ -263,8 +258,6 @@ export default function DashboardPage() {
               {activeView === 'fundamentals' && <FundamentalsTable />}
               {activeView === 'correlation' && <CorrelationMatrix />}
               {activeView === 'radar' && <RadarComparison />}
-              {/* {activeView === 'risk-return' && <RiskReturnScatterPlot/>} */}
-              {/* {activeView === 'key-metrics' && <KeyMetricsBarChart />} */}
               {activeView === 'summary' && <SummaryAnalysis />}
               {activeView === 'plans' && <Plans />}
             </div>

@@ -9,6 +9,28 @@ import DividendCalculatorModal from "../components/dividendos/DividendCalculator
 import MobileDividendCard from "../components/dividendos/MobileDividendCard";
 import CalculatorIcon from "../components/dividendos/CalculatorIcon";
 import { useConfig } from "../hooks/useConfig";
+import { TourButton } from "../components/onboarding/TooltipSystem";
+
+const dividendsPageTourSteps = [
+  {
+    selector: '[data-tour="dividends-filters"]',
+    title: '1. Filtra tu Búsqueda',
+    description: 'Usa estos controles para encontrar dividendos por símbolo, frecuencia de pago o rango de fechas (Ex-Dividendo).',
+    placement: 'bottom'
+  },
+  {
+    selector: '[data-tour="dividends-table"]',
+    title: '2. Resultados del Calendario',
+    description: 'Aquí verás la lista de próximos dividendos. Puedes ordenar la tabla haciendo clic en los encabezados de las columnas.',
+    placement: 'top'
+  },
+  {
+    selector: '[data-tour="dividends-calculator"]',
+    title: '3. Usa la Calculadora',
+    description: 'Haz clic en este ícono junto a cualquier símbolo para abrir una calculadora y estimar cuánto recibirías según la cantidad de acciones que tengas.',
+    placement: 'top'
+  }
+];
 
 export default function DividendosPage() {
   const [loading, setLoading] = useState(true);
@@ -142,15 +164,20 @@ export default function DividendosPage() {
 
       <div className="card bg-gray-800/50 p-4 sm:p-6 rounded-xl shadow-lg w-11/12 sm:w-full max-w-7xl mx-auto mb-14 pb-4">
         {/* Header */}
-        <header className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold">Calendario de Dividendos</h2>
-          <p className="text-xs sm:text-sm text-gray-300">
-            Filtrá por símbolo, frecuencia y rango de fechas.
-          </p>
+        <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4 sm:mb-6">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold">Calendario de Dividendos</h2>
+            <p className="text-xs sm:text-sm text-gray-300">
+              Filtrá por símbolo, frecuencia y rango de fechas.
+            </p>
+          </div>
+          <div className="hidden md:block" data-tour="dividends-help">
+            <TourButton className="md:cursor-pointer" tourSteps={dividendsPageTourSteps} />
+          </div>
         </header>
 
         {/* Filtros (apilados en móvil, en fila en sm+) */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+        <div data-tour="dividends-filters" className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
           <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 w-full">
             <div className="flex flex-col">
               <label className="text-xs text-gray-400 mb-1">Símbolo</label>
@@ -273,7 +300,7 @@ export default function DividendosPage() {
         </div>
 
         {/* Desktop: tabla */}
-        <div className="hidden md:block overflow-x-auto">
+        <div data-tour="dividends-table" className="hidden md:block overflow-x-auto">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-gray-400 uppercase">
               <tr>
@@ -307,7 +334,7 @@ export default function DividendosPage() {
                 : paged.map((r, idx) => (
                     <tr key={`${r.symbol}-${idx}-${r.date}`} className="border-b border-gray-700 hover:bg-gray-700/50 transition-colors">
                     <td className="px-4 py-3 font-medium text-white">
-                        <div className="flex items-center gap-2">
+                        <div data-tour="dividends-symbol" className="flex items-center gap-2">
                            <span>{r.symbol}</span>
                            <button onClick={() => setCalculatorItem(r)} className="cursor-pointer text-blue-400 hover:text-blue-300" title="Calcular dividendo">
                              <CalculatorIcon className="w-4 h-4" />

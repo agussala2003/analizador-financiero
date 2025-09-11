@@ -7,26 +7,43 @@ import { useConfig } from "../hooks/useConfig";
 import { useError } from "../hooks/useError";
 import Header from "../components/ui/Header";
 import Footer from "../components/ui/Footer";
-
-// --- Iconos para las tarjetas ---
-const UserCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
-const ChipIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3" /></svg>;
-const BadgeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>;
-
+import BadgeIcon from "../components/svg/badge";
+import ChipIcon from "../components/svg/chip";
+import UserCircleIcon from "../components/svg/userCircle";
+import { TourButton } from "../components/onboarding/TooltipSystem";
 
 // --- Componente de Botón para Pestañas ---
 const TabButton = ({ isActive, onClick, children }) => (
   <button
     onClick={onClick}
     className={`cursor-pointer px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
-      isActive
-        ? 'bg-blue-600 text-white'
-        : 'text-gray-300 hover:bg-gray-700'
+      isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'
     }`}
   >
     {children}
   </button>
 );
+
+const profilePageTourSteps = [
+  {
+    selector: '[data-tour="profile-tabs"]',
+    title: '1. Secciones del Perfil',
+    description: 'Navega entre "Datos Personales" para actualizar tu información y "Portafolio" para ver tus inversiones (próximamente).',
+    placement: 'bottom'
+  },
+  {
+    selector: '[data-tour="personal-data-form"]',
+    title: '2. Actualiza tu Información',
+    description: 'Aquí puedes cambiar tu nombre y apellido. Tu correo electrónico no se puede modificar. ¡No olvides guardar los cambios!',
+    placement: 'top'
+  },
+  {
+    selector: '[data-tour="plan-and-usage"]',
+    title: '3. Tu Plan y Consumo',
+    description: 'En esta sección puedes ver cuál es tu plan actual y cuántas consultas a la API has realizado hoy.',
+    placement: 'left'
+  }
+];
 
 
 export default function ProfilePage() {
@@ -106,15 +123,20 @@ export default function ProfilePage() {
       <Header />
       <main className="flex-grow">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
-          <div className="text-center mb-10">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white">
-              Mi Perfil
-            </h1>
-            <p className="text-gray-400 mt-2">Gestiona tu información personal y visualiza tu portafolio.</p>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-center sm:text-left mb-10">
+           <div>
+             <h1 className="text-4xl sm:text-5xl font-bold text-white">
+               Mi Perfil
+             </h1>
+             <p className="text-gray-400 mt-2">Gestiona tu información personal y visualiza tu portafolio.</p>
+           </div>
+           <div className="hidden md:block">
+             <TourButton className="md:cursor-pointer" tourSteps={profilePageTourSteps} />
+           </div>
           </div>
 
           {/* Navegación de Pestañas */}
-          <div className="flex justify-center items-center gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700 mb-8 max-w-md mx-auto">
+          <div data-tour="profile-tabs" className="flex justify-center items-center gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700 mb-8 max-w-md mx-auto">
             <TabButton 
               isActive={activeTab === 'personal'} 
               onClick={() => {
@@ -148,7 +170,7 @@ export default function ProfilePage() {
             {activeTab === 'personal' && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
                 {/* Columna Izquierda: Formulario */}
-                <div className="lg:col-span-2 bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                <div data-tour="personal-data-form" className="lg:col-span-2 bg-gray-800/50 p-6 rounded-xl border border-gray-700">
                   <div className="flex items-center gap-3 mb-6">
                     <UserCircleIcon />
                     <h2 className="text-xl font-bold text-white">Información de la Cuenta</h2>
@@ -175,7 +197,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Columna Derecha: Plan y Uso */}
-                <div className="space-y-6">
+                <div data-tour="plan-and-usage" className="space-y-6">
                   <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
                     <div className="flex items-center gap-3 mb-4">
                       <BadgeIcon />
