@@ -1,13 +1,12 @@
 // src/context/DashboardContext.jsx
-import { createContext, useContext, useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from './AuthContext';
-import { useError } from './ErrorContext';
+import { useAuth } from '../hooks/useAuth';
+import { useError } from '../hooks/useError';
 import { computeSharpe, computeStdDevPct, findCloseByDate, getFirstPresent, indicatorConfig, meanArr, sharpeFromReturns, stdDevArr, toNumber } from '../utils/financial';
 import { logger } from '../lib/logger';
-import { useConfig } from './ConfigContext';
-
-const DashboardContext = createContext(null);
+import { useConfig } from '../hooks/useConfig';
+import { DashboardContext } from '../context/dashboardContext';
 
 export function DashboardProvider({ children }) {
   const { user, profile } = useAuth();
@@ -19,7 +18,7 @@ export function DashboardProvider({ children }) {
   const config = useConfig()
 
   // --- Límite diario de API por plan (tabla profiles)
-  const checkApiLimit = async () => {
+  const checkApiLimit = useCallback(async () => {
     if (!user) return false;
 
     const today = new Date().toISOString().split('T')[0];
@@ -61,10 +60,10 @@ export function DashboardProvider({ children }) {
       return false;
     }
     return true;
-  };
+  }, [user, profile?.role, config.plans.roleLimits, showError]);
 
   // --- Fetch a FMP + procesamiento
-  const fetchTickerData = async (ticker) => {
+  const fetchTickerData = useCallback(async (ticker) => {
     const allowed = await checkApiLimit();
     if (!allowed) return null;
 
@@ -283,10 +282,10 @@ export function DashboardProvider({ children }) {
       showError('No pudimos traer los datos del activo.', { detail: msg });
       return null;
     }
-  };
+  }, [checkApiLimit, config.api.fmpProxyEndpoints, showError]);
 
   // --- API pública del contexto
-  const addTicker = async (tickerRaw) => {
+  const addTicker = useCallback(async (tickerRaw) => {
     const ticker = tickerRaw.trim().toUpperCase();
     if (!ticker) return;
 
@@ -329,7 +328,7 @@ export function DashboardProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [config.plans.freeTierSymbols, config.dashboard.maxTickersToCompare, profile?.role, selectedTickers, showError, fetchTickerData]);
 
   const removeTicker = (ticker) => {
     setSelectedTickers((prev) => prev.filter((t) => t !== ticker));
@@ -351,7 +350,7 @@ export function DashboardProvider({ children }) {
       stdDev: stdDevArr,
       sharpe: sharpeFromReturns,
     }),
-    [selectedTickers, assetsData, loading, error, profile]
+    [selectedTickers, assetsData, loading, error, profile, addTicker]
   );
 
   return (
@@ -359,8 +358,4 @@ export function DashboardProvider({ children }) {
       {children}
     </DashboardContext.Provider>
   );
-}
-
-export function useDashboard() {
-  return useContext(DashboardContext);
 }

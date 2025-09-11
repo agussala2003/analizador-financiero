@@ -4,9 +4,8 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 // Providers y Lógica
-import { AuthProvider } from './context/AuthContext';
-import { DashboardProvider } from './context/DashboardContext';
-import { ErrorProvider } from './context/ErrorContext.jsx';
+import { AuthProvider } from './providers/AuthProvider.jsx';
+import { DashboardProvider } from './providers/DashboardProvider.jsx';
 import ErrorModal from './components/ui/ErrorModal.jsx';
 
 // Páginas y Layouts
@@ -27,7 +26,14 @@ import AdminProtectedRoute from './components/protected/AdminProtectedRoute.jsx'
 import AppErrorBoundary, { AppErrorBridge } from './components/protected/AppErrorBoundary.jsx';
 import InfoPage from './pages/InfoPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
-import { ConfigProvider } from './context/ConfigContext.jsx';
+import { ConfigProvider } from './providers/ConfigProvider.jsx';
+import BlogsPage from './pages/BlogsPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
+import BlogPostPage from './pages/BlogsPostPage.jsx';
+import CreateBlogPage from './pages/CreateBlogPage.jsx';
+import MyPostsPage from './pages/MyPostsPage.jsx';
+import EditBlogPage from './pages/EditBlogPage.jsx';
+import ErrorProvider from './providers/ErrorProvider.jsx';
 
 const router = createBrowserRouter([
   {
@@ -43,6 +49,12 @@ const router = createBrowserRouter([
 
       // --- Rutas Privadas (solo para usuarios logueados) ---
       { index: true, element: <InfoPage /> }, // Página de información pública como principal
+      { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
+      { path: 'blogs', element:  <ProtectedRoute><BlogsPage /></ProtectedRoute> },
+      { path: 'blogs/:slug', element: <ProtectedRoute><BlogPostPage /></ProtectedRoute> },
+      { path: 'blogs/create', element: <ProtectedRoute><CreateBlogPage /></ProtectedRoute> },
+      { path: 'blogs/my-posts', element: <ProtectedRoute><MyPostsPage /></ProtectedRoute> }, // 👈 Ruta para ver mis posts
+      { path: 'blogs/edit/:slug', element: <ProtectedRoute><EditBlogPage /></ProtectedRoute> }, // 👈 Ruta para editar
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
       { path: 'admin', element: <ProtectedRoute><AdminProtectedRoute><AdminPage /></AdminProtectedRoute></ProtectedRoute> },
       { path: 'news', element: <ProtectedRoute><NewsPage /></ProtectedRoute> },

@@ -1,6 +1,6 @@
 // src/components/ui/AvailableSymbolsModal.jsx
-import { useAuth } from '../../context/AuthContext';
-import { useConfig } from '../../context/ConfigContext';
+import { useAuth } from "../../hooks/useAuth";
+import { useConfig } from "../../hooks/useConfig";
 // Ícono simple para el botón de cierre
 function XIcon(props) {
   return (

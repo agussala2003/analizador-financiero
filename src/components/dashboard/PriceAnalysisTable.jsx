@@ -1,10 +1,9 @@
 // src/components/dashboard/PriceAnalysisTable.jsx
 import { useMemo, useState } from "react";
-import { useDashboard } from "../../context/DashboardContext";
-import { useAuth } from "../../context/AuthContext";
+import { useDashboard } from "../../hooks/useDashboard";
 import { exportToCSV, exportToXLSX } from "../../lib/export";
 import { exportTablesToPDF } from "../../lib/exportPdf";
-import { useError } from "../../context/ErrorContext";
+import { useError } from "../../hooks/useError";
 import CompanyInfoModal from "../common/CompanyInfoModal";
 
 function formatCurrency(v) { return typeof v === "number" ? `$${v.toFixed(2)}` : "N/A"; }
@@ -28,8 +27,6 @@ function InfoIcon({ className = "w-5 h-5" }) {
 
 export default function PriceAnalysisTable() {
   const { selectedTickers, assetsData, loading } = useDashboard();
-  const { profile } = useAuth();
-  const role = (profile?.role || "basico").toLowerCase();
   const { showError } = useError();
 
   const [sort, setSort] = useState({ key: "ticker", dir: "asc" });

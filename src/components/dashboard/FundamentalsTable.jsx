@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../hooks/useDashboard";
 import { exportToCSV, exportToXLSX } from "../../lib/export";
 import { exportTablesToPDF } from "../../lib/exportPdf";
-import { useError } from "../../context/ErrorContext";
+import { useError } from "../../hooks/useError";
 
 // Estructura para dividir los indicadores en secciones
 const indicatorSections = [

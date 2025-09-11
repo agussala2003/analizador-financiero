@@ -1,5 +1,5 @@
 // src/components/ui/ErrorModal.jsx
-import { useError } from '../../context/ErrorContext';
+import { useError } from "../../hooks/useError";
 
 // Ícono simple de Alerta (SVG) para usar en el modal
 function AlertTriangleIcon(props) {

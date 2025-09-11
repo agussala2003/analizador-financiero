@@ -1,5 +1,5 @@
 import React from "react";
-import { useConfig } from "../../context/ConfigContext";
+import { useConfig } from "../../hooks/useConfig";
 
 // src/components/Footer.jsx
 function Footer() {

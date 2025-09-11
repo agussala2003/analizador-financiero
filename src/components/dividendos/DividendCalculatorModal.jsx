@@ -74,7 +74,7 @@ export default function DividendCalculatorModal({ isOpen, onClose, item }) {
 
         <button
           onClick={onClose}
-          className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-transform hover:scale-105"
+          className="cursor-pointer mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-transform hover:scale-105"
         >
           Cerrar
         </button>

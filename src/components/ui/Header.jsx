@@ -1,10 +1,12 @@
 // src/components/Header.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { NavLink, useLocation} from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { logger } from '../../lib/logger';
 import XIcon from '../svg/x';
 import BurgerIcon from '../svg/burguer';
-import { useConfig } from '../../context/ConfigContext';
+import { useConfig } from '../../hooks/useConfig';
+import { TourButton } from '../onboarding/TooltipSystem';
 
 function Header() {
   const { user, profile, signOut } = useAuth();
@@ -16,7 +18,6 @@ function Header() {
 
   const role = (profile?.role || 'basico').toLowerCase();
   const isAdmin = role === 'administrador';
-  const isNotBasic = role !== 'basico';
 
   const [usage, setUsage] = useState(0);
 
@@ -25,6 +26,16 @@ function Header() {
   const remainingRaw = planLimit === Infinity ? Infinity : Math.max(planLimit - usage, 0);
 
   const remainingLabel = remainingRaw === Infinity ? '∞' : String(remainingRaw);
+
+  const displayName = useMemo(() => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    if (profile?.first_name) {
+      return profile.first_name;
+    }
+    return user?.email || '';
+  }, [user, profile]);
 
   // Sincroniza cuando cambie el perfil desde el backend
   useEffect(() => {
@@ -73,6 +84,58 @@ function Header() {
     return (local[0] || 'U').toUpperCase();
   }, [user?.email]);
 
+  // Tours disponibles
+  const headerTourSteps = [
+    {
+      selector: '[data-tour="navigation"]',
+      title: '🧭 Navegación Principal',
+      description: 'Usa este menú para moverte entre las secciones principales de la aplicación.',
+      placement: 'bottom'
+    },
+    {
+      selector: '[data-tour="user-profile"]',
+      title: '👤 Tu Perfil y Cuenta',
+      description: 'Accede a tu perfil, gestiona tu plan y cierra sesión desde aquí.',
+      placement: 'bottom'
+    },
+    {
+      selector: '[data-tour="dashboard"]',
+      title: '📊 Dashboard',
+      description: 'Visualiza y analiza datos financieros personalizados en tu dashboard.',
+      placement: 'bottom'
+    },
+    {
+      selector: '[data-tour="latest-news"]',
+      title: '📰 Últimas Noticias',
+      description: 'Mantente informado sobre las últimas noticias del mercado y actualizaciones de la aplicación.',
+      placement: 'bottom'
+    },
+    {
+      selector: '[data-tour="our-blog"]',
+      title: '📝 Nuestro Blog',
+      description: 'Accede a artículos y recursos útiles sobre análisis de datos y finanzas.',
+      placement: 'bottom'
+    },
+    {
+      selector: '[data-tour="dividends"]',
+      title: '💰 Seguimiento de Dividendos',
+      description: 'Gestiona y realiza un seguimiento de tus ingresos por dividendos aquí.',
+      placement: 'bottom'
+    },
+    {
+      selector: '[data-tour="suggestions"]',
+      title: '💡 Sugerencias y Feedback',
+      description: '¿Tienes ideas para mejorar? Envíanos tus sugerencias y comentarios.',
+      placement: 'bottom'
+    },
+    {
+      selector: '[data-tour="help-button"]',
+      title: '❓ Ayuda y Tours',
+      description: 'Puedes reiniciar este tour o encontrar otros tours específicos en cada página desde botones como este.',
+      placement: 'bottom'
+    }
+  ];
+
   return (
     <header className="bg-gray-800 text-white shadow-md mb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,28 +148,46 @@ function Header() {
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white md:hidden"
               aria-label="Abrir menú"
               aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen(v => !v)}
+              onClick={() => {
+                logger.info('HEADER_MOBILE_MENU_TOGGLED', 'Usuario abriendo/cerrando menú móvil', {
+                  isOpening: !mobileOpen,
+                  currentPath: location.pathname,
+                  userId: user?.id
+                });
+                setMobileOpen(v => !v);
+              }}
             >
               {mobileOpen ? ( <XIcon className="h-6 w-6" /> ) : ( <BurgerIcon className="h-6 w-6" /> )}
             </button>
 
             {/* Navegación desktop */}
-            <nav className="hidden md:flex items-center space-x-2">
+            <nav className="hidden md:flex items-center space-x-2" data-tour="navigation">
               <NavLink to="/" className={navLinkClass} end>
                 Información
               </NavLink>
-              <NavLink to="/dashboard" className={navLinkClass}>
+              <NavLink data-tour="dashboard" to="/dashboard" className={navLinkClass}>
                 Dashboard
               </NavLink>
-              <NavLink to="/news" className={navLinkClass}>
+              <NavLink data-tour="latest-news" to="/news" className={navLinkClass}>
                 Noticias
               </NavLink>
-              <NavLink to="/dividends" className={navLinkClass}>
+              <NavLink data-tour="our-blog" to="/blogs" className={navLinkClass} end>
+                Blogs
+              </NavLink>
+              <NavLink data-tour="dividends" to="/dividends" className={navLinkClass}>
                 Dividendos
               </NavLink>
-              <NavLink to="/suggestions" className={navLinkClass}>
+              <NavLink data-tour="suggestions" to="/suggestions" className={navLinkClass}>
                 Sugerencias
               </NavLink>
+              <NavLink to="/profile" className={navLinkClass}>
+                Perfil
+              </NavLink>
+              {profile?.can_upload_blog && (
+                <NavLink to="/blogs/my-posts" className={navLinkClass}>
+                  Mis Publicaciones
+                </NavLink>
+              )}
               {isAdmin && (
                 <NavLink to="/admin" className={navLinkClass}>
                   Admin
@@ -115,10 +196,27 @@ function Header() {
             </nav>
           </div>
 
-          {/* Derecha: sección usuario */}
-          <div className="relative" ref={userMenuRef}>
-            <button
-              onClick={() => setUserOpen(v => !v)}
+          {/* Derecha: tour + usuario */}
+          <div className="flex items-center space-x-4">
+            {/* Tour button, solo debe aparecer en desktop */}
+            <div className='hidden md:block' data-tour="help-button">
+              <TourButton
+                tourSteps={headerTourSteps}
+                label="Ayuda"
+              />
+            </div>
+
+            {/* Menú de usuario */}
+            <div className="relative" ref={userMenuRef} data-tour="user-profile">
+              <button
+                onClick={() => {
+                logger.info('HEADER_USER_MENU_TOGGLED', 'Usuario abriendo/cerrando menú de usuario', {
+                  isOpening: !userOpen,
+                  userId: user?.id,
+                  currentPath: location.pathname
+                });
+                setUserOpen(v => !v);
+              }}
               className="flex items-center gap-3 rounded-md px-2 py-1 hover:bg-gray-700 focus:outline-none "
               aria-haspopup="menu"
               aria-expanded={userOpen}
@@ -126,7 +224,7 @@ function Header() {
               {/* Email + plan (oculto en xs) */}
               <div className="hidden sm:flex flex-col text-right">
                 <span className="text-sm font-semibold leading-4">
-                  {user?.email}
+                  {displayName}
                 </span>
                 <span className="text-[11px] text-gray-300 leading-4 capitalize">
                   Plan: {role}
@@ -167,8 +265,15 @@ function Header() {
 
                 <div className="p-2 border-t border-gray-100">
                   <button
-                    onClick={signOut}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700"
+                    onClick={() => {
+                      logger.info('HEADER_SIGNOUT_CLICKED', 'Usuario cerrando sesión desde header', {
+                        userId: user?.id,
+                        userEmail: user?.email,
+                        currentPath: location.pathname
+                      });
+                      signOut();
+                    }}
+                    className="cursor-pointer w-full inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700"
                   >
                     Cerrar sesión
                   </button>
@@ -191,15 +296,23 @@ function Header() {
               <MobileLink to="/news">
                 Noticias
               </MobileLink>
+              <MobileLink to="/blogs" end>
+                Blogs
+              </MobileLink>
               <MobileLink to="/dividends">
                 Dividendos
               </MobileLink>
               <MobileLink to="/suggestions">
                 Sugerencias
               </MobileLink>
-              <MobileLink to="/info">
-                Información
+              <MobileLink to="/profile">
+                Perfil
               </MobileLink>
+              {profile?.can_upload_blog && (
+                <MobileLink to="/blogs/my-posts">
+                  Mis Publicaciones
+                </MobileLink>
+              )}
 
               {isAdmin && (
                 <MobileLink to="/admin">
@@ -209,6 +322,7 @@ function Header() {
             </nav>
           </div>
         )}
+      </div>
       </div>
     </header>
   );

@@ -73,7 +73,7 @@ export function exportTablesToPDF({
       },
       
       // didDrawPage se sigue usando para el footer, que va encima de todo
-      didDrawPage: (data) => {
+      didDrawPage: () => {
         const str = `Página ${doc.internal.getNumberOfPages()}`;
         doc.setFontSize(9);
         doc.setTextColor(180);

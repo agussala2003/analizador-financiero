@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useError } from '../context/ErrorContext'; // 👈 Importamos el hook
+import { useError } from '../hooks/useError';
 import { logger } from '../lib/logger';
+import Loader from '../components/ui/Loader';
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('');
@@ -72,7 +73,7 @@ export default function UpdatePasswordPage() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors disabled:bg-gray-500"
           >
-            {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
+            {loading ? <Loader variant="spin" size="sm" color="white" message="Actualizando..." /> : 'Actualizar Contraseña'}
           </button>
         </form>
         {message && <p className="text-green-400 text-sm mt-4 text-center">{message}</p>}

@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
-import { useError } from '../context/ErrorContext'; // 👈 Importamos el hook
+import { useError } from '../hooks/useError';
 import { logger } from '../lib/logger';
+import Loader from '../components/ui/Loader';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -60,7 +61,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors disabled:bg-gray-500"
           >
-            {loading ? 'Creando cuenta...' : 'Registrarse'}
+            {loading ? <Loader variant="spin" size="sm" color="white" message="Creando cuenta..." /> : 'Registrarse'}
           </button>
         </form>
         {message && <p className="text-green-400 text-sm mt-4 text-center">{message}</p>}

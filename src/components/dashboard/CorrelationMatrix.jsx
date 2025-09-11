@@ -1,28 +1,7 @@
 import { useMemo } from "react";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../hooks/useDashboard";
 import { exportTablesToPDF } from "../../lib/exportPdf";
-
-function mean(arr) { return arr.reduce((a, b) => a + b, 0) / (arr.length || 1); }
-function std(arr) {
-  if (arr.length < 2) return 0;
-  const m = mean(arr);
-  return Math.sqrt(arr.map(x => (x - m) ** 2).reduce((a, b) => a + b, 0) / (arr.length - 1));
-}
-function covariance(a, b) {
-  const n = Math.min(a.length, b.length);
-  if (n < 2) return 0;
-  const a2 = a.slice(-n), b2 = b.slice(-n);
-  const ma = mean(a2), mb = mean(b2);
-  let s = 0; for (let i = 0; i < n; i++) s += (a2[i] - ma) * (b2[i] - mb);
-  return s / (n - 1);
-}
-function corr(a, b) {
-  const n = Math.min(a.length, b.length);
-  if (n < 2) return 0;
-  const sa = std(a.slice(-n)), sb = std(b.slice(-n));
-  if (!sa || !sb) return 0;
-  return covariance(a, b) / (sa * sb);
-}
+import { correlation } from "../../utils/math";
 function cellStyle(value) {
   const hue = (value + 1) * 60; // [-1..1] -> [0..120] HSL
   return { backgroundColor: `hsl(${hue}, 80%, 75%)`, color: '#1f2937' };
@@ -65,7 +44,7 @@ export default function CorrelationMatrix() {
     selectedTickers.forEach(cT => {
       const value = rT === cT
         ? 1
-        : corr(assetsData[rT]?.historicalReturns || [], assetsData[cT]?.historicalReturns || []);
+        : correlation(assetsData[rT]?.historicalReturns || [], assetsData[cT]?.historicalReturns || []);
       row.push(Number.isFinite(value) ? value.toFixed(2) : "0.00");
     });
     return row;
@@ -151,7 +130,7 @@ export default function CorrelationMatrix() {
                   {row.t}
                 </th>
                 {rows.map((col, j) => {
-                  const value = i === j ? 1 : corr(row.r, col.r);
+                  const value = i === j ? 1 : correlation(row.r, col.r);
                   return (
                     <td key={col.t} className="px-4 sm:px-6 py-3 sm:py-4 text-center font-semibold" style={cellStyle(value)}>
                       {(Number.isFinite(value) ? value : 0).toFixed(2)}

@@ -22,4 +22,5 @@ export const logger = {
   info: (eventType, message, metadata) => logEvent('INFO', eventType, message, metadata),
   warn: (eventType, message, metadata) => logEvent('WARN', eventType, message, metadata),
   error: (eventType, message, metadata) => logEvent('ERROR', eventType, message, metadata),
+  debug: (eventType, message, metadata) => logEvent('DEBUG', eventType, message, metadata),
 };

@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
-import { useError } from '../context/ErrorContext'; // 👈 Importamos el hook
+import { useError } from '../hooks/useError'; // 👈 Importamos el hook
 import { logger } from '../lib/logger';
+import Loader from '../components/ui/Loader';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
@@ -52,7 +53,7 @@ export default function ForgotPasswordPage() {
                         disabled={loading}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors disabled:bg-gray-500"
                     >
-                        {loading ? 'Enviando...' : 'Enviar Enlace'}
+                        {loading ? <Loader variant="spin" size="sm" color="white" message="Enviando..." /> : 'Enviar Enlace'}
                     </button>
                 </form>
                 {message && <p className="text-green-500 mt-4 text-center">{message}</p>}

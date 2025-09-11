@@ -36,6 +36,7 @@ function formatMarketCap(n) {
 export default function CompanyInfoModal({ open, onClose, data }) {
   // Cerrar con ESC y bloquear scroll
   const [expanded, setExpanded] = useState(false);
+  
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === "Escape" && onClose?.();
@@ -72,8 +73,7 @@ export default function CompanyInfoModal({ open, onClose, data }) {
     range,
     volume,
     averageVolume,
-    ipoDate,
-    data: rawData = {}, // por si guardaste beta, marketCap, etc. en processed.data
+    ipoDate
   } = data;
 
   // Soporte: si no viene image en processed, usamos el de FMP por ticker

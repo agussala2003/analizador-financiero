@@ -65,19 +65,35 @@
       "items": [
         {
           "title": "Análisis Fundamental",
-          "description": "Decenas de indicadores de valoración, rentabilidad y salud financiera para un análisis exhaustivo."
+          "description": "Métricas de valoración, rentabilidad y salud financiera con tablas comparativas avanzadas y análisis automatizado."
         },
         {
-          "title": "Visualizaciones Clave",
-          "description": "Matriz de correlación y gráficos de radar para una comparativa visual e instantánea de activos."
+          "title": "Matriz de Correlación",
+          "description": "Visualiza relaciones entre activos con matriz de correlación interactiva y escalas de color intuitivas."
         },
         {
-          "title": "Reportes Profesionales",
-          "description": "Exporta tus análisis a PDF, CSV o Excel. Perfecto para informes o para compartir tus hallazgos."
+          "title": "Gráfico Radar Comparativo",
+          "description": "Compara múltiples acciones en un radar multidimensional que muestra fortalezas y debilidades al instante."
         },
         {
-          "title": "Datos de Mercado",
-          "description": "Calendario de dividendos interactivo y noticias financieras para no perderte ninguna oportunidad."
+          "title": "Resumen Inteligente",
+          "description": "IA que analiza todos los indicadores y te dice qué acción destaca en cada métrica con veredicto automático."
+        },
+        {
+          "title": "Calendario de Dividendos",
+          "description": "Consulta fechas ex-dividendo, pagos, rendimientos y usa la calculadora integrada para proyectar ingresos pasivos."
+        },
+        {
+          "title": "Noticias Financieras",
+          "description": "Agregador de noticias de price targets y upgrades/downgrades ordenadas cronológicamente con paginación inteligente."
+        },
+        {
+          "title": "Interfaz Intuitiva",
+          "description": "Diseño limpio y moderno que facilita la navegación y el análisis, incluso para principiantes."
+        },
+        {
+          "title": "Acceso Gratuito",
+          "description": "Comienza gratis con acceso a funciones esenciales y actualiza cuando estés listo para más."
         }
       ]
     },

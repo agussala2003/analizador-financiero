@@ -1,18 +1,16 @@
-import { useMemo } from "react";
-import { useDashboard } from "../../context/DashboardContext";
+import { useMemo, useCallback } from "react";
+import { useDashboard } from "../../hooks/useDashboard";
 
 export default function SummaryAnalysis() {
   const { selectedTickers, assetsData, indicatorConfig } = useDashboard();
   
-  if (!selectedTickers.length) return null;
-
   const assets = useMemo(
     () => selectedTickers.map(t => ({ ticker: t, ...assetsData[t] })),
     [selectedTickers, assetsData]
   );
 
   // --- MEJORA: La función ahora devuelve null si no hay datos válidos ---
-  const pickBest = (key) => {
+  const pickBest = useCallback((key) => {
     const cfg = indicatorConfig[key];
     if (!cfg) return null; // Previene errores si la config no existe
     
@@ -27,7 +25,7 @@ export default function SummaryAnalysis() {
       }
       return currentValue > bestValue ? cur : best;
     });
-  };
+  }, [assets, indicatorConfig]);
 
   // --- CORRECCIÓN: Se usa 'asPercent' en lugar de 'isPercentage' según tu config ---
   const formatValue = (key, value) => {
@@ -39,7 +37,7 @@ export default function SummaryAnalysis() {
   };
   
   // --- MEJORA: El array de secciones ahora es más completo ---
-  const sections = [
+  const sections = useMemo(() => [
     ['Valoración (PER)', 'Mide si una acción está "barata" o "cara" respecto a sus ganancias. Menor es mejor.', 'PER'],
     ['Valoración (P/FCF)', 'Similar al PER, pero usa el flujo de caja libre, más difícil de manipular. Menor es mejor.', 'pfc_ratio'],
     ['Rentabilidad (ROE)', 'Eficiencia generando beneficios con el dinero de los accionistas. Mayor es mejor.', 'roe'],
@@ -48,7 +46,7 @@ export default function SummaryAnalysis() {
     ['Liquidez (Current Ratio)', 'Capacidad para pagar deudas a corto plazo. Mayor es mejor (usualmente > 1.5).', 'currentRatio'],
     ['Dividendos', 'Rendimiento anual que paga la empresa a sus accionistas. Mayor es mejor.', 'dividendYield'],
     ['Riesgo de Mercado (Beta)', 'Volatilidad respecto al mercado. Menor implica más estabilidad.', 'beta'],
-  ];
+  ], []);
 
   // --- LÓGICA CENTRALIZADA: Calculamos todos los "mejores" y las fortalezas de una vez ---
   const analysis = useMemo(() => {
@@ -78,7 +76,10 @@ export default function SummaryAnalysis() {
     });
 
     return { bestOf, strengthsByTicker, mostBalanced };
-  }, [assets, sections]);
+  }, [sections, selectedTickers, indicatorConfig, pickBest]);
+
+  // Early return after all hooks
+  if (!selectedTickers.length) return null;
 
 
   // --- COMPONENTE DE TARJETA: Ahora no renderiza nada si no hay datos ---

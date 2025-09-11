@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
-import { useError } from '../context/ErrorContext'; // 👈 1. Importamos el hook de errores
+import { useError } from '../hooks/useError';
 import { logger } from '../lib/logger';
+import Loader from '../components/ui/Loader';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -58,7 +59,7 @@ export default function LoginPage() {
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
             disabled={loading} // 5. Desactivamos el botón mientras carga
           >
-            {loading ? 'Ingresando...' : 'Ingresar'}
+            {loading ? <Loader variant="spin" size="sm" color="white" message="Ingresando..." /> : 'Ingresar'}
           </button>
         </form>
         
