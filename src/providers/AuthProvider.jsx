@@ -114,18 +114,75 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // ✅ NUEVO: Función signOut robusta con manejo de errores
+  const signOut = async () => {
+    try {
+      logger.info('AUTH_SIGNOUT_START', 'Iniciando proceso de cerrar sesión', {
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        isMobile: window.innerWidth <= 768,
+        userAgent: navigator.userAgent
+      });
+
+      // ✅ 1. Limpiar estado local inmediatamente para feedback visual
+      setSession(null);
+      setProfile(null);
+
+      // ✅ 2. Llamar a Supabase para cerrar sesión en el servidor
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        logger.error('AUTH_SIGNOUT_ERROR', 'Error al cerrar sesión en Supabase', {
+          error: error.message,
+          code: error.code,
+          userId: session?.user?.id
+        });
+        
+        // En caso de error, podrías querer restaurar el estado o manejarlo de otra forma
+        // Para este caso, mantenemos el estado limpio ya que visualmente ya se "cerró"
+        throw new Error(`Error al cerrar sesión: ${error.message}`);
+      }
+
+      logger.info('AUTH_SIGNOUT_SUCCESS', 'Sesión cerrada exitosamente');
+
+      // ✅ 3. Limpiar cualquier dato del localStorage/sessionStorage si los usas
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+      } catch (storageError) {
+        logger.warn('AUTH_SIGNOUT_STORAGE_CLEAR_FAILED', 'No se pudo limpiar el storage', {
+          error: storageError.message
+        });
+      }
+
+      // ✅ 4. Forzar reload para limpiar completamente el estado
+      // Esto es especialmente importante en móviles donde el estado puede persistir
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+
+    } catch (error) {
+      logger.error('AUTH_SIGNOUT_FAILED', 'Fallo crítico al cerrar sesión', {
+        error: error.message,
+        stack: error.stack
+      });
+      
+      // ✅ En caso de fallo crítico, forzar redirect de todas formas
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+      
+      throw error;
+    }
+  };
+
   const value = {
     session,
     user: session?.user,
     profile,
     loading, // 👈 4. Exponemos el estado de carga
     refreshProfile,
-    signOut: () => {
-      logger.info('AUTH_SIGNOUT_TRIGGERED', 'Usuario cerrando sesión', {
-        userId: session?.user?.id
-      });
-      return supabase.auth.signOut();
-    },
+    signOut, // ✅ Usar la nueva función signOut robusta
   };
 
   return (
