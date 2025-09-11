@@ -38,23 +38,20 @@ import ErrorProvider from './providers/ErrorProvider.jsx';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />, // App.jsx ahora es el layout que envuelve a TODAS las rutas hijas
+    element: <App />,
     children: [
-      // --- Rutas Públicas (solo para visitantes) ---
       { path: '/login', element: <PublicRoute><LoginPage /></PublicRoute> },
       { path: '/register', element: <PublicRoute><RegisterPage /></PublicRoute> },
       { path: '/forgot-password', element: <PublicRoute><ForgotPasswordPage /></PublicRoute> },
       { path: '/update-password', element: <UpdatePasswordPage /> },
       { path: '/verify-email', element: <VerifyEmailPage /> },
-
-      // --- Rutas Privadas (solo para usuarios logueados) ---
-      { index: true, element: <InfoPage /> }, // Página de información pública como principal
+      { index: true, element: <InfoPage /> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
       { path: 'blogs', element:  <ProtectedRoute><BlogsPage /></ProtectedRoute> },
-      { path: 'blogs/:slug', element: <ProtectedRoute><BlogPostPage /></ProtectedRoute> },
+      { path: 'blogs/:slug', element: <BlogPostPage /> },
       { path: 'blogs/create', element: <ProtectedRoute><CreateBlogPage /></ProtectedRoute> },
-      { path: 'blogs/my-posts', element: <ProtectedRoute><MyPostsPage /></ProtectedRoute> }, // 👈 Ruta para ver mis posts
-      { path: 'blogs/edit/:slug', element: <ProtectedRoute><EditBlogPage /></ProtectedRoute> }, // 👈 Ruta para editar
+      { path: 'blogs/my-posts', element: <ProtectedRoute><MyPostsPage /></ProtectedRoute> },
+      { path: 'blogs/edit/:slug', element: <ProtectedRoute><EditBlogPage /></ProtectedRoute> },
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
       { path: 'admin', element: <ProtectedRoute><AdminProtectedRoute><AdminPage /></AdminProtectedRoute></ProtectedRoute> },
       { path: 'news', element: <ProtectedRoute><NewsPage /></ProtectedRoute> },
@@ -67,7 +64,7 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ConfigProvider> {/* 👈 Envolver aquí */}
+    <ConfigProvider>
       <ErrorProvider>
         <AppErrorBoundary>
           <AuthProvider>
@@ -79,6 +76,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           </AuthProvider>
         </AppErrorBoundary>
       </ErrorProvider>
-    </ConfigProvider> {/* 👈 Cerrar aquí */}
+    </ConfigProvider>
   </React.StrictMode>
 );

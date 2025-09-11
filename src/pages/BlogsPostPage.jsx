@@ -7,6 +7,7 @@ import Header from '../components/ui/Header';
 import Footer from '../components/ui/Footer';
 import NotFoundPage from './NotFoundPage';
 import DOMPurify from 'dompurify';
+import { useAuth } from '../hooks/useAuth';
 
 // --- Componente para una tarjeta en la barra lateral ---
 function RelatedPostCard({ post }) {
@@ -63,6 +64,7 @@ function PostSkeleton() {
 
 // --- Componente Principal de la Página del Post ---
 export default function BlogPostPage() {
+  const { user } = useAuth();
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
@@ -144,7 +146,7 @@ export default function BlogPostPage() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-gray-900">
-        <Header />
+        {user ? <Header /> : <></>}
         <main className="flex-grow"><PostSkeleton /></main>
         <Footer />
       </div>
@@ -159,7 +161,7 @@ export default function BlogPostPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-900">
-      <Header />
+      {user ? <Header /> : <></>}
       <main className="flex-grow">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">

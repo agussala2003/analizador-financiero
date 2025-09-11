@@ -1,5 +1,4 @@
 // src/components/onboarding/TooltipSystem.jsx
-import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTour } from '../../hooks/useTour';
 
@@ -73,30 +72,6 @@ export function ContextualTooltip() {
     </>,
     document.body
   );
-}
-
-/**
- * Componente para iniciar el tour del dashboard automáticamente la primera vez
- */
-export function AutoDashboardTour({ tourSteps }) {
-  const { startTour, isActive } = useTour();
-
-  useEffect(() => {
-    const hasSeenTour = localStorage.getItem('dashboard_tour_completed');
-    if (!hasSeenTour && !isActive) {
-      const timer = setTimeout(() => startTour(tourSteps), 1500); // Inicia después de 1.5s
-      return () => clearTimeout(timer);
-    }
-  }, [startTour, isActive, tourSteps]);
-
-  useEffect(() => {
-    if (!isActive && tourSteps.length > 0) {
-      // Marcamos como completado una vez que el tour finaliza.
-      localStorage.setItem('dashboard_tour_completed', 'true');
-    }
-  }, [isActive, tourSteps]);
-
-  return null; // Este componente no renderiza nada visible
 }
 
 /**

@@ -172,6 +172,12 @@ function Header() {
       placement: 'bottom'
     },
     {
+      selector: '[data-tour="profile"]',
+      title: '👤 Tu Perfil',
+      description: 'Accede y edita tu información personal y preferencias desde aquí.',
+      placement: 'bottom'
+    },
+    {
       selector: '[data-tour="help-button"]',
       title: '❓ Ayuda y Tours',
       description: 'Puedes reiniciar este tour o encontrar otros tours específicos en cada página desde botones como este.',
@@ -205,7 +211,7 @@ function Header() {
               <NavLink data-tour="our-blog" to="/blogs" className={navLinkClass} end>Blogs</NavLink>
               <NavLink data-tour="dividends" to="/dividends" className={navLinkClass}>Dividendos</NavLink>
               <NavLink data-tour="suggestions" to="/suggestions" className={navLinkClass}>Sugerencias</NavLink>
-              <NavLink to="/profile" className={navLinkClass}>Perfil</NavLink>
+              <NavLink data-tour="profile" to="/profile" className={navLinkClass}>Perfil</NavLink>
               {profile?.can_upload_blog && (<NavLink to="/blogs/my-posts" className={navLinkClass}>Mis Publicaciones</NavLink>)}
               {isAdmin && (<NavLink to="/admin" className={navLinkClass}>Admin</NavLink>)}
             </nav>
@@ -214,7 +220,7 @@ function Header() {
           {/* Contenedor Derecho */}
           <div className="flex items-center space-x-4">
             <div className='hidden md:block' data-tour="help-button">
-              <TourButton tourSteps={headerTourSteps} label="Ayuda" />
+              <TourButton className='md:cursor-pointer' tourSteps={headerTourSteps} label="Ayuda" />
             </div>
             {/* ✅ AÑADIDO: ref para el menú de usuario */}
             <div className="relative" data-tour="user-profile" ref={userMenuRef}>

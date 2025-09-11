@@ -7,6 +7,22 @@ import SuggestionCard from '../components/suggestion/SuggestionCard';
 import Loader from '../components/ui/Loader';
 import { logger } from '../lib/logger';
 import { useConfig } from '../hooks/useConfig';
+import { TourButton } from '../components/onboarding/TooltipSystem';
+
+const suggestionsPageTourSteps = [
+  {
+    selector: '[data-tour="suggestion-form"]',
+    title: '1. Envía tu Idea',
+    description: 'Escribe aquí cualquier sugerencia o idea que tengas para mejorar la aplicación. ¡Valoramos mucho tu feedback!',
+    placement: 'bottom'
+  },
+  {
+    selector: '[data-tour="suggestion-list"]',
+    title: '2. Tus Sugerencias Enviadas',
+    description: 'Aquí aparecerá una lista con todas las sugerencias que has enviado.',
+    placement: 'top'
+  }
+];
 
 const SuggestionsPage = () => {
   const [suggestions, setSuggestions] = useState([]);
@@ -122,12 +138,17 @@ const SuggestionsPage = () => {
       <Header />
       <main className="flex-grow">
         <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 mb-14">
-          <div className="text-center mb-8 md:mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white">Buzón de Sugerencias 💡</h1>
-            <p className="text-gray-400 mt-2">¿Tienes una idea para mejorar la app? ¡Nos encantaría escucharla!</p>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center text-center sm:text-left gap-4 mb-8 md:mb-12">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white">Buzón de Sugerencias 💡</h1>
+              <p className="text-gray-400 mt-2">¿Tienes una idea para mejorar la app? ¡Nos encantaría escucharla!</p>
+            </div>
+            <div className='hidden md:block'>
+              <TourButton className='md:cursor-pointer' tourSteps={suggestionsPageTourSteps} />
+            </div>
           </div>
 
-          <div className="bg-gray-800/50 p-6 rounded-xl shadow-lg mb-10 border border-gray-700">
+          <div data-tour="suggestion-form" className="bg-gray-800/50 p-6 rounded-xl shadow-lg mb-10 border border-gray-700">
             <form onSubmit={handleSubmitSuggestion}>
               <textarea
                 value={newSuggestion}
@@ -152,12 +173,12 @@ const SuggestionsPage = () => {
           <div>
             <h2 className="text-2xl font-bold text-white border-b border-gray-700 pb-2 mb-6">Mis Sugerencias Enviadas</h2>
             {/* Contenedor principal de la lista */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div data-tour="suggestion-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => <SuggestionCardSkeleton key={i} />)
               ) : suggestions.length > 0 ? (
                 suggestions.map(suggestion => (
-                  <SuggestionCard key={suggestion.id} suggestion={suggestion} />
+                  <SuggestionCard key={suggestion.id} suggestion={suggestion}/>
                 ))
               ) : (
                  <div className="md:col-span-2 lg:col-span-3 text-center text-gray-400 bg-gray-800 p-6 rounded-lg">
