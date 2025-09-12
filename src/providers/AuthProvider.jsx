@@ -1,4 +1,4 @@
-// src/context/AuthContext.jsx
+// src/providers/AuthProvider.jsx
 import { useState, useEffect, useCallback } from 'react';
 import Loader from '../components/ui/Loader';
 import { supabase } from '../lib/supabase';
@@ -10,13 +10,11 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Nueva función de fetch de perfil, reutilizable
   const fetchProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null);
       return null;
     }
-    // ✅ Seleccionamos explícitamente los campos, incluyendo los nuevos del onboarding
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('*, onboarding_completed, onboarding_step, onboarding_profile')
@@ -69,7 +67,24 @@ export function AuthProvider({ children }) {
       await fetchProfile(session?.user);
     });
 
-    return () => subscription.unsubscribe();
+    // --- AÑADIDO: Manejador para la visibilidad de la pestaña ---
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Forzamos a Supabase a que verifique la sesión.
+        // Esto disparará onAuthStateChange si algo cambió.
+        supabase.auth.getSession();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // --- FIN DEL AÑADIDO ---
+
+
+    return () => {
+      subscription.unsubscribe();
+      // --- AÑADIDO: Limpieza del event listener ---
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [fetchProfile]);
 
   const refreshProfile = useCallback(async () => {
