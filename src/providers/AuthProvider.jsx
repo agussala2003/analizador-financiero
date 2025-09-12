@@ -41,86 +41,55 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const setData = async () => {
-      logger.info('AUTH_SESSION_INIT_START', 'Iniciando obtención de sesión inicial');
-      
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        logger.error('AUTH_SESSION_INIT_FAILED', 'Error al obtener sesión inicial', { error: error.message });
-        setLoading(false);
-        return;
-      }
-      
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-      if (session) {
-        await fetchProfile(session.user);
-      } else {
-        setProfile(null);
-      }
+      await fetchProfile(session?.user);
       setLoading(false);
     };
 
     setData();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      logger.info('AUTH_STATE_CHANGED', 'Estado de autenticación cambió', { event, hasSession: !!session });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       await fetchProfile(session?.user);
     });
 
-    // --- AÑADIDO: Manejador para la visibilidad de la pestaña ---
+    // ✅ **LA CLAVE ESTÁ AQUÍ**
+    // Este listener detecta cuando la pestaña vuelve a estar visible.
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Forzamos a Supabase a que verifique la sesión.
-        // Esto disparará onAuthStateChange si algo cambió.
+        // Al volver a la pestaña, forzamos a Supabase a que verifique la sesión.
+        // Si el token cambió, disparará onAuthStateChange y toda la app se actualizará.
         supabase.auth.getSession();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    // --- FIN DEL AÑADIDO ---
-
 
     return () => {
       subscription.unsubscribe();
-      // --- AÑADIDO: Limpieza del event listener ---
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [fetchProfile]);
 
   const refreshProfile = useCallback(async () => {
-    if (!session?.user) return;
-    logger.info('AUTH_PROFILE_REFRESH_START', 'Iniciando actualización manual del perfil', { userId: session.user.id });
-    await fetchProfile(session.user);
+    if (session?.user) {
+      await fetchProfile(session.user);
+    }
   }, [session, fetchProfile]);
 
   const signOut = async () => {
-    try {
-      logger.info('AUTH_SIGNOUT_START', 'Iniciando proceso de cerrar sesión');
       setSession(null);
       setProfile(null);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw new Error(`Error al cerrar sesión: ${error.message}`);
-      logger.info('AUTH_SIGNOUT_SUCCESS', 'Sesión cerrada exitosamente');
+      await supabase.auth.signOut();
       setTimeout(() => { window.location.href = '/'; }, 100);
-    } catch (error) {
-      logger.error('AUTH_SIGNOUT_FAILED', 'Fallo crítico al cerrar sesión', { error: error.message });
-      setTimeout(() => { window.location.href = '/'; }, 500);
-      throw error;
-    }
   };
 
-  const value = {
-    session,
-    user: session?.user,
-    profile,
-    loading,
-    refreshProfile,
-    signOut,
-  };
+  const value = { session, user: session?.user, profile, loading, refreshProfile, signOut };
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? ( <Loader size='32' fullScreen overlay message="Conectando con el servidor..." /> ) : ( children )}
+      {loading ? <Loader size='32' fullScreen overlay message="Conectando..." /> : children}
     </AuthContext.Provider>
   );
 }
