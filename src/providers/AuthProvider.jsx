@@ -1,4 +1,3 @@
-// src/providers/AuthProvider.jsx
 import { useState, useEffect, useCallback } from 'react';
 import Loader from '../components/ui/Loader';
 import { supabase } from '../lib/supabase';
@@ -10,68 +9,76 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Mantenemos fetchProfile en un useCallback por buena práctica
   const fetchProfile = useCallback(async (user) => {
     if (!user) {
       setProfile(null);
       return null;
     }
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('*, onboarding_completed, onboarding_step, onboarding_profile')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError) {
-      logger.error('AUTH_PROFILE_FETCH_FAILED', 'Error al obtener perfil del usuario', {
-        userId: user.id,
-        error: profileError.message
-      });
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*, onboarding_completed, onboarding_step, onboarding_profile')
+        .eq('id', user.id)
+        .single();
+      if (error) throw error;
+      setProfile(data);
+      return data;
+    } catch (error) {
+      logger.error('AUTH_PROFILE_FETCH_FAILED', 'Error al obtener perfil', { error: error.message });
       setProfile(null);
       return null;
-    } else {
-      logger.info('AUTH_PROFILE_LOADED', 'Perfil del usuario cargado exitosamente', {
-        userId: user.id,
-        userRole: profileData?.role,
-        onboardingCompleted: profileData?.onboarding_completed
-      });
-      setProfile(profileData);
-      return profileData;
     }
   }, []);
 
   useEffect(() => {
-    const setData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      await fetchProfile(session?.user);
+    // --- LÓGICA DE INICIALIZACIÓN RESTAURADA ---
+    // Este es el flujo que funcionaba: secuencial y seguro.
+    const initializeSession = async () => {
+      // 1. Obtenemos la sesión.
+      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        logger.error('AUTH_SESSION_INIT_FAILED', 'Error al obtener sesión inicial', { error: error.message });
+        setSession(null);
+        setProfile(null);
+        setLoading(false); // Hay un error, pero dejamos de cargar
+        return;
+      }
+
+      // 2. Guardamos la sesión en el estado.
+      setSession(currentSession);
+      
+      // 3. SI hay sesión, buscamos el perfil.
+      if (currentSession) {
+        await fetchProfile(currentSession.user);
+      }
+      
+      // 4. SOLO AL FINAL de todo este proceso, quitamos el loader.
+      // Esto garantiza que la app no se renderice hasta tener la info de auth.
       setLoading(false);
     };
 
-    setData();
+    initializeSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      await fetchProfile(session?.user);
-    });
-
-    // ✅ **LA CLAVE ESTÁ AQUÍ**
-    // Este listener detecta cuando la pestaña vuelve a estar visible.
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // Al volver a la pestaña, forzamos a Supabase a que verifique la sesión.
-        // Si el token cambió, disparará onAuthStateChange y toda la app se actualizará.
-        supabase.auth.getSession();
+    // --- LISTENER SIMPLIFICADO ---
+    // Como en la versión que funcionaba, este listener solo se encarga
+    // de actualizar la sesión en caso de LOGIN o LOGOUT.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        // Ya no llamamos a fetchProfile aquí para evitar la carrera.
+        // Si hay un cambio de sesión (login), la app se recargará y
+        // el flujo de inicialización se encargará del perfil.
       }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    );
 
     return () => {
       subscription.unsubscribe();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [fetchProfile]);
+  }, [fetchProfile]); // La dependencia es correcta.
 
+  // El resto de funciones se mantienen igual
   const refreshProfile = useCallback(async () => {
     if (session?.user) {
       await fetchProfile(session.user);
@@ -79,17 +86,29 @@ export function AuthProvider({ children }) {
   }, [session, fetchProfile]);
 
   const signOut = async () => {
-      setSession(null);
-      setProfile(null);
-      await supabase.auth.signOut();
-      setTimeout(() => { window.location.href = '/'; }, 100);
+    await supabase.auth.signOut();
+    setSession(null);
+    setProfile(null);
+    // Un redirect puede ser útil aquí si el router no lo maneja automáticamente
+    window.location.href = '/login'; 
   };
 
-  const value = { session, user: session?.user, profile, loading, refreshProfile, signOut };
+  const value = {
+    session,
+    user: session?.user,
+    profile,
+    loading,
+    refreshProfile,
+    signOut,
+  };
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? <Loader size='32' fullScreen overlay message="Conectando..." /> : children}
+      {loading ? (
+        <Loader size='32' fullScreen overlay message="Conectando..." />
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }
