@@ -23,6 +23,12 @@
       "premium": 50,
       "administrador": 100000 
     },
+    "portfolioLimits": {
+      "basico": 1,
+      "plus": 5,
+      "premium": 10,
+      "administrador": 10000
+    },
     "freeTierSymbols": [
       "AAPL", "TSLA", "AMZN", "MSFT", "NVDA", "GOOGL", "META", "NFLX", "JPM", "V",
       "BAC", "AMD", "PYPL", "DIS", "T", "PFE", "COST", "INTC", "KO", "TGT", "NKE",
@@ -35,6 +41,18 @@
       "TWTR", "BILI", "RKT"
     ]
   },
+  "notifications": [
+    {
+      "id": "portfolio_launch_01",
+      "title": "¡Nuevo Portfolio disponible!",
+      "description": "Dale una oportunidad a nuestro nuevo módulo de Portfolio. Carga tus activos para ver tus rendimientos en tiempo real."
+    },
+    {
+      "id": "Navbar_update_01",
+      "title": "Mejoras en Menu",
+      "description": "Hemos actualizado el menú de navegación para mejorar la experiencia del usuario. ¡Explora las nuevas secciones!"
+    }
+  ],
   "dashboard": {
     "maxTickersToCompare": 10
   },

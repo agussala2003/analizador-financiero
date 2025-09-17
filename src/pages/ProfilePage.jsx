@@ -1,5 +1,5 @@
 // src/pages/ProfilePage.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import { logger } from "../lib/logger";
@@ -11,14 +11,18 @@ import BadgeIcon from "../components/svg/badge";
 import ChipIcon from "../components/svg/chip";
 import UserCircleIcon from "../components/svg/userCircle";
 import { TourButton } from "../components/onboarding/TooltipSystem";
+import { usePortfolio } from "../hooks/usePortfolio";
+import PortfolioStats from "../components/portfolio/PortfolioStats";
+import PortfolioView from "../components/portfolio/PortfolioView";
+import TransactionHistory from "../components/portfolio/TransactionHistory";
+import PortfolioCharts from "../components/portfolio/PortfolioCharts";
 
 // --- Componente de Botón para Pestañas ---
 const TabButton = ({ isActive, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`cursor-pointer px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
-      isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'
-    }`}
+    className={`cursor-pointer px-4 py-2 text-sm font-semibold rounded-md transition-colors ${isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'
+      }`}
   >
     {children}
   </button>
@@ -55,6 +59,15 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const config = useConfig();
   const { showError, showSuccess } = useError();
+  const { holdings, transactions, loading: portfolioLoading, refreshPortfolio, totalPerformance } = usePortfolio();
+
+  const portfolioAssetData = useMemo(() => {
+    const data = {};
+    holdings.forEach(h => {
+      data[h.symbol] = h.assetData;
+    });
+    return data;
+  }, [holdings]);
 
   useEffect(() => {
     if (profile) {
@@ -66,7 +79,7 @@ export default function ProfilePage() {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-    
+
     logger.info('PROFILE_UPDATE_START', 'Usuario iniciando actualización de perfil', {
       userId: user.id,
       currentFirstName: profile?.first_name,
@@ -74,22 +87,22 @@ export default function ProfilePage() {
       newFirstName: firstName.trim(),
       newLastName: lastName.trim()
     });
-    
+
     setIsSaving(true);
     try {
-      const { error } = await supabase.from('profiles').update({ 
-        first_name: firstName.trim(), 
-        last_name: lastName.trim() 
+      const { error } = await supabase.from('profiles').update({
+        first_name: firstName.trim(),
+        last_name: lastName.trim()
       }).eq('id', user.id);
 
       if (error) throw error;
-      
+
       logger.info('PROFILE_UPDATE_SUCCESS', 'Perfil actualizado exitosamente', {
         userId: user.id,
         firstName: firstName.trim(),
         lastName: lastName.trim()
       });
-      
+
       if (refreshProfile) await refreshProfile();
       showSuccess('¡Perfil actualizado con éxito!');
     } catch (err) {
@@ -104,7 +117,7 @@ export default function ProfilePage() {
       setIsSaving(false);
     }
   };
-  
+
   if (!profile) {
     return (
       <div className="flex flex-col min-h-screen bg-gray-900">
@@ -114,7 +127,7 @@ export default function ProfilePage() {
         </main>
         <Footer />
       </div>
-    ); 
+    );
   }
 
 
@@ -124,21 +137,21 @@ export default function ProfilePage() {
       <main className="flex-grow">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-center sm:text-left mb-10">
-           <div>
-             <h1 className="text-4xl sm:text-5xl font-bold text-white">
-               Mi Perfil
-             </h1>
-             <p className="text-gray-400 mt-2">Gestiona tu información personal y visualiza tu portafolio.</p>
-           </div>
-           <div className="hidden md:block">
-             <TourButton className="md:cursor-pointer" tourSteps={profilePageTourSteps} />
-           </div>
+            <div>
+              <h1 className="text-4xl sm:text-5xl font-bold text-white">
+                Mi Perfil
+              </h1>
+              <p className="text-gray-400 mt-2">Gestiona tu información personal y visualiza tu portafolio.</p>
+            </div>
+            <div className="hidden md:block">
+              <TourButton className="md:cursor-pointer" tourSteps={profilePageTourSteps} />
+            </div>
           </div>
 
           {/* Navegación de Pestañas */}
           <div data-tour="profile-tabs" className="flex justify-center items-center gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700 mb-8 max-w-md mx-auto">
-            <TabButton 
-              isActive={activeTab === 'personal'} 
+            <TabButton
+              isActive={activeTab === 'personal'}
               onClick={() => {
                 logger.info('PROFILE_TAB_CHANGED', 'Usuario cambió pestaña de perfil', {
                   fromTab: activeTab,
@@ -150,8 +163,8 @@ export default function ProfilePage() {
             >
               Datos Personales
             </TabButton>
-            <TabButton 
-              isActive={activeTab === 'portfolio'} 
+            <TabButton
+              isActive={activeTab === 'portfolio'}
               onClick={() => {
                 logger.info('PROFILE_TAB_CHANGED', 'Usuario cambió pestaña de perfil', {
                   fromTab: activeTab,
@@ -179,7 +192,7 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="firstName" className="block text-sm text-gray-400 mb-1">Nombre</label>
-                        <input id="firstName" type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full bg-gray-700 rounded-md p-2 text-white" disabled={isSaving}/>
+                        <input id="firstName" type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full bg-gray-700 rounded-md p-2 text-white" disabled={isSaving} />
                       </div>
                       <div>
                         <label htmlFor="lastName" className="block text-sm text-gray-400 mb-1">Apellido</label>
@@ -208,9 +221,9 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
-                     <div className="flex items-center gap-3 mb-4">
-                       <ChipIcon />
-                       <h2 className="text-xl font-bold text-white">Uso de API</h2>
+                    <div className="flex items-center gap-3 mb-4">
+                      <ChipIcon />
+                      <h2 className="text-xl font-bold text-white">Uso de API</h2>
                     </div>
                     <p className="text-gray-300 text-sm">Consultas hoy: <span className="font-semibold text-white">{profile.api_calls_made} / {limit === Infinity ? 'Ilimitadas' : limit}</span></p>
                     <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2"><div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${(profile.api_calls_made / limit) * 100}%` }}></div></div>
@@ -220,11 +233,26 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'portfolio' && (
-              <div className="text-center py-20 px-6 bg-gray-800/50 rounded-xl border border-dashed border-gray-600 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white">Portafolio Próximamente</h2>
-                <p className="text-gray-400 mt-2">Estamos trabajando en una nueva sección donde podrás seguir y analizar tus inversiones.</p>
+              <div className="animate-fade-in">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-white">Mi Portafolio</h2>
+                  <button onClick={refreshPortfolio} disabled={portfolioLoading}
+                          className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-lg disabled:opacity-50">
+                    {portfolioLoading ? 'Actualizando...' : 'Actualizar Datos'}
+                  </button>
+                </div>
+
+                <PortfolioStats holdings={holdings} portfolioData={portfolioAssetData} totalPerformance={totalPerformance} />
+
+                <div className="mb-8">
+                  <PortfolioCharts holdings={holdings} />
+                </div>
+
+                <PortfolioView holdings={holdings} loading={portfolioLoading} />
+                <TransactionHistory transactions={transactions} />
               </div>
             )}
+
           </div>
         </div>
       </main>

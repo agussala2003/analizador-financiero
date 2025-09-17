@@ -1,5 +1,5 @@
-// src/pages/BlogPostPage.jsx
-import { useState, useEffect, useMemo } from 'react';
+// src/pages/BlogsPostPage.jsx
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
@@ -8,6 +8,9 @@ import Footer from '../components/ui/Footer';
 import NotFoundPage from './NotFoundPage';
 import DOMPurify from 'dompurify';
 import { useAuth } from '../hooks/useAuth';
+import { useError } from '../hooks/useError';
+import BlogInteractions from '../components/blogs/BlogsInteractions';
+import BlogComments from '../components/blogs/BlogComments';
 
 // --- Componente para una tarjeta en la barra lateral ---
 function RelatedPostCard({ post }) {
@@ -66,78 +69,114 @@ function PostSkeleton() {
 export default function BlogPostPage() {
   const { user } = useAuth();
   const { slug } = useParams();
+  const { showError, showSuccess } = useError();
+
   const [post, setPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  
+  const [likes, setLikes] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
+
+  const userHasLiked = useMemo(() => likes.some(like => like.user_id === user?.id), [likes, user]);
+  const userHasBookmarked = useMemo(() => bookmarks.some(b => b.user_id === user?.id), [bookmarks, user]);
+
+  const fetchAllPostData = useCallback(async () => {
+    if (!slug) return;
+    
+    logger.info('BLOG_POST_FETCH_START', 'Iniciando obtención de artículo e interacciones', { slug });
+    setLoading(true);
+    setError(false);
+    
+    try {
+      // ✅ CAMBIO: El contenido principal del blog es visible para todos.
+      const { data: mainPost, error: mainPostError } = await supabase
+        .from('blogs').select('*, author:profiles(first_name, last_name)').eq('slug', slug).eq('status', 'approved').single();
+      
+      if (mainPostError || !mainPost) throw mainPostError || new Error("Post no encontrado");
+      setPost(mainPost);
+
+      // ✅ CAMBIO: Las interacciones públicas también se cargan para todos.
+      const [likesRes, commentsRes, relatedRes] = await Promise.all([
+        supabase.from('blog_likes').select('user_id').eq('blog_id', mainPost.id),
+        supabase.from('blog_comments').select('*, author:profiles(first_name, last_name)').eq('blog_id', mainPost.id).order('created_at', { ascending: false }),
+        supabase.from('blogs').select('title, slug, featured_image_url, published_at').eq('status', 'approved').not('id', 'eq', mainPost.id).order('published_at', { ascending: false }).limit(3)
+      ]);
+
+      // ✅ CAMBIO: Si el usuario está logueado, verificamos si ha guardado el post en favoritos.
+      if (user) {
+        const { data: bookmarksData, error: bookmarksError } = await supabase.from('blog_bookmarks').select('user_id').eq('blog_id', mainPost.id).eq('user_id', user.id);
+        if (bookmarksError) throw bookmarksError;
+        setBookmarks(bookmarksData || []);
+      }
+
+      if (likesRes.error) throw likesRes.error;
+      if (commentsRes.error) throw commentsRes.error;
+      if (relatedRes.error) throw relatedRes.error;
+
+      setLikes(likesRes.data || []);
+      setComments(commentsRes.data || []);
+      setRelatedPosts(relatedRes.data || []);
+      
+      logger.info('BLOG_POST_FETCH_SUCCESS', 'Artículo e interacciones obtenidos', { slug, postId: mainPost.id });
+
+    } catch (err) {
+      logger.error('BLOG_POST_FETCH_FAILED', 'Error al obtener datos del post', { slug, error: err.message });
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [slug, user]); // ✅ CAMBIO: `user` se incluye como dependencia para recargar los bookmarks si el usuario inicia/cierra sesión.
 
   useEffect(() => {
-    const fetchPostAndRelated = async () => {
-      if (!slug) return;
-      
-      logger.info('BLOG_POST_FETCH_START', 'Iniciando obtención de artículo individual', {
-        slug: slug
-      });
-      
-      setLoading(true);
-      setError(false);
-      
-      try {
-        // Obtener el post principal
-        const { data: mainPost, error: mainPostError } = await supabase
-          .from('blogs')
-          .select('*, author:profiles(first_name, last_name)')
-          .eq('slug', slug)
-          .eq('status', 'approved')
-          .single();
+    fetchAllPostData();
+  }, [fetchAllPostData]);
 
-        if (mainPostError || !mainPost) throw mainPostError || new Error("Post no encontrado");
-        
-        logger.info('BLOG_POST_FETCH_SUCCESS', 'Artículo principal obtenido exitosamente', {
-          slug: slug,
-          postId: mainPost.id,
-          postTitle: mainPost.title,
-          authorName: mainPost.author?.first_name ? `${mainPost.author.first_name} ${mainPost.author.last_name || ''}`.trim() : 'Anónimo',
-          publishedAt: mainPost.published_at,
-          contentLength: mainPost.content?.length || 0
-        });
-        
-        setPost(mainPost);
-
-        // Obtener posts relacionados (los 3 más recientes, excluyendo el actual)
-        const { data: relatedData, error: relatedError } = await supabase
-          .from('blogs')
-          .select('title, slug, featured_image_url, published_at')
-          .eq('status', 'approved')
-          .not('id', 'eq', mainPost.id)
-          .order('published_at', { ascending: false })
-          .limit(3);
-
-        if (relatedError) throw relatedError;
-        
-        logger.info('BLOG_RELATED_POSTS_FETCH_SUCCESS', 'Artículos relacionados obtenidos exitosamente', {
-          slug: slug,
-          relatedPostsCount: relatedData?.length || 0,
-          relatedTitles: relatedData?.map(p => p.title) || []
-        });
-        
-        setRelatedPosts(relatedData);
-
-      } catch (err) {
-        logger.error('BLOG_POST_FETCH_FAILED', 'Error al obtener artículo o relacionados', {
-          slug: slug,
-          error: err.message,
-          errorType: err.name
-        });
-        console.error('Error fetching data:', err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // --- HANDLERS PARA INTERACCIONES (sin cambios de lógica, pero la UI los llamará condicionalmente) ---
+  const handleLike = async () => {
+    if (!user) return showError("Debes iniciar sesión para dar me gusta.");
     
-    fetchPostAndRelated();
-  }, [slug]);
+    if (userHasLiked) {
+      const { error } = await supabase.from('blog_likes').delete().match({ user_id: user.id, blog_id: post.id });
+      if (error) return showError("No se pudo quitar el 'Me gusta'.");
+      setLikes(likes.filter(l => l.user_id !== user.id));
+    } else {
+      const { data, error } = await supabase.from('blog_likes').insert({ user_id: user.id, blog_id: post.id }).select('user_id');
+      if (error) return showError("No se pudo dar 'Me gusta'.");
+      setLikes([...likes, ...data]);
+    }
+  };
+  
+  const handleBookmark = async () => {
+    if (!user) return showError("Debes iniciar sesión para guardar.");
+
+    if (userHasBookmarked) {
+      const { error } = await supabase.from('blog_bookmarks').delete().match({ user_id: user.id, blog_id: post.id });
+      if (error) return showError("No se pudo quitar de favoritos.");
+      setBookmarks([]);
+      showSuccess("Eliminado de tus favoritos.");
+    } else {
+      const { error } = await supabase.from('blog_bookmarks').insert({ user_id: user.id, blog_id: post.id });
+      if (error) return showError("No se pudo guardar en favoritos.");
+      setBookmarks([{ user_id: user.id }]);
+      showSuccess("Guardado en tus favoritos.");
+    }
+  };
+
+  const handleAddComment = async (content) => {
+    if (!user) return showError("Debes iniciar sesión para comentar.");
+    const { data, error } = await supabase
+      .from('blog_comments')
+      .insert({ content, blog_id: post.id, user_id: user.id })
+      .select('*, author:profiles(first_name, last_name)')
+      .single();
+
+    if (error) return showError("No se pudo publicar el comentario.");
+    setComments([data, ...comments]);
+    showSuccess("Comentario publicado.");
+  };
 
   const cleanHTML = useMemo(() => {
     return post?.content ? DOMPurify.sanitize(post.content, { ADD_ATTR: ['target'] }) : '';
@@ -145,11 +184,11 @@ export default function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-900">
-        {user ? <Header /> : <></>}
-        <main className="flex-grow"><PostSkeleton /></main>
-        <Footer />
-      </div>
+        <div className="flex flex-col min-h-screen bg-gray-900">
+          {user ? <Header /> : <></>}
+          <main className="flex-grow"><PostSkeleton /></main>
+          <Footer />
+        </div>
     );
   }
   
@@ -166,7 +205,6 @@ export default function BlogPostPage() {
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             
-            {/* Columna Principal: Contenido del Post */}
             <div className="lg:col-span-2">
               <article>
                 <Link 
@@ -192,13 +230,25 @@ export default function BlogPostPage() {
                   </time>
                 </div>
                 
+                <div className="my-8 py-4 border-y border-gray-700">
+                  <BlogInteractions 
+                    likesCount={likes.length}
+                    commentsCount={comments.length}
+                    userHasLiked={userHasLiked}
+                    userHasBookmarked={userHasBookmarked}
+                    onLike={handleLike}
+                    onBookmark={handleBookmark}
+                  />
+                </div>
+                
                 <div className="mt-8 prose prose-invert prose-lg max-w-none prose-p:text-gray-300 prose-headings:text-white prose-a:text-blue-400"
                   dangerouslySetInnerHTML={{ __html: cleanHTML }}
                 />
+
+                <BlogComments comments={comments} onAddComment={handleAddComment} />
               </article>
             </div>
 
-            {/* Columna Lateral: Notas Relevantes */}
             <aside className="lg:col-span-1">
               <div className="sticky top-24">
                 <h3 className="text-xl font-bold text-white mb-6">Otras notas relevantes</h3>

@@ -9,40 +9,50 @@ import { useAuth } from './useAuth';
  */
 export function useOnboarding(options = {}) {
   const { autoStart = true, enableAnalytics = true } = options;
-  const { user, profile, refreshProfile } = useAuth(); // Usamos el perfil del contexto de Auth
+  const { user, profile, refreshProfile } = useAuth();
 
-  // El estado inicial ahora se deriva del perfil del usuario
+  // ✅ SOLUCIÓN: Función robusta para inicializar el perfil del onboarding.
+  // Esto asegura que `interests` y `goals` sean siempre arrays,
+  // incluso si los datos guardados en la base de datos están incompletos.
+  const getInitialProfile = useCallback((dbProfile) => {
+    const defaults = {
+      type: null,
+      interests: [],
+      goals: [],
+    };
+    return {
+      ...defaults,
+      ...(dbProfile || {}),
+      interests: dbProfile?.interests || [],
+      goals: dbProfile?.goals || [],
+    };
+  }, []);
+  
   const [isActive, setIsActive] = useState(false);
-  const [currentStep, setCurrentStep] = useState(profile?.onboarding_step || 0);
-  const [isCompleted, setIsCompleted] = useState(profile?.onboarding_completed || false);
-  const [userProfile, setUserProfile] = useState(profile?.onboarding_profile || {
-    type: null,
-    interests: [],
-    goals: []
-  });
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+  // Usamos la nueva función para garantizar un estado inicial seguro.
+  const [userProfile, setUserProfile] = useState(() => getInitialProfile(profile?.onboarding_profile));
 
   const debounceTimeoutRef = useRef(null);
 
-  // Cargar el estado inicial del onboarding desde el perfil del usuario
   useEffect(() => {
     if (profile) {
       const completed = profile.onboarding_completed || false;
       setIsCompleted(completed);
       setCurrentStep(profile.onboarding_step || 0);
-      setUserProfile(profile.onboarding_profile || { type: null, interests: [], goals: [] });
+      // Usamos la función de inicialización también aquí para sincronizar de forma segura.
+      setUserProfile(getInitialProfile(profile.onboarding_profile));
       
-      // Iniciar automáticamente solo si no está completo y el usuario está cargado
       if (autoStart && !completed && user) {
         setIsActive(true);
       }
     }
-  }, [profile, autoStart, user]);
+  }, [profile, autoStart, user, getInitialProfile]);
 
-  // Función para guardar el progreso en la base de datos con debounce
   const saveProgressToDB = useCallback((progress) => {
     if (!user) return;
 
-    // Cancelar el guardado anterior si se llama de nuevo rápidamente
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
@@ -62,17 +72,14 @@ export function useOnboarding(options = {}) {
         logger.error('ONBOARDING_SAVE_ERROR', 'Error guardando progreso en DB', { userId: user.id, error: error.message });
       } else {
         logger.info('ONBOARDING_SAVE_SUCCESS', 'Progreso guardado exitosamente en DB');
-        // Opcional: refrescar el perfil global para que otros componentes tengan los datos actualizados
         if (refreshProfile) {
           refreshProfile();
         }
       }
-    }, 1000); // Espera 1 segundo antes de guardar para evitar escrituras excesivas
+    }, 1000);
   }, [user, refreshProfile]);
 
-  // Cada vez que un estado relevante cambia, preparamos el guardado
   useEffect(() => {
-    // No guardar si el onboarding no está activo para evitar escrituras innecesarias al cargar
     if (isActive) {
       saveProgressToDB({
         isCompleted,
@@ -81,7 +88,6 @@ export function useOnboarding(options = {}) {
       });
     }
   }, [isCompleted, currentStep, userProfile, isActive, saveProgressToDB]);
-
 
   const nextStep = useCallback(() => {
     setCurrentStep(prev => prev + 1);
@@ -106,23 +112,20 @@ export function useOnboarding(options = {}) {
       logger.info('ONBOARDING_COMPLETED', 'Onboarding completado', { userProfile: finalProfile });
     }
     
-    // Forzar el guardado inmediato al completar
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     saveProgressToDB({ 
       isCompleted: true, 
-      currentStep: currentStep, // Guardamos el último paso también
+      currentStep: currentStep,
       userProfile: finalProfile 
     });
   }, [userProfile, enableAnalytics, currentStep, saveProgressToDB]);
 
   const dismissOnboarding = useCallback(() => {
     setIsActive(false);
-    // Marcamos como completo para que no vuelva a aparecer
     setIsCompleted(true); 
     if (enableAnalytics) {
       logger.info('ONBOARDING_DISMISSED', 'Onboarding cerrado sin completar');
     }
-     // Forzar el guardado inmediato al descartar
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     saveProgressToDB({ isCompleted: true, currentStep, userProfile });
   }, [enableAnalytics, currentStep, userProfile, saveProgressToDB]);
@@ -133,7 +136,6 @@ export function useOnboarding(options = {}) {
     setCurrentStep(0);
     setIsCompleted(false);
     setUserProfile(initialProfile);
-    // Forzar guardado inmediato del reseteo
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     saveProgressToDB({ isCompleted: false, currentStep: 0, userProfile: initialProfile });
 
@@ -149,7 +151,6 @@ export function useOnboarding(options = {}) {
   const pauseOnboarding = useCallback(() => setIsActive(false), []);
   const resumeOnboarding = useCallback(() => setIsActive(true), []);
 
-
   return {
     isActive,
     currentStep,
@@ -157,7 +158,7 @@ export function useOnboarding(options = {}) {
     userProfile,
     nextStep,
     previousStep,
-    skipStep: nextStep, // Saltar simplemente avanza al siguiente paso
+    skipStep: nextStep,
     goToStep: setCurrentStep,
     completeOnboarding,
     dismissOnboarding,
@@ -168,7 +169,6 @@ export function useOnboarding(options = {}) {
     canGoBack: currentStep > 0,
   };
 }
-
 
 /**
  * Hook especializado para onboarding financiero
@@ -201,8 +201,10 @@ export function useFinancialOnboarding() {
       case 'user_type':
         return !!onboarding.userProfile.type;
       case 'interests':
+        // El error ocurría aquí. Ahora `interests` está garantizado que es un array.
         return onboarding.userProfile.interests.length > 0;
       case 'goals':
+        // El error ocurría aquí. Ahora `goals` está garantizado que es un array.
         return onboarding.userProfile.goals.length > 0;
       default:
         return true;
@@ -218,6 +220,11 @@ export function useFinancialOnboarding() {
     }
     return true;
   };
+  
+  // ✅ CORRECCIÓN: Se evita la división por cero si solo hay un paso.
+  const progressPercentage = steps.length > 1
+    ? Math.round(((onboarding.currentStep) / (steps.length - 1)) * 100)
+    : (onboarding.currentStep > 0 ? 100 : 0);
 
   return {
     ...onboarding,
@@ -226,7 +233,7 @@ export function useFinancialOnboarding() {
     canContinue,
     completeCurrentStep,
     totalSteps: steps.length,
-    progressPercentage: Math.round(((onboarding.currentStep) / (steps.length -1)) * 100)
+    progressPercentage,
   };
 }
 
