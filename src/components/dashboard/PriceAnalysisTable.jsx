@@ -5,6 +5,8 @@ import { exportToCSV, exportToXLSX } from "../../lib/export";
 import { exportTablesToPDF } from "../../lib/exportPdf";
 import { useError } from "../../hooks/useError";
 import CompanyInfoModal from "../common/CompanyInfoModal";
+import AddTransactionModal from "../portfolio/AddTransactionModal";
+import { PlusCircleIcon } from "../svg/plusCircle";
 
 function formatCurrency(v) { return typeof v === "number" ? `$${v.toFixed(2)}` : "N/A"; }
 function pctNode(v) {
@@ -31,6 +33,7 @@ export default function PriceAnalysisTable() {
 
   const [sort, setSort] = useState({ key: "ticker", dir: "asc" });
   const [openInfoFor, setOpenInfoFor] = useState(null);   // ticker | null
+  const [modalForTicker, setModalForTicker] = useState(null);
 
   const rows = useMemo(() => {
     const base = selectedTickers.map((t) => ({ ticker: t, ...(assetsData[t] ?? {}) }));
@@ -201,7 +204,6 @@ export default function PriceAnalysisTable() {
                     <span className="font-semibold text-white">{r.ticker}</span>
                   </div>
                   <div className="flex items-center gap-1">
-
                     <button
                       type="button"
                       onClick={() => setOpenInfoFor(r.ticker)}
@@ -210,6 +212,15 @@ export default function PriceAnalysisTable() {
                       aria-label="Información de la empresa"
                     >
                       <InfoIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModalForTicker(r.ticker)}
+                      className="cursor-pointer p-1 rounded text-green-400 hover:bg-gray-700"
+                      title="Agregar al Portafolio"
+                      aria-label="Agregar al Portafolio"
+                      >
+                      <PlusCircleIcon className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -290,6 +301,15 @@ export default function PriceAnalysisTable() {
                         >
                           <InfoIcon className="w-4 h-4" />
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setModalForTicker(r.ticker)}
+                          className="cursor-pointer p-1 rounded text-green-400 hover:bg-gray-700"
+                          title="Agregar al Portafolio"
+                          aria-label="Agregar al Portafolio"
+                          >
+                          <PlusCircleIcon className="w-4 h-4 text-white" />
+                        </button>
                       </div>
                     </td>
 
@@ -312,6 +332,12 @@ export default function PriceAnalysisTable() {
         open={Boolean(openInfoFor)}
         onClose={() => setOpenInfoFor(null)}
         data={infoData}
+      />
+      <AddTransactionModal
+        isOpen={!!modalForTicker}
+        onClose={() => setModalForTicker(null)}
+        ticker={modalForTicker}
+        currentPrice={assetsData[modalForTicker]?.currentPrice}
       />
     </section>
   );

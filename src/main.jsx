@@ -34,6 +34,8 @@ import CreateBlogPage from './pages/CreateBlogPage.jsx';
 import MyPostsPage from './pages/MyPostsPage.jsx';
 import EditBlogPage from './pages/EditBlogPage.jsx';
 import ErrorProvider from './providers/ErrorProvider.jsx';
+import { PortfolioProvider } from './providers/PortfolioProvider.jsx';
+import MyBookmarksPage from './pages/MyBookmarksPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -52,6 +54,7 @@ const router = createBrowserRouter([
       { path: 'blogs/create', element: <ProtectedRoute><CreateBlogPage /></ProtectedRoute> },
       { path: 'blogs/my-posts', element: <ProtectedRoute><MyPostsPage /></ProtectedRoute> },
       { path: 'blogs/edit/:slug', element: <ProtectedRoute><EditBlogPage /></ProtectedRoute> },
+      { path: 'blogs/my-bookmarks', element: <ProtectedRoute><MyBookmarksPage /></ProtectedRoute> },
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
       { path: 'admin', element: <ProtectedRoute><AdminProtectedRoute><AdminPage /></AdminProtectedRoute></ProtectedRoute> },
       { path: 'news', element: <ProtectedRoute><NewsPage /></ProtectedRoute> },
@@ -69,9 +72,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <AppErrorBoundary>
           <AuthProvider>
             <DashboardProvider>
-              <RouterProvider router={router} />
-              <AppErrorBridge />
-              <ErrorModal />
+              <PortfolioProvider>
+                <RouterProvider router={router} />
+                <AppErrorBridge />
+                <ErrorModal />
+              </PortfolioProvider>
             </DashboardProvider>
           </AuthProvider>
         </AppErrorBoundary>

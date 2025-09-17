@@ -15,9 +15,8 @@ export function DashboardProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { showError } = useError();
-  const config = useConfig()
+  const config = useConfig();
 
-  // --- Límite diario de API por plan (tabla profiles)
   const checkApiLimit = useCallback(async () => {
     if (!user) return false;
 
@@ -38,7 +37,6 @@ export function DashboardProvider({ children }) {
     let calls = prof.api_calls_made ?? 0;
     let lastDate = prof.last_api_call_date ?? null;
 
-    // reset diario
     if (lastDate !== today) {
       calls = 0;
       lastDate = today;
@@ -62,7 +60,6 @@ export function DashboardProvider({ children }) {
     return true;
   }, [user, profile?.role, config.plans.roleLimits, showError]);
 
-  // --- Fetch a FMP + procesamiento
   const fetchTickerData = useCallback(async (ticker) => {
     const allowed = await checkApiLimit();
     if (!allowed) return null;
@@ -78,35 +75,27 @@ export function DashboardProvider({ children }) {
     const endpoints = endpointTemplates.map(path => `${path}?symbol=${ticker}`);
 
     try {
-      const promises = endpoints.map(endpointPath => 
+      const promises = endpoints.map(endpointPath =>
         supabase.functions.invoke('fmp-proxy', {
           body: { endpointPath }
         })
       );
-      
       const results = await Promise.all(promises);
 
       for (const result of results) {
         if (result.error) throw result.error;
       }
-      
-      // 5. Extraemos los datos de cada respuesta
+
       const [profileRes, keyMetricsRes, quoteRes, historicalRes, priceTargetRes] = results.map(result => result.data);
 
-      // Validaciones de shape
       if (!Array.isArray(profileRes) || profileRes.length === 0) throw new Error('Ticker no encontrado o respuesta inválida (profile).');
-
       if (!Array.isArray(keyMetricsRes)) throw new Error('Respuesta inválida (key-metrics-ttm).');
-
       if (!Array.isArray(quoteRes) || quoteRes.length === 0) throw new Error('Respuesta inválida (quote).');
-
       const companyProfile = profileRes[0] || {};
       if (companyProfile?.['Error Message']) throw new Error(companyProfile['Error Message']);
 
       const latestKeyMetrics = keyMetricsRes[0] || {};
       const companyQuote = quoteRes[0] || {};
-
-      // "raw" consolida todo para facilitar el mapeo
       const raw = { ...companyProfile, ...latestKeyMetrics, ...companyQuote, ...priceTargetRes[0] };
 
       const processed = {
@@ -132,14 +121,12 @@ export function DashboardProvider({ children }) {
         data: {},
         historicalReturns: [],
         currentPrice: toNumber(raw.price),
-        dayChange: toNumber(raw.changePercentage), // %
+        dayChange: toNumber(raw.changePercentage),
         monthChange: 'N/A',
         yearChange: 'N/A',
-        stdDev: 'N/A',      // % (últimos 30 retornos)
-        sharpeRatio: 'N/A', // anualizado (252)
+        stdDev: 'N/A',
+        sharpeRatio: 'N/A',
       };
-
-      // --- Mapeo de indicadores con alias + compute
 
       Object.keys(indicatorConfig).forEach((key) => {
         const cfg = indicatorConfig[key];
@@ -183,21 +170,21 @@ export function DashboardProvider({ children }) {
         const latestPrice = latest.close;
 
         const d7 = new Date(latest.date); d7.setDate(d7.getDate() - 7);
-        const p7 = findCloseByDate(historyAsc, d7.toISOString().slice(0,10));
+        const p7 = findCloseByDate(historyAsc, d7.toISOString().slice(0, 10));
         if (Number.isFinite(latestPrice) && Number.isFinite(p7) && p7 > 0) {
           processed.weekChange = ((latestPrice / p7) - 1) * 100;
         }
 
         // 90 días (3 meses aprox.)
         const d90 = new Date(latest.date); d90.setDate(d90.getDate() - 90);
-        const p90 = findCloseByDate(historyAsc, d90.toISOString().slice(0,10));
+        const p90 = findCloseByDate(historyAsc, d90.toISOString().slice(0, 10));
         if (Number.isFinite(latestPrice) && Number.isFinite(p90) && p90 > 0) {
           processed.quarterChange = ((latestPrice / p90) - 1) * 100;
         }
 
         // YTD: comparar con el último cierre del “inicio de año”
         const startYear = new Date(latest.date); startYear.setMonth(0, 1); // 1 de enero
-        const pYtd = findCloseByDate(historyAsc, startYear.toISOString().slice(0,10));
+        const pYtd = findCloseByDate(historyAsc, startYear.toISOString().slice(0, 10));
         if (Number.isFinite(latestPrice) && Number.isFinite(pYtd) && pYtd > 0) {
           processed.ytdChange = ((latestPrice / pYtd) - 1) * 100;
         }
@@ -273,58 +260,100 @@ export function DashboardProvider({ children }) {
         processed.data.sma200 = Number.isFinite(sma200) ? sma200 : 'N/A';
         processed.data.smaSignal = smaSignal;
       }
+
+      const { error: cacheUpsertError } = await supabase
+        .from('asset_data_cache')
+        .upsert({
+          symbol: ticker,
+          data: processed,
+          last_updated_at: new Date().toISOString(),
+        });
+
+      if (cacheUpsertError) {
+        // No es un error crítico, así que solo lo logueamos.
+        console.error("Error al actualizar la caché:", cacheUpsertError.message);
+        logger.warn('CACHE_UPSERT_FAILED', `Falló el upsert para ${ticker}`, { detail: cacheUpsertError.message });
+      }
+
       return processed;
+
     } catch (e) {
       console.error('FMP error:', e);
       const msg = e?.message || 'Error al consultar datos del activo.';
-      logger.error('API_FETCH_FAILED', `Failed to fetch data for ticker: ${ticker}`, { ticker: ticker, errorMessage: msg, errorStack: e.stack, });
-      setError(msg);
+      logger.error('API_FETCH_FAILED', `Failed to fetch data for ticker: ${ticker}`, { ticker: ticker, errorMessage: msg });
       showError('No pudimos traer los datos del activo.', { detail: msg });
       return null;
     }
   }, [checkApiLimit, config.api.fmpProxyEndpoints, showError]);
 
-  // --- API pública del contexto
-  const addTicker = useCallback(async (tickerRaw) => {
+  const addTicker = useCallback(async (tickerRaw, fromPortfolio = false) => {
     const ticker = tickerRaw.trim().toUpperCase();
     if (!ticker) return;
 
-    // ✅ Nueva validación
+    if (selectedTickers.includes(ticker)) {
+      if (!fromPortfolio) showError('Este activo ya ha sido añadido.');
+      return;
+    }
+
     const freeSymbolsSet = new Set(config.plans.freeTierSymbols);
     if (profile?.role === 'basico' && !freeSymbolsSet.has(ticker)) {
-      showError(`El símbolo ${ticker} no está disponible en el plan Básico.`, { title: 'Función Premium' });
+      if (!fromPortfolio) showError(`El símbolo ${ticker} no está disponible en el plan Básico.`);
       return;
     }
 
-    // reset de error previo
-    setError('');
-
-    if (selectedTickers.length >= config.dashboard.maxTickersToCompare) {
-      const msg = `Puedes comparar hasta ${config.dashboard.maxTickersToCompare} activos a la vez.`;
-      setError(msg);
-      showError(msg);
-      return;
-    }
-    if (selectedTickers.includes(ticker)) {
-      const msg = 'Este activo ya ha sido añadido.';
-      setError(msg);
-      showError(msg);
-      return;
+    if (!fromPortfolio) {
+      setError('');
+      if (selectedTickers.length >= config.dashboard.maxTickersToCompare) {
+        showError(`Puedes comparar hasta ${config.dashboard.maxTickersToCompare} activos a la vez.`);
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const data = await fetchTickerData(ticker);
-      if (!data) return; // error ya mostrado
-      setSelectedTickers((prev) => [...prev, ticker]);
-      setAssetsData((prev) => ({ ...prev, [ticker]: data }));
+      // 1. Intentar obtener de la caché primero
+      const { data: cached, error: cacheError } = await supabase
+        .from('asset_data_cache')
+        .select('data, last_updated_at')
+        .eq('symbol', ticker)
+        .single();
 
-      logger.info('TICKER_ADDED', `User added ticker: ${ticker}`, { ticker });
+      if (cacheError && cacheError.code !== 'PGRST116') { // Ignorar error "fila no encontrada"
+        throw cacheError;
+      }
+
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+      // 2. Si la caché es reciente, úsala y termina.
+      if (cached && new Date(cached.last_updated_at) > oneHourAgo) {
+        logger.info('TICKER_ADDED_FROM_CACHE', `Usando caché para ${ticker}`);
+        setAssetsData((prev) => ({ ...prev, [ticker]: cached.data }));
+        setSelectedTickers((prev) => [...prev, ticker]);
+      } else {
+        // 3. Si no, busca datos frescos, con fallback a la caché si falla la API.
+        logger.info('TICKER_CACHE_MISS_OR_STALE', `Cache desactualizada o no encontrada para ${ticker}. Fetching de API.`);
+        const data = await fetchTickerData(ticker);
+
+        if (data) {
+          // ÉXITO DE LA API: usa los datos nuevos.
+          setAssetsData((prev) => ({ ...prev, [ticker]: data }));
+          setSelectedTickers((prev) => [...prev, ticker]);
+          logger.info('TICKER_ADDED_FROM_API', `Ticker añadido desde API: ${ticker}`);
+        } else if (cached) {
+          // FALLO DE LA API, PERO HAY CACHÉ ANTIGUA: úsala como fallback.
+          setAssetsData((prev) => ({ ...prev, [ticker]: cached.data }));
+          setSelectedTickers((prev) => [...prev, ticker]);
+          logger.warn('API_FAIL_FALLBACK_TO_CACHE', `Falló la API para ${ticker}, usando caché desactualizada.`);
+          // Notificar al usuario que los datos pueden no ser actuales.
+          showError(`No pudimos actualizar los datos para ${ticker}. Mostrando la última versión disponible.`);
+        } else {
+          // FALLO DE LA API Y SIN CACHÉ: no se puede hacer nada. 
+          // El error ya fue mostrado al usuario dentro de fetchTickerData.
+          logger.error('TICKER_ADD_FAILED', `No se pudo añadir ${ticker}: fallo de API sin caché de respaldo.`);
+        }
+      }
     } catch (e) {
-      console.error('addTicker error:', e);
-      const msg = 'Ocurrió un error inesperado al agregar el activo.';
-      setError(msg);
-      showError(msg, { detail: e?.message });
+      showError('Ocurrió un error inesperado al agregar el activo.', { detail: e.message });
     } finally {
       setLoading(false);
     }
@@ -344,13 +373,8 @@ export function DashboardProvider({ children }) {
       removeTicker,
       loading,
       error,
-      role: profile?.role || 'basico',
-      // Helpers expuestos por si los necesitás en la UI
-      mean: meanArr,
-      stdDev: stdDevArr,
-      sharpe: sharpeFromReturns,
     }),
-    [selectedTickers, assetsData, loading, error, profile, addTicker]
+    [selectedTickers, assetsData, loading, error, addTicker]
   );
 
   return (
