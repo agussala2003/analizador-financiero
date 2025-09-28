@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  ============================================
+  BASE THEME AND SHARED VARIABLES
+  ============================================
+*/
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Mapeo de colores semánticos */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Paleta de gráficos extendida */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
+  --color-chart-10: var(--chart-10);
+  --color-chart-11: var(--chart-11);
+  --color-chart-12: var(--chart-12);
+  --color-chart-13: var(--chart-13);
+  --color-chart-14: var(--chart-14);
+  --color-chart-15: var(--chart-15);
+  --color-chart-16: var(--chart-16);
+  --color-chart-17: var(--chart-17);
+  --color-chart-18: var(--chart-18);
+  --color-chart-19: var(--chart-19);
+  --color-chart-20: var(--chart-20);
+
+  /* Estilos específicos del Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  ============================================
+  TEMA CLARO (LIGHT THEME) - AZUL
+  ============================================
+*/
+:root {
+  --radius: 0.75rem;
+
+  /* Paleta base neutra con tinte azulado */
+  --background: oklch(98.5% 0.01 240);
+  /* Fondo casi blanco con un sutil tinte azul frío */
+  --foreground: oklch(15% 0.03 240);
+  /* Texto azul muy oscuro, casi negro */
+  --card: oklch(100% 0 0);
+  /* Tarjetas en blanco puro para máximo contraste */
+  --card-foreground: oklch(15% 0.03 240);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(15% 0.03 240);
+  --border: oklch(92% 0.015 240);
+  /* Borde azulado muy claro */
+  --input: oklch(95% 0.015 240);
+  --muted: oklch(95% 0.015 240);
+  --muted-foreground: oklch(55% 0.02 240);
+
+  /* Paleta de acento principal (Azul) */
+  --primary: oklch(58% 0.16 250);
+  /* Azul principal, fuerte y accesible */
+  --primary-foreground: oklch(99% 0.01 250);
+  /* Texto blanco ligeramente azulado para contraste */
+  --ring: oklch(58% 0.16 250 / 50%);
+
+  /* Paleta secundaria */
+  --secondary: oklch(95% 0.015 240);
+  --secondary-foreground: oklch(25% 0.03 240);
+  --accent: oklch(95% 0.015 240);
+  --accent-foreground: oklch(25% 0.03 240);
+
+  --destructive: oklch(65% 0.22 25);
+  /* Rojo para acciones destructivas (estándar) */
+
+  /* Colores de Gráficos (Light) - Reordenados por contraste */
+
+  --chart-1: oklch(60% 0.18 225);
+  /* Azul */
+
+  --chart-2: oklch(70% 0.20 150);
+  /* Verde Mar */
+
+  --chart-3: oklch(65% 0.18 320);
+  /* Rosa Fuerte */
+
+  --chart-4: oklch(75% 0.25 50);
+  /* Naranja */
+
+  --chart-5: oklch(70% 0.15 280);
+  /* Púrpura */
+
+  --chart-6: oklch(85% 0.25 90);
+  /* Amarillo */
+
+  --chart-7: oklch(65% 0.22 195);
+  /* Turquesa */
+
+  --chart-8: oklch(70% 0.22 20);
+  /* Rojo Claro */
+
+  --chart-9: oklch(80% 0.20 120);
+  /* Verde Lima */
+
+  --chart-10: oklch(60% 0.15 350);
+  /* Carmesí */
+
+  --chart-11: oklch(75% 0.18 30);
+  /* Melón */
+
+  --chart-12: oklch(55% 0.12 255);
+  /* Azul Profundo */
+
+  --chart-13: oklch(80% 0.10 140);
+  /* Verde Menta */
+
+  --chart-14: oklch(60% 0.10 260);
+  /* Indigo más suave */
+
+  --chart-15: oklch(70% 0.08 300);
+  /* Lavanda */
+
+  --chart-16: oklch(60% 0.18 180);
+  /* Cian puro */
+
+  --chart-17: oklch(70% 0.15 60);
+  /* Naranja-Amarillo */
+
+  --chart-18: oklch(50% 0.20 20);
+  /* Rojo oscuro */
+
+  --chart-19: oklch(75% 0.10 230);
+  /* Azul cielo pálido */
+
+  --chart-20: oklch(65% 0.10 160);
+  /* Verde esmeralda suave */
+
+  /* Colores del Sidebar (Light) */
+  --sidebar: oklch(97% 0.01 240);
+  --sidebar-foreground: oklch(35% 0.025 240);
+  --sidebar-border: oklch(92% 0.015 240);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(92% 0.015 240);
+  --sidebar-accent-foreground: oklch(15% 0.03 240);
+  --sidebar-ring: var(--ring);
+}
+
+/*
+  ============================================
+  TEMA OSCURO (DARK THEME) - AZUL
+  ============================================
+*/
+.dark {
+  /* Paleta base con fondo azul oscuro profundo */
+  --background: oklch(15% 0.03 240);
+  /* Azul noche profundo */
+  --foreground: oklch(95% 0.01 240);
+  /* Texto blanco con un leve tinte azul */
+  --card: oklch(20% 0.04 240);
+  /* Tarjetas en un azul ligeramente más claro que el fondo */
+  --card-foreground: oklch(95% 0.01 240);
+  --popover: oklch(18% 0.035 240);
+  --popover-foreground: oklch(95% 0.01 240);
+  --border: oklch(30% 0.04 240);
+  /* Borde azulado sutil */
+  --input: oklch(30% 0.04 240);
+  --muted: oklch(30% 0.04 240);
+  --muted-foreground: oklch(65% 0.02 240);
+
+  /* Paleta de acento principal (Celeste brillante) */
+  --primary: oklch(75% 0.18 230);
+  /* Celeste brillante que resalta en fondos oscuros */
+  --primary-foreground: oklch(15% 0.03 240);
+  /* Texto azul muy oscuro para alto contraste */
+  --ring: oklch(75% 0.18 230 / 50%);
+
+  /* Paleta secundaria */
+  --secondary: oklch(30% 0.04 240);
+  --secondary-foreground: oklch(95% 0.01 240);
+  --accent: oklch(30% 0.04 240);
+  --accent-foreground: oklch(95% 0.01 240);
+
+  --destructive: oklch(70% 0.22 25);
+  /* Rojo más brillante para visibilidad en tema oscuro */
+
+  /* Colores de Gráficos (Dark) - Reordenados por contraste */
+
+  --chart-1: oklch(75% 0.22 215);
+  /* Azul Brillante */
+
+  --chart-2: oklch(80% 0.22 155);
+  /* Verde Menta */
+
+  --chart-3: oklch(75% 0.20 330);
+  /* Rosa Fucsia */
+
+  --chart-4: oklch(80% 0.28 55);
+  /* Naranja Vívido */
+
+  --chart-5: oklch(75% 0.18 285);
+  /* Púrpura */
+
+  --chart-6: oklch(90% 0.28 95);
+  /* Amarillo Eléctrico */
+
+  --chart-7: oklch(75% 0.25 190);
+  /* Turquesa */
+
+  --chart-8: oklch(75% 0.25 25);
+  /* Rojo Claro */
+
+  --chart-9: oklch(85% 0.22 125);
+  /* Verde Lima */
+
+  --chart-10: oklch(70% 0.18 355);
+  /* Carmesí */
+
+  --chart-11: oklch(85% 0.20 35);
+  /* Melón */
+
+  --chart-12: oklch(65% 0.15 245);
+  /* Azul Profundo */
+
+  --chart-13: oklch(85% 0.12 140);
+  /* Verde Claro */
+
+  --chart-14: oklch(70% 0.12 265);
+  /* Indigo más suave */
+
+  --chart-15: oklch(80% 0.10 300);
+  /* Lavanda */
+
+  --chart-16: oklch(70% 0.20 180);
+  /* Cian puro */
+
+  --chart-17: oklch(80% 0.18 70);
+  /* Naranja-Amarillo */
+
+  --chart-18: oklch(60% 0.22 20);
+  /* Rojo oscuro */
+
+  --chart-19: oklch(85% 0.12 230);
+  /* Azul cielo pálido */
+
+  --chart-20: oklch(75% 0.12 165);
+  /* Verde esmeralda suave */
+
+  /* Colores del Sidebar (Dark) */
+  --sidebar: oklch(18% 0.035 240);
+  --sidebar-foreground: oklch(85% 0.015 240);
+  --sidebar-border: var(--border);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(25% 0.04 240);
+  --sidebar-accent-foreground: oklch(98% 0.01 240);
+  --sidebar-ring: var(--ring);
+}
+
+/*
+  ============================================
+  ESTILOS BASE
+  ============================================
+*/
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/*
+  ============================================
+  UTILIDADES
+  ============================================
+*/
+@layer utilities {
+  @keyframes scroll-infinite {
+    from {
+      transform: translateX(0%);
+    }
+
+    to {
+      /* Se desplaza el 50% porque hemos duplicado el contenido */
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll-infinite {
+    /* Ajusta la duración para cambiar la velocidad (ej: 40s para más lento) */
+    animation: scroll-infinite 40s linear infinite;
+  }
+}

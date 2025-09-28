@@ -1,0 +1,239 @@
+{
+  "useMockData": true,
+  "app": {
+    "name": "Financytics",
+    "version": "2.0",
+    "contactEmail": "agussala2003@gmail.com"
+  },
+  "api": {
+    "fmpProxyEndpoints": {
+      "profile": "stable/profile",
+      "keyMetrics": "stable/key-metrics-ttm",
+      "quote": "stable/quote",
+      "historical": "stable/historical-price-eod/full",
+      "priceTarget": "stable/price-target-summary",
+      "newsPriceTarget": "stable/price-target-latest-news",
+      "newsGrades": "stable/grades-latest-news",
+      "dividendsCalendar": "stable/dividends-calendar"
+    }
+  },
+  "plans": {
+    "roleLimits": {
+      "basico": 5,
+      "plus": 25,
+      "premium": 50,
+      "administrador": 100000 
+    },
+    "portfolioLimits": {
+      "basico": 1,
+      "plus": 5,
+      "premium": 10,
+      "administrador": 10000
+    },
+    "freeTierSymbols": [
+      "AAPL", "TSLA", "AMZN", "MSFT", "NVDA", "GOOGL", "META", "NFLX", "JPM", "V",
+      "BAC", "AMD", "PYPL", "DIS", "T", "PFE", "COST", "INTC", "KO", "TGT", "NKE",
+      "SPY", "BA", "BABA", "XOM", "WMT", "GE", "CSCO", "VZ", "JNJ", "CVX", "PLTR",
+      "SQ", "SHOP", "SBUX", "SOFI", "HOOD", "RBLX", "SNAP", "UBER", "FDX", "ABBV",
+      "ETSY", "MRNA", "LMT", "GM", "F", "RIVN", "LCID", "CCL", "DAL", "UAL", "AAL",
+      "TSM", "SONY", "ET", "NOK", "MRO", "COIN", "SIRI", "RIOT", "CPRX", "VWO",
+      "SPYG", "ROKU", "VIAC", "ATVI", "BIDU", "DOCU", "ZM", "PINS", "TLRY", "WBA",
+      "MGM", "NIO", "C", "GS", "WFC", "ADBE", "PEP", "UNH", "CARR", "FUBO", "HCA",
+      "TWTR", "BILI", "RKT"
+    ]
+  },
+  "notifications": [
+    {
+      "id": "portfolio_launch_01",
+      "title": "¡Nuevo Portfolio disponible!",
+      "description": "Dale una oportunidad a nuestro nuevo módulo de Portfolio. Carga tus activos para ver tus rendimientos en tiempo real."
+    },
+    {
+      "id": "Navbar_update_01",
+      "title": "Mejoras en Menu",
+      "description": "Hemos actualizado el menú de navegación para mejorar la experiencia del usuario. ¡Explora las nuevas secciones!"
+    }
+  ],
+  "dashboard": {
+    "maxTickersToCompare": {
+      "basico": 3,
+      "plus": 5,
+      "premium": 10,
+      "administrador": 20
+    }
+  },
+  "news": {
+    "pageSize": 6,
+    "defaultLimit": 10
+  },
+  "suggestions": {
+    "minLength": 10
+  },
+  "admin": {
+    "pageSizeOptions": [2, 5, 10]
+  },
+  "dividends":{
+    "pageSizeOptions": [10, 20, 50]
+  },
+  "infoPage": {
+    "hero": {
+      "title": "Análisis Financiero Inteligente.",
+      "subtitle": "Visualiza el mercado, compara activos y toma decisiones informadas con herramientas de nivel profesional, diseñadas para ser intuitivas.",
+      "cta": {
+        "loggedIn": "Ir al Dashboard",
+        "loggedOut": "Comenzar Gratis"
+      }
+    },
+    "features": {
+      "title": "Una plataforma,<br>infinitas posibilidades.",
+      "subtitle": "Desde análisis fundamentales hasta resúmenes con IA, tenemos todo lo que necesitas para invertir con confianza.",
+      "items": [
+        {
+          "icon": "ChartArea",
+          "title": "Análisis Fundamental",
+          "description": "Métricas clave, ratios de valoración y salud financiera con tablas comparativas avanzadas."
+        },
+        {
+          "icon": "GitCompare",
+          "title": "Matriz de Correlación",
+          "description": "Visualiza relaciones entre activos con una matriz interactiva y escalas de color intuitivas."
+        },
+        {
+          "icon": "Radar",
+          "title": "Gráfico Radar Comparativo",
+          "description": "Compara acciones en un radar multidimensional que muestra fortalezas y debilidades al instante."
+        },
+        {
+          "icon": "Brain",
+          "title": "Resumen Inteligente con IA",
+          "description": "Nuestra IA analiza todos los indicadores y te dice qué acción destaca en cada métrica con un veredicto."
+        },
+        {
+          "icon": "Coins",
+          "title": "Calendario de Dividendos",
+          "description": "Consulta fechas, pagos, rendimientos y proyecta tus ingresos pasivos con la calculadora integrada."
+        },
+        {
+          "icon": "Newspaper",
+          "title": "Noticias Financieras Clave",
+          "description": "Agregador de noticias de price targets y upgrades/downgrades ordenadas cronológicamente."
+        },
+        {
+          "icon": "Heart",
+          "title": "Interfaz Intuitiva",
+          "description": "Diseño limpio y moderno que facilita la navegación y el análisis, incluso para principiantes."
+        },
+        {
+          "icon": "Unlock",
+          "title": "Acceso Gratuito",
+          "description": "Comienza gratis con acceso a funciones esenciales y actualiza cuando estés listo para más."
+        }
+      ]
+    },
+    "testimonial": {
+      "title": "Lo que dicen nuestros usuarios",
+      "subtitle": "Historias reales de inversores que han transformado su análisis financiero con Financytics.",
+      "opinions" : [
+        {
+          "name": "María López",
+          "role": "Inversora Individual",
+          "avatar": "https://randomuser.me/api/portraits/women/1.jpg",
+          "comment": "Financytics ha revolucionado la forma en que analizo mis inversiones. La matriz de correlación y el gráfico radar me permiten comparar acciones de manera rápida y efectiva. ¡No sé cómo viví sin ello!"
+        },
+        {
+          "name": "Carlos Martínez",
+          "role": "Asesor Financiero",
+          "avatar": "https://github.com/leerob.png",
+          "comment": "La matriz de correlación y el gráfico radar me permiten tomar decisiones informadas rápidamente. ¡Es una herramienta imprescindible para mi trabajo diario con clientes!"
+        },
+        {
+          "name": "Ana García",
+          "role": "Estudiante de Finanzas",
+          "avatar": "https://github.com/evilrabbit.png",
+          "comment": "Ha sido una herramienta invaluable en mi aprendizaje. La interfaz es intuitiva y las funciones de análisis son potentes. ¡Recomiendo Financytics a todos mis compañeros!"
+        },
+        {
+          "name": "Luis Fernández",
+          "role": "Inversor a Largo Plazo",
+          "avatar": "https://randomuser.me/api/portraits/men/1.jpg",
+          "comment": "Financytics me ha ayudado a optimizar mi cartera de inversiones. Las herramientas de análisis son de primera y me permiten tomar decisiones informadas."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "Lleva tu análisis al siguiente nivel.",
+      "subtitle": "Únete a miles de inversores que ya toman decisiones más inteligentes. Es gratis para empezar.",
+      "cta": {
+        "loggedIn": "Volver al Dashboard",
+        "loggedOut": "Crear Cuenta Gratis"
+      }
+    }
+  },
+  "authPages": {
+    "login": {
+      "title": "Inicia sesión en tu cuenta",
+      "subtitle": "Bienvenido de nuevo, por favor ingresa tus credenciales.",
+      "emailPlaceholder": "Correo electrónico",
+      "passwordPlaceholder": "Contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Regístrate aquí"
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Únete a nosotros y comienza tu viaje financiero.",
+      "emailPlaceholder": "Correo electrónico",
+      "passwordPlaceholder": "Contraseña",
+      "confirmPasswordPlaceholder": "Confirma tu contraseña",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "login": "Inicia sesión aquí"
+    },
+    "resetPassword": {
+      "title": "Restablece tu contraseña",
+      "subtitle": "Ingresa tu correo electrónico para recibir instrucciones.",
+      "emailPlaceholder": "Correo electrónico",
+      "backToLogin": "Volver al inicio de sesión"
+    }
+  },
+  "sidebar": {
+    "groups": [
+      {
+        "label": "Herramientas",
+        "items": [
+          { "to": "/", "label": "Inicio", "icon": "Home" },
+          { "to": "/dashboard", "label": "Dashboard", "icon": "ChartCandlestick", "requiresAuth": true },
+          { "to": "/profile", "label": "Portafolio", "icon": "LayoutDashboard", "requiresAuth": true },
+          { "to": "/dividends", "label": "Dividendos", "icon": "Divide", "requiresAuth": true }
+        ]
+      },
+      {
+        "label": "Contenido",
+        "items": [
+          { "to": "/news", "label": "Noticias", "icon": "Newspaper", "requiresAuth": true },
+          { "to": "/blogs", "label": "Blogs", "icon": "BookCopy", "requiresAuth": true },
+          { "to": "/blogs/my-bookmarks", "label": "Mis Favoritos", "icon": "BookMarked", "requiresAuth": true },
+          {
+            "to": "/blogs/my-posts",
+            "label": "Mis Publicaciones",
+            "icon": "FilePenLine",
+            "requiresAuth": true,
+            "requiresPermission": "can_upload_blog"
+          }
+        ]
+      },
+      {
+        "label": "General",
+        "items": [
+          { "to": "/suggestions", "label": "Sugerencias", "icon": "MessageSquareHeart", "requiresAuth": true },
+          {
+            "to": "/admin",
+            "label": "Admin",
+            "icon": "Shield",
+            "requiresAuth": true,
+            "requiresRole": "administrador"
+          }
+        ]
+      }
+    ]
+  }
+}
