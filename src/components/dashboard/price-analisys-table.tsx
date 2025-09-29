@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { exportToPdf } from "../../utils/export-pdf";
 import { indicatorConfig } from "../../utils/financial";
 import { useTheme } from "../theme-provider";
+import { Link } from "react-router-dom";
 
 // --- Props del Componente ---
 interface PriceAnalysisTableProps {
@@ -161,13 +162,15 @@ export function PriceAnalysisTable({ assets }: PriceAnalysisTableProps) {
                                 {sortedAssets.map((asset) => (
                                     <TableRow key={asset.symbol}>
                                         <TableCell className="font-medium">
-                                            <div className="flex items-center gap-3">
+                                            {/* V V V INICIO DEL CAMBIO V V V */}
+                                            <Link to={`/asset/${asset.symbol}`} className="flex items-center gap-3 group">
                                                 <img src={asset.image} alt={asset.companyName} className="w-8 h-8 rounded-full bg-muted object-contain border" />
                                                 <div>
-                                                    <div className="font-bold">{asset.symbol}</div>
+                                                    <div className="font-bold group-hover:text-primary transition-colors">{asset.symbol}</div>
                                                     <div className="text-xs text-muted-foreground truncate max-w-[200px]">{asset.companyName}</div>
                                                 </div>
-                                            </div>
+                                            </Link>
+                                            {/* ^ ^ ^ FIN DEL CAMBIO ^ ^ ^ */}
                                         </TableCell>
                                         <TableCell className="text-center font-semibold">{formatCurrency(asset.currentPrice)}</TableCell>
                                         <TableCell className="text-center">{pctNode(asset.dayChange)}</TableCell>

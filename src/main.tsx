@@ -19,6 +19,7 @@ import { DashboardProvider } from './providers/dashboard-provider.tsx';
 import { PortfolioProvider } from './providers/portfolio-provider.tsx';
 import ProfilePage from './components/pages/profile-page.tsx';
 import RiskPremiumPage from './components/pages/risk-premium-page.tsx';
+import AssetDetailPage from './components/pages/asset-detail-page.tsx';
 
 
 const router = createBrowserRouter([
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <InfoPage /> },
       { path: "dashboard", element: <DashboardPage /> },
+      { path: "asset/:symbol", element: <AssetDetailPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
       { path: "dividends", element: <DividendsPage /> },

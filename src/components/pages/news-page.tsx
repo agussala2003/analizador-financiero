@@ -10,7 +10,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { ListFilter, X } from "lucide-react";
+import { ListFilter, Newspaper, X } from "lucide-react";
 import PaginationDemo from "../pagination-demo";
 
 const NewsCard = ({ news, index }: { news: NewsItem; index: number }) => {
@@ -172,11 +172,18 @@ export default function NewsPage() {
     return (
         <div className="min-h-screen">
             <div className="container mx-auto px-4 py-10">
-                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                    <h1 className="text-4xl font-bold text-center mb-2">Últimas Noticias Financieras</h1>
-                    <p className="text-lg text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+                                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                    <div className="flex items-center gap-4 pb-4 mb-6 border-b">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <Newspaper className="w-8 h-8 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Ultimas Noticias Financieras</h1>
+                        <p className="text-muted-foreground">
                         Mantente al día con las últimas noticias del mercado y los eventos que pueden afectar tus inversiones.
-                    </p>
+                        </p>
+                    </div>
+                    </div>
                 </motion.div>
 
                 {/* --- NUEVA BARRA DE FILTROS --- */}

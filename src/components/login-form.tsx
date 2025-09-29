@@ -33,7 +33,10 @@ export function LoginForm({
       if (error) throw error;
       logger.info('LOGIN_SUCCESS', `User ${email} logged in successfully.`);
       toast.success('Has iniciado sesión correctamente.');
-      setTimeout(() => navigate('/'), 1000);
+      setTimeout(() => {
+        navigate('/dashboard');
+        window.location.reload();
+      }, 500);
     } catch (error: any) {
       logger.error('LOGIN_FAILED', `User ${email} failed to log in.`, { errorMessage: error.message });
       toast.error('Email o contraseña incorrectos.');

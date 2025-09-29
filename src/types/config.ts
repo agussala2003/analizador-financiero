@@ -35,6 +35,11 @@ export interface FmpProxyEndpoints {
   newsPriceTarget: string;
   newsGrades: string;
   dividendsCalendar: string;
+  marketRiskPremium: string;
+  dcf: string;
+  rating: string;
+  revenueGeographic: string; // <-- AÑADIR ESTA LÍNEA
+  revenueProduct: string;    // <-- AÑADIR ESTA LÍNEA
 }
 
 export interface App {
