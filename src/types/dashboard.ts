@@ -5,6 +5,21 @@ import { IndicatorConfig } from "../utils/financial";
 // Representa cualquier dato crudo que venga de la API
 export type RawApiData = Record<string, any>;
 
+export interface AssetRating {
+    rating: string;
+    overallScore: number;
+    returnOnEquityScore: number;
+    returnOnAssetsScore: number;
+    debtToEquityScore: number;
+    priceToEarningsScore: number;
+    priceToBookScore: number;
+}
+
+export interface RevenueSegment {
+    name: string;
+    value: number;
+}
+
 // Representa los datos de un activo ya procesados y listos para usar en la UI
 export interface AssetData {
     symbol: string;
@@ -38,6 +53,10 @@ export interface AssetData {
     ytdChange: number | 'N/A';
     stdDev: number | 'N/A';
     sharpeRatio: number | 'N/A';
+    dcf: number | 'N/A';
+    rating: AssetRating | null;
+    geographicRevenue: RevenueSegment[]; // <-- AÑADIR ESTA LÍNEA
+    productRevenue: RevenueSegment[];    // <-- AÑADIR ESTA LÍNEA
 }
 
 export interface HistoricalHolding {
@@ -59,7 +78,7 @@ export interface DashboardContextType {
     assetsData: Record<string, AssetData>;
     loading: boolean;
     error: string;
-    addTicker: (tickerRaw: string, fromPortfolio?: boolean) => Promise<void>;
+    addTicker: (tickerRaw: string, options: { fromPortfolio?: boolean, addToSelected?: boolean }) => Promise<void>;
     removeTicker: (ticker: string) => void;
     indicatorConfig: IndicatorConfig;
 }

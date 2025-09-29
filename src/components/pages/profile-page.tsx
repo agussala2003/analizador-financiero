@@ -38,7 +38,7 @@ const interestOptions = [
 ];
 
 const ProfileSkeleton = () => (
-  <div className="space-y-8">
+  <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
     <div className="flex items-center gap-4">
       <Skeleton className="w-10 h-10 rounded-full" />
       <div className="space-y-2">
@@ -153,21 +153,25 @@ export default function ProfilePage() {
 
   return (
     <motion.div
-      className="w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-8"
+      className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="p-2 bg-primary/10 rounded-full">
-          <UserCircle className="w-8 h-8 text-primary" />
+       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="flex items-center gap-4 pb-4 mb-6 border-b">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <UserCircle className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mi Perfil</h1>
+            <p className="text-muted-foreground">
+              Actualiza tu información y personaliza tu experiencia.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mi Perfil</h1>
-          <p className="text-muted-foreground">Actualiza tu información y personaliza tu experiencia.</p>
-        </div>
-      </div>
+      </motion.div>
       <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-8">
         {/* Información Personal */}
         <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">

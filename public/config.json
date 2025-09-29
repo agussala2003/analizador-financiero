@@ -15,7 +15,11 @@
       "newsPriceTarget": "stable/price-target-latest-news",
       "newsGrades": "stable/grades-latest-news",
       "dividendsCalendar": "stable/dividends-calendar",
-      "marketRiskPremium": "stable/market-risk-premium" 
+      "marketRiskPremium": "stable/market-risk-premium",
+      "dcf": "stable/custom-discounted-cash-flow",
+      "rating": "stable/ratings-snapshot",
+      "revenueGeographic": "stable/revenue-geographic-segmentation", 
+      "revenueProduct": "stable/revenue-product-segmentation"    
     }
   },
   "plans": {

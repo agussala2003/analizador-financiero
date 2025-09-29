@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { CalendarIcon, XIcon } from "lucide-react";
+import { CalendarIcon, Divide, XIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { format } from "date-fns";
 import { Calendar } from "../ui/calendar";
@@ -75,9 +75,18 @@ export default function DividendsPage() {
 
   return (
     <div className="container px-4 py-10 mx-auto sm:px-6 lg:px-8">
-      <motion.div className="pb-8 mb-8 text-center" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Calendario de Dividendos</h1>
-        <p className="max-w-2xl mx-auto text-lg text-muted-foreground">Consulta y filtra las fechas importantes de los próximos dividendos.</p>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="flex items-center gap-4 pb-4 mb-6 border-b">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Divide className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendario de Dividendos</h1>
+            <p className="text-muted-foreground">
+              Consulta y filtra las fechas importantes de los próximos dividendos.
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {loading ? <TableSkeleton /> : (
