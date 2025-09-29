@@ -18,11 +18,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "../components/ui/sidebar"
-import { CreditCard, Edit, EllipsisVertical, LogOut, UserCircle } from "lucide-react"
-import { useState } from "react";
+import { CreditCard, EllipsisVertical, LogOut, UserCircle } from "lucide-react"
 import { useConfig } from "../hooks/use-config";
-import { Dialog, DialogTrigger } from "../components/ui/dialog"; // Importa Dialog
-import { EditProfileModal } from "./edit-profile";
 import { User } from "@supabase/supabase-js";
 import { Profile } from "../types/auth";
 
@@ -35,7 +32,6 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const config = useConfig();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const userRole = profile.role
   const apiLimit = config.plans.roleLimits[userRole as keyof typeof config.plans.roleLimits]
   const callsMade = profile.api_calls_made
@@ -75,7 +71,7 @@ export function NavUser({
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{profile?.first_name || "Anónimo"}</span>
+                  <span className="truncate font-medium">{profile?.first_name + " " + profile?.last_name || "Anónimo"}</span>
                   <span className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </span>
@@ -92,15 +88,6 @@ export function NavUser({
                 <CreditCard className="mr-2 size-4" />
                 <span className="font-medium">Uso de API:</span> <span className="ml-auto font-semibold">{callsMade} / {apiLimit === Infinity ? '∞' : apiLimit}</span>
               </DropdownMenuItem>
-              <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}> {/* Controla el estado aquí */}
-                <DialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e: any) => e.preventDefault()}> {/* Evita que el menú se cierre al hacer clic */}
-                    <Edit className="mr-2 size-4" />
-                    <span className="font-medium">Editar Perfil</span>
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <EditProfileModal onClose={() => setIsEditModalOpen(false)} /> {/* Pasa la función de cierre */}
-              </Dialog>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut}>
