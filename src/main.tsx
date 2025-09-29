@@ -17,6 +17,8 @@ import NewsPage from './components/pages/news-page.tsx';
 import DashboardPage from './components/pages/dashboard-page.tsx';
 import { DashboardProvider } from './providers/dashboard-provider.tsx';
 import { PortfolioProvider } from './providers/portfolio-provider.tsx';
+import ProfilePage from './components/pages/profile-page.tsx';
+import RiskPremiumPage from './components/pages/risk-premium-page.tsx';
 
 
 const router = createBrowserRouter([
@@ -30,6 +32,8 @@ const router = createBrowserRouter([
       { path: "register", element: <RegisterPage /> },
       { path: "dividends", element: <DividendsPage /> },
       { path: "news", element: <NewsPage /> },
+      { path: "profile", element: <ProfilePage /> },
+      { path: "risk-premium", element: <RiskPremiumPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

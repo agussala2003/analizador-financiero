@@ -14,7 +14,8 @@
       "priceTarget": "stable/price-target-summary",
       "newsPriceTarget": "stable/price-target-latest-news",
       "newsGrades": "stable/grades-latest-news",
-      "dividendsCalendar": "stable/dividends-calendar"
+      "dividendsCalendar": "stable/dividends-calendar",
+      "marketRiskPremium": "stable/market-risk-premium" 
     }
   },
   "plans": {
@@ -202,8 +203,10 @@
         "items": [
           { "to": "/", "label": "Inicio", "icon": "Home" },
           { "to": "/dashboard", "label": "Dashboard", "icon": "ChartCandlestick", "requiresAuth": true },
-          { "to": "/profile", "label": "Portafolio", "icon": "LayoutDashboard", "requiresAuth": true },
-          { "to": "/dividends", "label": "Dividendos", "icon": "Divide", "requiresAuth": true }
+          { "to": "/portfolio", "label": "Portafolio", "icon": "LayoutDashboard", "requiresAuth": true },
+          { "to": "/dividends", "label": "Dividendos", "icon": "Divide", "requiresAuth": true },
+          { "to": "/risk-premium", "label": "Riesgo País", "icon": "Globe", "requiresAuth": true },
+          { "to": "/profile", "label": "Mi Perfil", "icon": "User", "requiresAuth": true }
         ]
       },
       {

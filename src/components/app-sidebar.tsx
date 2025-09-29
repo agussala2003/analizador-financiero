@@ -1,3 +1,5 @@
+// src/components/app-sidebar.tsx
+
 import { NavLink } from "react-router-dom";
 import { NavMain } from "../components/nav-main";
 import { NavUser } from "../components/nav-user";
@@ -23,14 +25,16 @@ import {
   ChartCandlestick,
   Divide,
   LucideProps,
+  LogIn, // <--- Importar ícono
+  UserPlus,
+  User,
+  Globe, // <--- Importar ícono
 } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
-import { Button } from "../components/ui/button";
 import { useConfig } from "../hooks/use-config";
-import { Skeleton } from "../components/ui/skeleton"; // Importa un componente Skeleton
+import { Skeleton } from "../components/ui/skeleton"; 
 import { SidebarLink } from "../types/config";
 
-// 1. Mapa de Íconos para convertir strings a componentes
 const iconMap: { [key: string]: React.ComponentType<LucideProps> } = {
   Home,
   ChartCandlestick,
@@ -42,32 +46,27 @@ const iconMap: { [key: string]: React.ComponentType<LucideProps> } = {
   FilePenLine,
   MessageSquareHeart,
   Shield,
+  User,
+  Globe
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // 2. Obtén el estado de carga de tu hook de autenticación
   const { profile, user, signOut, isLoaded } = useAuth();
   const config = useConfig();
 
-  // 3. Lógica centralizada para determinar la visibilidad de un enlace
   const isLinkVisible = (link: SidebarLink) => {
-    // Si no requiere autenticación, siempre es visible
     if (!link.requiresAuth) {
       return true;
     }
-    // Si requiere autenticación pero no hay usuario, no es visible
     if (link.requiresAuth && !user) {
       return false;
     }
-    // Si requiere un rol, verifica que el perfil del usuario lo tenga
     if (link.requiresRole && profile?.role.toLowerCase() !== link.requiresRole.toLowerCase()) {
       return false;
     }
-    // Si requiere un permiso, verifica que el perfil lo tenga en true
     if (link.requiresPermission && !profile?.[link.requiresPermission]) {
       return false;
     }
-    // Si pasó todas las validaciones, es visible
     return true;
   };
 
@@ -126,18 +125,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ) : user && profile ? (
           <NavUser user={user} signOut={signOut} profile={profile} />
         ) : (
-          <div className="flex flex-col gap-2">
-            <NavLink to="/login" className="w-full">
-              <Button variant="default" className="w-full">
-                Iniciar Sesión
-              </Button>
-            </NavLink>
-            <NavLink to="/register" className="w-full">
-              <Button variant="outline" className="w-full">
-                Registrarse
-              </Button>
-            </NavLink>
-          </div>
+          // --- Inicio del cambio ---
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <NavLink to="/login" className="w-full">
+                <SidebarMenuButton tooltip="Iniciar Sesión" className="w-full">
+                  <LogIn />
+                  <span>Iniciar Sesión</span>
+                </SidebarMenuButton>
+              </NavLink>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <NavLink to="/register" className="w-full">
+                <SidebarMenuButton tooltip="Registrarse" variant="outline" className="w-full">
+                  <UserPlus />
+                  <span>Registrarse</span>
+                </SidebarMenuButton>
+              </NavLink>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          // --- Fin del cambio ---
         )}
       </SidebarFooter>
     </Sidebar>

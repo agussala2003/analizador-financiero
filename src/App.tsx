@@ -2,37 +2,43 @@
 
 import { Outlet } from "react-router-dom";
 import { ThemeProvider } from "./components/theme-provider";
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "./components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "./components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
 import { Toaster } from "sonner";
 import { ModeToggle } from "./components/mode-toggle";
 import GenericBreadcrumb from "./components/breadcrumb-demo";
-import ActivesBar from "./components/actives-bar"; // Se mantiene la importación
+import ActivesBar from "./components/actives-bar";
 
 function App() {
   return (
     <SidebarProvider>
       <Toaster position="top-right" richColors />
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        {/* Se elimina el padding-top del div principal */}
-        <div className="flex w-full">
-          <AppSidebar />
-          <SidebarInset>
-            <ActivesBar  />
-            
-            <div className="flex justify-between p-4">
-              <div className="flex items-center justify-end gap-6">
-                <SidebarTrigger />
-                <GenericBreadcrumb />
-              </div>
-              <ModeToggle />
+        {/* Sidebar y SidebarInset se encargan del layout */}
+        <AppSidebar />
+        <SidebarInset>
+          {/* Barra superior fija */}
+          <ActivesBar />
+          <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger />
+              <GenericBreadcrumb />
             </div>
+            <ModeToggle />
+          </header>
+
+          {/* Área de contenido con scroll interno */}
+          <main className="flex-1">
             <Outlet />
-          </SidebarInset>
-        </div>
+          </main>
+        </SidebarInset>
       </ThemeProvider>
     </SidebarProvider>
-  )
+  );
 }
 
 export default App;
