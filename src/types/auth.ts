@@ -8,7 +8,7 @@ export interface Profile {
     last_api_call_date: Date;
     first_name: string | null;
     last_name: string | null;
-    can_upload_blogs: boolean;
+    can_upload_blog: boolean;
     onboarding_completed: boolean;
     onboarding_step: number;
     onboarding_profile: any
