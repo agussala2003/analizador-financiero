@@ -40,3 +40,10 @@ export interface PortfolioContextType {
     deleteAsset: (symbol: string) => Promise<void>;
     refreshPortfolio: () => Promise<void>;
 }
+
+export type HoldingWithMetrics = Holding & {
+  currentPrice: number;
+  marketValue: number;
+  pl: number;
+  plPercent: number;
+};

@@ -37,7 +37,7 @@ export default function DashboardPage() {
         if (portfolioLoadedRef.current || portfolioLoading || !holdings?.length) return;
         portfolioLoadedRef.current = true;
         const portfolioSymbols = holdings.map(h => h.symbol);
-        Promise.all(portfolioSymbols.map(symbol => addTicker(symbol, true)));
+        Promise.all(portfolioSymbols.map(symbol => addTicker(symbol, {})));
     }, [portfolioLoading, holdings, addTicker]);
 
     const assets: AssetData[] = useMemo(() => {
@@ -49,7 +49,7 @@ export default function DashboardPage() {
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!tickerInput) return;
-        await addTicker(tickerInput);
+        await addTicker(tickerInput, {});
         setTickerInput('');
     };
 

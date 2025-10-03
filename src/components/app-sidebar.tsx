@@ -28,7 +28,8 @@ import {
   LogIn, // <--- Importar ícono
   UserPlus,
   User,
-  Globe, // <--- Importar ícono
+  Globe,
+  PiggyBank, // <--- Importar ícono
 } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
 import { useConfig } from "../hooks/use-config";
@@ -47,7 +48,8 @@ const iconMap: { [key: string]: React.ComponentType<LucideProps> } = {
   MessageSquareHeart,
   Shield,
   User,
-  Globe
+  Globe,
+  PiggyBank
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

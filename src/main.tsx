@@ -20,6 +20,10 @@ import { PortfolioProvider } from './providers/portfolio-provider.tsx';
 import ProfilePage from './components/pages/profile-page.tsx';
 import RiskPremiumPage from './components/pages/risk-premium-page.tsx';
 import AssetDetailPage from './components/pages/asset-detail-page.tsx';
+import PortfolioPage from './components/pages/portfolio-page.tsx';
+import SuggestionsPage from './components/pages/suggestion-page.tsx';
+import AdminPage from './components/pages/admin-page.tsx';
+import RetirementCalculatorPage from './components/pages/retirement-calculator-page.tsx';
 
 
 const router = createBrowserRouter([
@@ -36,6 +40,10 @@ const router = createBrowserRouter([
       { path: "news", element: <NewsPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "risk-premium", element: <RiskPremiumPage /> },
+      { path: "portfolio", element: <PortfolioPage /> },
+      { path: "suggestions", element: <SuggestionsPage /> },
+      { path: "admin", element: <AdminPage /> },
+      { path: "retirement-calculator", element: <RetirementCalculatorPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

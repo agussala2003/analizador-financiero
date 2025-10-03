@@ -210,7 +210,8 @@
           { "to": "/portfolio", "label": "Portafolio", "icon": "LayoutDashboard", "requiresAuth": true },
           { "to": "/dividends", "label": "Dividendos", "icon": "Divide", "requiresAuth": true },
           { "to": "/risk-premium", "label": "Riesgo País", "icon": "Globe", "requiresAuth": true },
-          { "to": "/profile", "label": "Mi Perfil", "icon": "User", "requiresAuth": true }
+          { "to": "/profile", "label": "Mi Perfil", "icon": "User", "requiresAuth": true },
+          { "to": "/retirement-calculator", "label": "Calculadora de Retiro", "icon": "PiggyBank", "requiresAuth": true }
         ]
       },
       {
