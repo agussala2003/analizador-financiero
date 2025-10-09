@@ -2,9 +2,14 @@
 
 import { IndicatorConfig } from "../utils/financial";
 
-// Representa cualquier dato crudo que venga de la API
+/**
+ * Representa cualquier objeto de datos crudos recibido de la API de FMP.
+ */
 export type RawApiData = Record<string, any>;
 
+/**
+ * Calificación de un activo (rating).
+ */
 export interface AssetRating {
     rating: string;
     overallScore: number;
@@ -15,12 +20,33 @@ export interface AssetRating {
     priceToBookScore: number;
 }
 
+/**
+ * Representa un segmento de ingresos (por geografía o producto).
+ */
 export interface RevenueSegment {
     name: string;
     value: number;
 }
 
-// Representa los datos de un activo ya procesados y listos para usar en la UI
+/**
+ * Datos históricos de un activo para un día específico.
+ */
+export interface HistoricalHolding {
+    symbol: string;
+    date: string; // ISO date string
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    change: number;
+    changePercent: number;
+    vwap: number;
+}
+
+/**
+ * Representa la estructura completa y procesada de un activo financiero, lista para usar en la UI.
+ */
 export interface AssetData {
     symbol: string;
     companyName: string;
@@ -55,24 +81,13 @@ export interface AssetData {
     sharpeRatio: number | 'N/A';
     dcf: number | 'N/A';
     rating: AssetRating | null;
-    geographicRevenue: RevenueSegment[]; // <-- AÑADIR ESTA LÍNEA
-    productRevenue: RevenueSegment[];    // <-- AÑADIR ESTA LÍNEA
+    geographicRevenue: RevenueSegment[];
+    productRevenue: RevenueSegment[];
 }
 
-export interface HistoricalHolding {
-    symbol: string;
-    date: string; // ISO date string
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-    change: number;
-    changePercent: number;
-    vwap: number;
-}
-
-// Define la forma del contexto del Dashboard
+/**
+ * Define la estructura del contexto del Dashboard.
+ */
 export interface DashboardContextType {
     selectedTickers: string[];
     assetsData: Record<string, AssetData>;

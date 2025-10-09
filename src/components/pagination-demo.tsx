@@ -1,3 +1,5 @@
+// src/components/pagination-demo.tsx
+
 import {
   Pagination,
   PaginationContent,
@@ -7,12 +9,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "./ui/pagination";
+import { usePagination } from "../hooks/use-pagination"; // ✅ Importamos el nuevo hook
 
-type Props = {
+interface PaginationDemoProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  /** cantidad de páginas a mostrar alrededor de la actual (por cada lado) */
   siblingCount?: number;
 };
 
@@ -21,80 +23,51 @@ export default function PaginationDemo({
   totalPages,
   onPageChange,
   siblingCount = 1,
-}: Props) {
-  // helpers
-  const goto = (page: number) => {
-    if (page < 1 || page > totalPages || page === currentPage) return;
-    onPageChange(page);
+}: PaginationDemoProps) {
+  // ✅ Toda la lógica compleja ahora vive en el hook
+  const paginationRange = usePagination({ currentPage, totalPages, siblingCount });
+
+  const onNext = () => {
+    if (currentPage < totalPages) onPageChange(currentPage + 1);
   };
 
-  // decide qué páginas mostrar de forma compacta
-  const pages: (number | "ellipsis")[] = [];
+  const onPrevious = () => {
+    if (currentPage > 1) onPageChange(currentPage - 1);
+  };
 
-  // always show first
-  pages.push(1);
-
-  const left = Math.max(2, currentPage - siblingCount);
-  const right = Math.min(totalPages - 1, currentPage + siblingCount);
-
-  if (left > 2) {
-    pages.push("ellipsis");
+  // Si no hay páginas o solo hay una, no renderizamos nada
+  if (totalPages <= 1) {
+    return null;
   }
-
-  for (let p = left; p <= right; p++) {
-    pages.push(p);
-  }
-
-  if (right < totalPages - 1) {
-    pages.push("ellipsis");
-  }
-
-  if (totalPages > 1) pages.push(totalPages);
-
-  // small helper to render a compact button style (Tailwind)
-  const buttonClass = "px-2 py-1 rounded-md text-sm min-w-[36px]";
 
   return (
-    <div className="w-full flex justify-center">
-      <Pagination className="w-full max-w-[420px]">
-        <PaginationContent className="flex items-center gap-2 px-3 py-2 bg-transparent">
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => goto(currentPage === 1 ? 1 : currentPage - 1)}
-              className={`disabled:opacity-50 ${buttonClass}`}
-            />
-          </PaginationItem>
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious onClick={onPrevious} aria-disabled={currentPage === 1} />
+        </PaginationItem>
 
-          {pages.map((item, idx) =>
-            item === "ellipsis" ? (
-              <PaginationItem key={`e-${idx}`}>
-                <PaginationEllipsis className={`${buttonClass} pointer-events-none`} />
-              </PaginationItem>
-            ) : (
-              <PaginationItem key={item}>
-                <PaginationLink
-                  isActive={currentPage === item}
-                  onClick={() => goto(item)}
-                  className={`${buttonClass} ${
-                    currentPage === item ? "font-semibold" : "font-normal"
-                  }`}
-                >
-                  {item}
-                </PaginationLink>
-              </PaginationItem>
-            )
-          )}
+        {paginationRange.map((pageNumber, index) => {
+          if (pageNumber === '...') {
+            return <PaginationItem key={`dots-${index}`}><PaginationEllipsis /></PaginationItem>;
+          }
 
-          <PaginationItem>
-            <PaginationNext
-              onClick={() =>
-                goto(currentPage === totalPages ? totalPages : currentPage + 1)
-              }
-              className={`disabled:opacity-50 ${buttonClass}`}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    </div>
+          return (
+            <PaginationItem key={pageNumber}>
+              <PaginationLink
+                isActive={currentPage === pageNumber}
+                onClick={() => onPageChange(pageNumber as number)}
+              >
+                {pageNumber}
+              </PaginationLink>
+            </PaginationItem>
+          );
+        })}
+
+        <PaginationItem>
+          <PaginationNext onClick={onNext} aria-disabled={currentPage === totalPages} />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
   );
 }

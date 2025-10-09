@@ -1,52 +1,53 @@
+// src/utils/export-pdf.ts
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AssetData } from '../types/dashboard';
-import { Indicator, IndicatorConfig } from '../utils/financial';
+import { Indicator, IndicatorConfig } from './financial';
 
 // --- TIPOS Y INTERFACES ---
 type Theme = 'light' | 'dark' | 'system';
 
 interface PdfSection {
-  title: string;
-  head: string[][];
-  body: (string | number)[][];
-  metricKeys?: string[]; // Claves de las métricas para aplicar estilos
-  isCorrelation?: boolean;
-  percentageColumns?: number[]; // Índices de columnas que contienen porcentajes
+    title: string;
+    head: string[][];
+    body: (string | number)[][];
+    metricKeys?: string[];
+    isCorrelation?: boolean;
 }
 
 interface ExportOptions {
-  title: string;
-  subtitle: string;
-  sections: PdfSection[];
-  assets: AssetData[];
-  theme: Theme;
-  indicatorConfig: IndicatorConfig;
+    title: string;
+    subtitle: string;
+    sections: PdfSection[];
+    assets: AssetData[];
+    theme: Theme;
+    indicatorConfig: IndicatorConfig;
 }
 
-// --- FUNCIONES UTILITARIAS ---
+// --- LÓGICA DE ESTILOS Y FORMATO (Funciones internas del módulo) ---
 const resolveTheme = (theme: Theme): 'light' | 'dark' => {
-  if (theme === 'system') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  return theme;
+    if (theme === 'system') {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme;
 };
 
-// --- LÓGICA DE ESTILOS ---
 const getThemeStyles = (theme: Theme) => {
-  const resolvedTheme = resolveTheme(theme);
-  const isDark = resolvedTheme === 'dark';
-  return {
-    backgroundColor: isDark ? '#1C2135' : '#FFFFFF',
-    textColor: isDark ? [240, 241, 249] as [number, number, number] : [33, 41, 72] as [number, number, number],
-    mutedColor: isDark ? [160, 167, 200] as [number, number, number] : [122, 130, 163] as [number, number, number],
-    borderColor: isDark ? '#414A6E' : '#E1E4F2',
-    headerColor: isDark ? [137, 221, 255] as [number, number, number] : [83, 104, 225] as [number, number, number],
-    tableHeaderFill: isDark ? '#414A6E' : '#F1F5F9',
-  };
+    const resolvedTheme = resolveTheme(theme);
+    const isDark = resolvedTheme === 'dark';
+    return {
+        backgroundColor: isDark ? '#1C2135' : '#FFFFFF',
+        textColor: isDark ? [240, 241, 249] as [number, number, number] : [33, 41, 72] as [number, number, number],
+        mutedColor: isDark ? [160, 167, 200] as [number, number, number] : [122, 130, 163] as [number, number, number],
+        borderColor: isDark ? '#414A6E' : '#E1E4F2',
+        headerColor: isDark ? [137, 221, 255] as [number, number, number] : [83, 104, 225] as [number, number, number],
+        tableHeaderFill: isDark ? '#414A6E' : '#F1F5F9',
+    };
 };
 
 const getTrafficLightColor = (config: Indicator, value: number, theme: Theme): [number, number, number] | undefined => {
+
     const { green, yellow, lowerIsBetter } = config;
     const resolvedTheme = resolveTheme(theme);
     const isDark = resolvedTheme === 'dark';
@@ -69,6 +70,7 @@ const getTrafficLightColor = (config: Indicator, value: number, theme: Theme): [
 };
 
 const getCorrelationCellStyle = (value: number) => {
+
     const negColor = { h: 0, s: 90, l: 55 };
     const midColor = { h: 60, s: 25, l: 97 };
     const posColor = { h: 120, s: 80, l: 45 };
@@ -90,6 +92,7 @@ const getCorrelationCellStyle = (value: number) => {
 };
 
 const getPercentageColor = (value: number, theme: Theme): [number, number, number] => {
+
     const resolvedTheme = resolveTheme(theme);
     const isDark = resolvedTheme === 'dark';
     if (value >= 0) {
@@ -99,8 +102,6 @@ const getPercentageColor = (value: number, theme: Theme): [number, number, numbe
         return isDark ? [239, 68, 68] : [220, 38, 38]; // text-red-500 / text-red-600
     }
 };
-
-
 
 // --- FUNCIÓN PRINCIPAL DE EXPORTACIÓN ---
 export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicatorConfig }: ExportOptions) => {
@@ -121,7 +122,7 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
     doc.setFontSize(11);
     doc.setTextColor(styles.mutedColor[0], styles.mutedColor[1], styles.mutedColor[2]);
     doc.text(subtitle, 14, 30);
-    
+
     finalY = 35;
 
     sections.forEach(section => {
@@ -132,11 +133,11 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
         doc.text(section.title, 14, finalY + 10);
 
         // Procesar el cuerpo de la tabla para añadir estilos de color
-        const processedBody = section.body.map(row => 
+        const processedBody = section.body.map(row =>
             row.map(cell => {
                 const cellValue = String(cell);
                 const isPercentage = cellValue.includes('%') && cellValue !== 'N/A' && cellValue !== '-';
-                
+
                 if (isPercentage && !section.isCorrelation && !section.metricKeys) {
                     const numericValue = parseFloat(cellValue.replace('%', ''));
                     if (!isNaN(numericValue)) {
@@ -177,8 +178,8 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
 
                     if (config && !isNaN(value)) {
                         const color = getTrafficLightColor(config, value, theme);
-                        if(color) {
-                           data.cell.styles.textColor = color;
+                        if (color) {
+                            data.cell.styles.textColor = color;
                         }
                     }
                 }
@@ -199,7 +200,7 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
                 }
             }
         });
-        
+
         finalY = (doc as any).lastAutoTable.finalY;
     });
 
@@ -212,8 +213,7 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
         doc.text(text, 14, doc.internal.pageSize.height - 10);
         doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 35, doc.internal.pageSize.height - 10);
     }
-    
+
     const fileName = `${title.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
 };
-

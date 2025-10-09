@@ -1,7 +1,24 @@
-// src/lib/logger.js
+// src/lib/logger.ts
+
 import { supabase } from './supabase';
 
-export const logEvent = async (level: string, eventType: string, message: string, metadata = {} ) => {
+// ✅ 1. Definimos un tipo estricto para los niveles de log.
+// Esto evita errores de tipeo y habilita el autocompletado.
+type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
+
+/**
+ * Envía un evento de log a una función RPC de Supabase para su almacenamiento.
+ * * @param level - El nivel de severidad del log (INFO, WARN, ERROR, DEBUG).
+ * @param eventType - Un identificador único para el tipo de evento (ej: 'LOGIN_SUCCESS').
+ * @param message - Un mensaje descriptivo del evento.
+ * @param metadata - Un objeto opcional con datos adicionales en formato JSON.
+ */
+export const logEvent = async (
+  level: LogLevel, 
+  eventType: string, 
+  message: string, 
+  metadata: Record<string, any> = {}
+) => {
   try {
     const { error } = await supabase.rpc('log_event', {
       p_level: level,
@@ -9,18 +26,35 @@ export const logEvent = async (level: string, eventType: string, message: string
       p_message: message,
       p_metadata: metadata
     });
+
     if (error) {
-      console.error('Failed to log event:', error); // Log a la consola si falla el logging
+      // ✅ 2. Si falla el logging, lo mostramos como una advertencia en la consola
+      // para no interrumpir al usuario pero sí notificar al desarrollador.
+      console.warn('Error al enviar el log a Supabase:', error);
     }
   } catch (e) {
-    console.error('Error in logger:', e);
+    console.error('Error inesperado en el servicio de logger:', e);
   }
 };
 
-// Funciones helpers para no escribir strings a mano
+/**
+ * Objeto `logger` con métodos de ayuda para registrar eventos con diferentes niveles de severidad.
+ * Proporciona una API simple y consistente para el logging en toda la aplicación.
+ */
 export const logger = {
-  info: (eventType: string, message: string, metadata?: object) => logEvent('INFO', eventType, message, metadata),
-  warn:  (eventType: string, message: string, metadata?: object) => logEvent('WARN', eventType, message, metadata),
-  error:  (eventType: string, message: string, metadata?: object) => logEvent('ERROR', eventType, message, metadata),
-  debug:  (eventType: string, message: string, metadata?: object) => logEvent('DEBUG', eventType, message, metadata),
+  /** Registra un evento informativo. */
+  info: (eventType: string, message: string, metadata?: Record<string, any>) => 
+    logEvent('INFO', eventType, message, metadata),
+
+  /** Registra una advertencia. */
+  warn: (eventType: string, message: string, metadata?: Record<string, any>) => 
+    logEvent('WARN', eventType, message, metadata),
+  
+  /** Registra un error. */
+  error: (eventType: string, message: string, metadata?: Record<string, any>) => 
+    logEvent('ERROR', eventType, message, metadata),
+
+  /** Registra un evento para depuración (generalmente para desarrollo). */
+  debug: (eventType: string, message: string, metadata?: Record<string, any>) => 
+    logEvent('DEBUG', eventType, message, metadata),
 };

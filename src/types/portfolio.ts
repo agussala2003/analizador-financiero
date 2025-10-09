@@ -1,23 +1,32 @@
 // src/types/portfolio.ts
 
+/**
+ * Representa una única transacción de compra o venta.
+ */
 export interface Transaction {
     id: number;
     user_id: string;
     symbol: string;
     quantity: number;
     purchase_price: number;
-    purchase_date: string; // Las fechas de Supabase suelen venir como strings ISO
+    purchase_date: string; // Fecha en formato ISO string
     transaction_type: 'buy' | 'sell';
 }
 
-// Define la forma de los datos de un activo en el portafolio.
-// Es un subconjunto de AssetData, solo con lo necesario para el portafolio.
+/**
+ * Datos de mercado relevantes para un activo dentro del portafolio.
+ * Es un subconjunto de `AssetData` para optimizar las cargas.
+ */
 export interface PortfolioAssetData {
     currentPrice?: number;
-    // Puedes añadir más campos de AssetData si los necesitas aquí
+    dayChange?: number;
+    beta?: number;
+    sharpeRatio?: number;
 }
 
-// Define la forma de un activo consolidado (holding) en el portafolio.
+/**
+ * Representa una posición consolidada (tenencia) de un activo en el portafolio.
+ */
 export interface Holding {
     symbol: string;
     quantity: number;
@@ -26,7 +35,19 @@ export interface Holding {
     assetData: PortfolioAssetData;
 }
 
-// Define el valor que el contexto del portafolio proveerá.
+/**
+ * Extiende `Holding` con métricas calculadas para la UI.
+ */
+export type HoldingWithMetrics = Holding & {
+  currentPrice: number;
+  marketValue: number;
+  pl: number;
+  plPercent: number;
+};
+
+/**
+ * Define la estructura del contexto del Portafolio.
+ */
 export interface PortfolioContextType {
     transactions: Transaction[];
     holdings: Holding[];
@@ -40,10 +61,3 @@ export interface PortfolioContextType {
     deleteAsset: (symbol: string) => Promise<void>;
     refreshPortfolio: () => Promise<void>;
 }
-
-export type HoldingWithMetrics = Holding & {
-  currentPrice: number;
-  marketValue: number;
-  pl: number;
-  plPercent: number;
-};

@@ -1,3 +1,5 @@
+// src/utils/financial.ts
+
 import { RawApiData } from "../types/dashboard";
 
 export interface Indicator {
@@ -8,7 +10,6 @@ export interface Indicator {
     green: number;
     yellow: number;
     asPercent?: boolean;
-    isPercentage?: boolean; // Alias for asPercent
     isLargeNumber?: boolean;
     explanation: string;
 }
@@ -17,6 +18,10 @@ export interface IndicatorConfig {
     [key: string]: Indicator;
 }
 
+/**
+ * Configuración central para todos los indicadores financieros de la aplicación.
+ * Define cómo se obtienen, calculan, evalúan y explican.
+ */
 export const indicatorConfig = {
   // ——— Valoración
   PER: {
@@ -260,67 +265,4 @@ export const indicatorConfig = {
     lowerIsBetter: false, green: 50, yellow: 25, asPercent: true,
     explanation: 'Mide cuánto subió el precio desde el mínimo de los últimos 12 meses. Un valor alto refleja recuperación y posible cambio de tendencia tras una caída fuerte.',
   },
-};
-
-// --- FUNCIONES DE UTILIDAD (MIGRADAS A TYPESCRIPT) ---
-
-export const getFirstPresent = (obj: RawApiData, fields: string[] = []): number | null => {
-    for (const f of fields) {
-        if (Object.prototype.hasOwnProperty.call(obj, f)) {
-            const num = Number(obj[f]);
-            if (num !== null && Number.isFinite(num)) return num;
-        }
-    }
-    return null;
-};
-
-export const RISK_FREE_RATE: number = 0.02;
-
-export const calculateMean = (data: number[]): number => data.reduce((a, b) => a + b, 0) / data.length;
-
-export const calculateStdDev = (data: number[]): number => {
-    if (data.length < 2) return 0;
-    const mean = calculateMean(data);
-    const variance = data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / (data.length - 1);
-    return Math.sqrt(variance);
-};
-
-export const calculateSharpeRatio = (returns: number[]): number | 'N/A' => {
-    if (returns.length < 2) return 'N/A';
-    const meanReturn = calculateMean(returns);
-    const stdDevReturns = calculateStdDev(returns);
-    if (stdDevReturns === 0) return 'N/A';
-    const annualizedReturn = meanReturn * 252;
-    const annualizedVolatility = stdDevReturns * Math.sqrt(252);
-    const sharpe = (annualizedReturn - RISK_FREE_RATE) / annualizedVolatility;
-    return sharpe;
-};
-
-export const findCloseByDate = (historyAsc: { date: string; close: number }[], targetDateISO: string): number | null => {
-    const t = new Date(targetDateISO).getTime();
-    for (let i = historyAsc.length - 1; i >= 0; i--) {
-        const ti = new Date(historyAsc[i].date).getTime();
-        if (ti <= t && Number.isFinite(historyAsc[i].close)) return historyAsc[i].close;
-    }
-    return null;
-};
-
-export const computeStdDevPct = (returns: number[]): number | null => {
-    if (!Array.isArray(returns) || returns.length < 2) return null;
-    const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
-    const variance = returns.reduce((acc, r) => acc + Math.pow(r - mean, 2), 0) / (returns.length - 1);
-    const sd = Math.sqrt(variance);
-    return sd * 100;
-};
-
-export const computeSharpe = (returns: number[], riskFreeAnnual: number = RISK_FREE_RATE): number | null => {
-    if (!Array.isArray(returns) || returns.length < 2) return null;
-    const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
-    const sdPct = computeStdDevPct(returns);
-    if (typeof sdPct !== 'number' || sdPct === 0) return null;
-
-    const sdDaily = sdPct / 100;
-    const meanAnnual = mean * 252;
-    const sdAnnual = sdDaily * Math.sqrt(252);
-    return (sdAnnual > 0) ? (meanAnnual - riskFreeAnnual) / sdAnnual : null;
 };

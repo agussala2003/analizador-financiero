@@ -12,8 +12,9 @@ import { Toaster } from "sonner";
 import { ModeToggle } from "./components/mode-toggle";
 import GenericBreadcrumb from "./components/breadcrumb-demo";
 import ActivesBar from "./components/actives-bar";
+import React from "react";
 
-function App() {
+export default function App() {
   return (
     <SidebarProvider>
       <Toaster position="top-right" richColors />
@@ -32,13 +33,13 @@ function App() {
           </header>
 
           {/* Área de contenido con scroll interno */}
-          <main className="flex-1">
+          <main className="flex-1 overflow-y-auto">
+            <React.Suspense fallback={<div>Cargando...</div>}>
             <Outlet />
+          </React.Suspense>
           </main>
         </SidebarInset>
       </ThemeProvider>
     </SidebarProvider>
   );
 }
-
-export default App;

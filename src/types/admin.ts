@@ -1,9 +1,14 @@
+// src/types/admin.ts
 import { Profile } from "./auth";
 
-// Reutilizamos el tipo Profile para los usuarios en el panel de admin.
+/**
+ * Alias para el perfil de usuario cuando se visualiza en el panel de administración.
+ */
 export type AdminUser = Profile;
 
-// Definimos la estructura de una entrada de log.
+/**
+ * Define la estructura de una entrada de log del sistema.
+ */
 export interface AdminLog {
     id: number;
     timestamp: string;

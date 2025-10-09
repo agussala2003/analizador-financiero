@@ -1,3 +1,8 @@
+// src/types/news.ts
+
+/**
+ * Representa un artículo de noticia financiera.
+ */
 export interface NewsItem {
   symbol: string;
   newsTitle: string;
@@ -10,4 +15,4 @@ export interface NewsItem {
   previousGrade?: string;
   priceTarget?: number;
   analystName?: string;
-};
+}
