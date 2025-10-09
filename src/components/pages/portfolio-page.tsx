@@ -23,7 +23,7 @@ const PortfolioSkeleton = () => (
       </div>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {[...Array(4)].map((_, i) => (
+      {Array.from({ length: 4 }).map((_, i) => (
         <Skeleton key={i} className="h-24 w-full" />
       ))}
     </div>
@@ -34,11 +34,15 @@ const PortfolioSkeleton = () => (
     <Skeleton className="h-96 w-full" />
   </div>
 );
-
 export default function PortfolioPage() {
   const { holdings, transactions, totalPerformance, loading, deleteAsset, portfolioData } = usePortfolio();
 
-  const [addModalInfo, setAddModalInfo] = useState<{ isOpen: boolean; ticker: string | null; price: number | null }>({
+  interface AddModalInfo {
+    isOpen: boolean;
+    ticker: string | null;
+    price: number | null;
+  }
+  const [addModalInfo, setAddModalInfo] = useState<AddModalInfo>({
     isOpen: false,
     ticker: null,
     price: null,
@@ -54,8 +58,11 @@ export default function PortfolioPage() {
     try {
       await deleteAsset(symbol);
       toast.success(`Activo ${symbol} eliminado correctamente.`);
-    } catch (error: any) {
-      toast.error('Error al eliminar el activo.', { description: error.message });
+    } catch (error: unknown) {
+      const msg = (typeof error === 'object' && error && 'message' in error && typeof (error as { message?: unknown }).message === 'string')
+        ? (error as { message: string }).message
+        : JSON.stringify(error);
+      toast.error('Error al eliminar el activo.', { description: msg });
     }
   };
 
@@ -63,7 +70,7 @@ export default function PortfolioPage() {
   const holdingsWithMetrics = useMemo(() => {
     if (loading || !holdings) return [];
     return holdings.map((h) => {
-      const currentPrice = portfolioData[h.symbol]?.currentPrice || 0;
+  const currentPrice = portfolioData[h.symbol]?.currentPrice ?? 0;
       const marketValue = h.quantity * currentPrice;
       const pl = marketValue - h.totalCost;
       const plPercent = h.totalCost > 0 ? (pl / h.totalCost) * 100 : 0;
@@ -99,7 +106,7 @@ export default function PortfolioPage() {
         <PortfolioCharts holdings={holdings} />
         <PortfolioView
           holdings={holdingsWithMetrics}
-          onDeleteAsset={handleDeleteAsset}
+          onDeleteAsset={(symbol) => { void handleDeleteAsset(symbol); }}
           onAddMore={handleOpenAddModal}
           onSell={handleOpenSellModal}
         />

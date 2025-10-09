@@ -17,7 +17,7 @@ export const logEvent = async (
   level: LogLevel, 
   eventType: string, 
   message: string, 
-  metadata: Record<string, any> = {}
+  metadata: Record<string, unknown> = {}
 ) => {
   try {
     const { error } = await supabase.rpc('log_event', {
@@ -43,18 +43,18 @@ export const logEvent = async (
  */
 export const logger = {
   /** Registra un evento informativo. */
-  info: (eventType: string, message: string, metadata?: Record<string, any>) => 
+  info: (eventType: string, message: string, metadata?: Record<string, unknown>) => 
     logEvent('INFO', eventType, message, metadata),
 
   /** Registra una advertencia. */
-  warn: (eventType: string, message: string, metadata?: Record<string, any>) => 
+  warn: (eventType: string, message: string, metadata?: Record<string, unknown>) => 
     logEvent('WARN', eventType, message, metadata),
   
   /** Registra un error. */
-  error: (eventType: string, message: string, metadata?: Record<string, any>) => 
+  error: (eventType: string, message: string, metadata?: Record<string, unknown>) => 
     logEvent('ERROR', eventType, message, metadata),
 
   /** Registra un evento para depuración (generalmente para desarrollo). */
-  debug: (eventType: string, message: string, metadata?: Record<string, any>) => 
+  debug: (eventType: string, message: string, metadata?: Record<string, unknown>) => 
     logEvent('DEBUG', eventType, message, metadata),
 };

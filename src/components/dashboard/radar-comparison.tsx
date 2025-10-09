@@ -51,7 +51,7 @@ export function RadarComparison({ assets }: RadarComparisonProps) {
         setVisibleAssets(prev => {
             const next = { ...prev } as Record<string, boolean>;
             assets.forEach(a => {
-                if (next[a.symbol] === undefined) next[a.symbol] = true;
+                next[a.symbol] ??= true;
             });
             Object.keys(next).forEach(k => {
                 if (!assets.some(a => a.symbol === k)) delete next[k];
@@ -78,8 +78,9 @@ export function RadarComparison({ assets }: RadarComparisonProps) {
         });
     }, [assets]);
     
-    const chartConfig = React.useMemo(() => {
-        const config: any = {};
+    type ChartConfig = Record<string, { label: string }>;
+    const chartConfig: ChartConfig = React.useMemo(() => {
+        const config: ChartConfig = {};
         assets.forEach(asset => {
             config[asset.symbol] = { label: asset.symbol };
         });
@@ -136,24 +137,35 @@ export function RadarComparison({ assets }: RadarComparisonProps) {
                         <PolarRadiusAxis angle={30} domain={[0, 1]} tick={false} axisLine={false} />
                         <ChartTooltip
                             cursor={{ strokeDasharray: '3 3' }}
-                            content={({ payload, label }) => (
-                                <Card className="p-2 text-sm">
-                                    <CardHeader className="p-1 font-bold">{label}</CardHeader>
-                                    <CardContent className="p-1 space-y-1">
-                                        {payload?.map((item, index) => (
-                                            <div key={index} className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                                                <span>{item.name}: </span>
-                                                <span className="font-semibold">
-                                                    {typeof item.payload[`${item.name}_original`] === 'number'
-                                                        ? (item.payload[`${item.name}_original`] as number).toFixed(2)
-                                                        : 'N/A'}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-                            )}
+                            content={({ payload, label }: { payload?: unknown[]; label?: React.ReactNode }) => {
+                                interface RadarTooltipItem {
+                                    name?: string;
+                                    color?: string;
+                                    payload?: Record<string, unknown>;
+                                }
+                                return (
+                                    <Card className="p-2 text-sm">
+                                        <CardHeader className="p-1 font-bold">{label}</CardHeader>
+                                        <CardContent className="p-1 space-y-1">
+                                            {Array.isArray(payload) && payload.map((itemRaw, index) => {
+                                                const item = itemRaw as RadarTooltipItem;
+                                                const name = typeof item.name === 'string' ? item.name : '';
+                                                const color = typeof item.color === 'string' ? item.color : undefined;
+                                                const original = typeof item.payload?.[`${name}_original`] === 'number'
+                                                    ? (item.payload?.[`${name}_original`] as number).toFixed(2)
+                                                    : 'N/A';
+                                                return (
+                                                    <div key={index} className="flex items-center gap-2">
+                                                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color ?? undefined }} />
+                                                        <span>{name}: </span>
+                                                        <span className="font-semibold">{original}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </CardContent>
+                                    </Card>
+                                );
+                            }}
                         />
                          <ChartLegend />
                         {assets.map((asset, index) => {

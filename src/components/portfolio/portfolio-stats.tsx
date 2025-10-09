@@ -37,22 +37,22 @@ export function PortfolioStats({ holdings, totalPerformance, portfolioData }: { 
         let totalInvested = 0, currentValue = 0, dailyPL = 0, weightedBetaSum = 0, weightedSharpeSum = 0;
 
         const performers = holdings.map(holding => {
-            const assetData = portfolioData[holding.symbol] as any; // Usamos 'any' para acceder a dayChange, etc.
-            const currentPrice = assetData?.currentPrice || 0;
-            const dayChange = assetData?.dayChange || 0;
+            const assetData: PortfolioAssetData | undefined = portfolioData[holding.symbol];
+            const currentPrice = assetData?.currentPrice ?? 0;
+            const dayChange = assetData?.dayChange ?? 0;
 
             const marketValue = holding.quantity * currentPrice;
             const pl = marketValue - holding.totalCost;
             const plPercent = holding.totalCost > 0 ? (pl / holding.totalCost) * 100 : 0;
-            
-            if(isFinite(currentPrice) && isFinite(dayChange)) {
+
+            if (isFinite(currentPrice) && isFinite(dayChange)) {
                 const previousDayPrice = currentPrice / (1 + (dayChange / 100));
                 dailyPL += holding.quantity * (currentPrice - previousDayPrice);
             }
 
             totalInvested += holding.totalCost;
             currentValue += marketValue;
-            
+
             if (typeof assetData?.beta === 'number') weightedBetaSum += assetData.beta * marketValue;
             if (typeof assetData?.sharpeRatio === 'number') weightedSharpeSum += assetData.sharpeRatio * marketValue;
 

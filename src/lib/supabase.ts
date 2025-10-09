@@ -3,8 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // 1. Obtenemos las variables de entorno.
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 // 2. Verificamos que las variables existan.
 // Si no están definidas, es un error crítico de configuración y la app no puede funcionar.

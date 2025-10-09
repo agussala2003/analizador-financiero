@@ -38,7 +38,7 @@ import {
   Tooltip,
 } from "recharts";
 
-const AssetDetailSkeleton = () => (
+const AssetDetailSkeleton: React.FC = () => (
   <div className="space-y-8 container px-4 py-10 mx-auto sm:px-6 lg:px-8">
     <Skeleton className="h-8 w-32 rounded-md" />
     <div className="flex flex-col sm:flex-row gap-6 items-start">
@@ -52,7 +52,7 @@ const AssetDetailSkeleton = () => (
     <Card>
       <CardHeader>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[...Array(6)].map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full rounded-md" />
           ))}
         </div>
@@ -67,20 +67,17 @@ const AssetDetailSkeleton = () => (
   </div>
 );
 
-const RatingScorecard = ({
-  rating,
-  currentPrice,
-  dcf,
-}: {
+interface RatingScorecardProps {
   rating: AssetRating | null;
   currentPrice: number;
   dcf: number | "N/A";
-}) => {
+}
+const RatingScorecard: React.FC<RatingScorecardProps> = ({ rating, currentPrice, dcf }) => {
   if (!rating) return null;
 
   const scoreToStars = (score: number) => (
     <div className="flex">
-      {[...Array(5)].map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
           className={`w-4 h-4 ${
@@ -176,10 +173,21 @@ const RatingScorecard = ({
   );
 };
 
-const RevenueSegmentationCharts = ({ asset }: { asset: AssetData }) => {
+interface RevenueSegmentationChartsProps {
+  asset: AssetData;
+}
+const RevenueSegmentationCharts: React.FC<RevenueSegmentationChartsProps> = ({ asset }) => {
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AF19FF", "#FF4560"];
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  interface PieLabelProps {
+    cx: number;
+    cy: number;
+    midAngle: number;
+    innerRadius: number;
+    outerRadius: number;
+    percent: number;
+  }
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelProps) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -215,14 +223,14 @@ const RevenueSegmentationCharts = ({ asset }: { asset: AssetData }) => {
             <ResponsiveContainer width="100%" height="100%">
               <RechartsPieChart>
                 <Pie
-                  data={asset.geographicRevenue}
+                  data={asset.geographicRevenue as { name: string; value: number }[]}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
                   labelLine={false}
-                  label={renderCustomizedLabel}
+                  label={renderCustomizedLabel as unknown as import('recharts').PieLabel}
                 >
                   {asset.geographicRevenue.map((_entry, index) => (
                     <Cell key={`cell-geo-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -252,14 +260,14 @@ const RevenueSegmentationCharts = ({ asset }: { asset: AssetData }) => {
             <ResponsiveContainer width="100%" height="100%">
               <RechartsPieChart>
                 <Pie
-                  data={asset.productRevenue}
+                  data={asset.productRevenue as { name: string; value: number }[]}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
                   labelLine={false}
-                  label={renderCustomizedLabel}
+                  label={renderCustomizedLabel as unknown as import('recharts').PieLabel}
                 >
                   {asset.productRevenue.map((_entry, index) => (
                     <Cell key={`cell-prod-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -281,7 +289,11 @@ const RevenueSegmentationCharts = ({ asset }: { asset: AssetData }) => {
   );
 };
 
-const KeyMetric = ({ label, value }: { label: string; value: React.ReactNode }) => (
+interface KeyMetricProps {
+  label: string;
+  value: React.ReactNode;
+}
+const KeyMetric: React.FC<KeyMetricProps> = ({ label, value }) => (
   <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
     <p className="text-xs text-muted-foreground font-medium">{label}</p>
     <p className="text-base font-bold text-foreground min-h-6 flex items-center justify-center sm:justify-start">
@@ -290,7 +302,12 @@ const KeyMetric = ({ label, value }: { label: string; value: React.ReactNode }) 
   </div>
 );
 
-const InfoItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) => (
+interface InfoItemProps {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+}
+const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value }) => (
   <div className="flex items-start gap-3">
     <div className="text-primary mt-0.5 flex-shrink-0">{icon}</div>
     <div className="min-w-0">
@@ -300,9 +317,9 @@ const InfoItem = ({ icon, label, value }: { icon: React.ReactNode; label: string
   </div>
 );
 
-const formatLargeNumber = (num: number | string) => {
+const formatLargeNumber = (num: number | string): string => {
   const n = Number(num);
-  if (isNaN(n)) return <span className="text-muted-foreground">N/A</span>;
+  if (isNaN(n)) return "N/A";
   if (Math.abs(n) >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
   if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
   if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
@@ -315,7 +332,7 @@ export default function AssetDetailPage() {
 
   useEffect(() => {
   if (symbol && !assetsData[symbol]) {
-    addTicker(symbol, { addToSelected: false }); // 👈 ¡Clave!
+    void addTicker(symbol, { addToSelected: false }); // 👈 ¡Clave!
   }
 }, [symbol, assetsData, addTicker]);
 
@@ -409,11 +426,11 @@ export default function AssetDetailPage() {
           <KeyMetric label="Market Cap" value={`$${formatLargeNumber(asset.marketCap)}`} />
           <KeyMetric label="Volumen" value={formatLargeNumber(asset.volume)} />
           <KeyMetric label="Vol. Promedio" value={formatLargeNumber(asset.averageVolume)} />
-          <KeyMetric label="Beta" value={asset.beta ? asset.beta.toFixed(2) : <span className="text-muted-foreground">N/A</span>} />
-          <KeyMetric label="Rango 52 Semanas" value={asset.range || <span className="text-muted-foreground">N/A</span>} />
+          <KeyMetric label="Beta" value={typeof asset.beta === 'number' ? asset.beta.toFixed(2) : "N/A"} />
+          <KeyMetric label="Rango 52 Semanas" value={typeof asset.range === 'string' ? asset.range : "N/A"} />
           <KeyMetric
             label="Último Dividendo"
-            value={asset.lastDividend > 0 ? `$${asset.lastDividend.toFixed(2)}` : <span className="text-muted-foreground">N/A</span>}
+            value={typeof asset.lastDividend === 'number' && asset.lastDividend > 0 ? `$${asset.lastDividend.toFixed(2)}` : "N/A"}
           />
         </CardContent>
       </Card>
@@ -451,7 +468,7 @@ export default function AssetDetailPage() {
                   <InfoItem
                     icon={<Users className="w-5 h-5" />}
                     label="Empleados"
-                    value={asset.employees ? formatLargeNumber(asset.employees) : "N/A"}
+                    value={typeof asset.employees === 'number' ? formatLargeNumber(asset.employees) : "N/A"}
                   />
                   <InfoItem icon={<Globe className="w-5 h-5" />} label="País" value={asset.country || "N/A"} />
                   <InfoItem
@@ -500,7 +517,7 @@ export default function AssetDetailPage() {
                         const value = asset.data?.[key];
                         const displayValue =
                           typeof value === "number"
-                            ? `${value.toFixed(2)}${config?.asPercent ? "%" : ""}`
+                            ? `${value.toFixed(2)}${(config && typeof config === "object" && "asPercent" in config && Boolean((config as { asPercent?: boolean }).asPercent)) ? "%" : ""}`
                             : "N/A";
                         return (
                           <li

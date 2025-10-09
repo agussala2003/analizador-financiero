@@ -14,7 +14,7 @@ import { ListFilter, Newspaper, X } from "lucide-react";
 import PaginationDemo from "../pagination-demo";
 
 const NewsCard = ({ news, index }: { news: NewsItem; index: number }) => {
-    const company = news.gradingCompany || news.analystCompany || 'N/A';
+    const company = news.gradingCompany ?? news.analystCompany ?? 'N/A';
 
     const formattedDate = new Date(news.publishedDate).toLocaleString('es-AR', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
@@ -63,7 +63,7 @@ const NewsCard = ({ news, index }: { news: NewsItem; index: number }) => {
 // Un esqueleto de carga que imita la estructura de las tarjetas para una mejor experiencia.
 const CardSkeleton = () => (
     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="flex flex-col h-full">
                 <CardHeader>
                     <div className="flex items-start justify-between">
@@ -108,28 +108,50 @@ export default function NewsPage() {
             setCurrentPage(1);
             const CACHE_KEY = 'news_page';
             try {
-                const { data: cached, error: cacheError } = await supabase.from('asset_data_cache').select('data, last_updated_at').eq('symbol', CACHE_KEY).single();
-                if (cacheError && cacheError.code !== 'PGRST116') throw cacheError;
+                const response = await supabase.from('asset_data_cache').select('data, last_updated_at').eq('symbol', CACHE_KEY).single();
+                const cached = response.data as { data: NewsItem[]; last_updated_at: string } | null;
+                const cacheError = response.error as { code?: string; message?: string } | null;
+                if (cacheError && cacheError.code !== 'PGRST116') throw new Error(typeof cacheError === 'object' && cacheError && 'message' in cacheError && typeof (cacheError as { message?: unknown }).message === 'string' ? (cacheError as { message: string }).message : JSON.stringify(cacheError));
                 const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
                 if (cached && new Date(cached.last_updated_at) > sixHoursAgo) {
-                    setNews(cached.data || []);
+                    setNews(Array.isArray(cached.data) ? cached.data : []);
                     return;
                 }
-                const limit = config.news.defaultLimit;
+                const limit: number = Number(config.news.defaultLimit) || 20;
                 const endpoints = [`${config.api.fmpProxyEndpoints.newsPriceTarget}?page=0&limit=${limit}`, `${config.api.fmpProxyEndpoints.newsGrades}?page=0&limit=${limit}`];
                 const promises = endpoints.map(endpointPath => supabase.functions.invoke('fmp-proxy', { body: { endpointPath } }));
-                const results = await Promise.all(promises);
-                const errors = results.map(res => res.error).filter(Boolean);
-                if (errors.length > 0) throw new Error(errors.map(e => e.message).join(', '));
-                const combinedData: NewsItem[] = results.flatMap(res => res.data || []);
-                combinedData.sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime());
-                setNews(combinedData);
-                await supabase.from('asset_data_cache').upsert({ symbol: CACHE_KEY, data: combinedData, last_updated_at: new Date().toISOString() });
-            } catch (error: any) {
-                logger.error("NEWS_FETCH_FAILED", error.message);
-                const { data: cachedFallback } = await supabase.from('asset_data_cache').select('data').eq('symbol', CACHE_KEY).single();
-                if (cachedFallback?.data) {
-                    setNews(cachedFallback.data);
+                const results: { data?: unknown; error?: { code?: string; message?: string } | null }[] = await Promise.all(promises);
+                const errors: { code?: string; message?: string }[] = results
+                    .map(res => (res && typeof res === 'object' && 'error' in res && res.error ? res.error as { code?: string; message?: string } : null))
+                    .filter((e): e is { code?: string; message?: string } => Boolean(e));
+                if (errors.length > 0) throw new Error(errors.map(e => (typeof e === 'object' && e && 'message' in e && typeof (e as { message?: unknown }).message === 'string' ? (e as { message: string }).message : JSON.stringify(e))).join(', '));
+                                                function isNewsItem(obj: unknown): obj is NewsItem {
+                                                    if (!obj || typeof obj !== 'object') return false;
+                                                    const o = obj as Record<string, unknown>;
+                                                    return (
+                                                        typeof o.newsURL === 'string' &&
+                                                        typeof o.newsTitle === 'string' &&
+                                                        typeof o.publishedDate === 'string' &&
+                                                        typeof o.symbol === 'string'
+                                                    );
+                                                }
+                                const combinedData: NewsItem[] = results.flatMap(res =>
+                                    (res && typeof res === 'object' && 'data' in res && Array.isArray(res.data)
+                                        ? res.data.filter(isNewsItem)
+                                        : [])
+                                );
+                                combinedData.sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime());
+                                setNews(combinedData);
+                                await supabase.from('asset_data_cache').upsert({ symbol: CACHE_KEY, data: combinedData, last_updated_at: new Date().toISOString() });
+            } catch (error: unknown) {
+                const msg = (typeof error === 'object' && error && 'message' in error && typeof (error as { message?: unknown }).message === 'string')
+                  ? (error as { message: string }).message
+                  : JSON.stringify(error);
+                void logger.error("NEWS_FETCH_FAILED", msg);
+                const fallbackResp = await supabase.from('asset_data_cache').select('data').eq('symbol', CACHE_KEY).single();
+                const cachedFallback = fallbackResp.data as { data?: unknown } | null;
+                if (cachedFallback && Array.isArray(cachedFallback.data)) {
+                    setNews(cachedFallback.data as NewsItem[]);
                     toast.warning("No se pudieron actualizar las noticias. Mostrando la última versión disponible.");
                 } else {
                     toast.error("Ocurrió un error al obtener las noticias.");
@@ -139,25 +161,26 @@ export default function NewsPage() {
                 setLoading(false);
             }
         };
-        fetchNews();
+        void fetchNews();
     }, [config]);
 
     const filteredNews = useMemo(() => {
         return news.filter(item => {
             const symbolMatch = symbolFilter ? item.symbol.toLowerCase().includes(symbolFilter.toLowerCase()) : true;
-            const company = item.gradingCompany || item.analystCompany || '';
+            const company = item.gradingCompany ?? item.analystCompany ?? '';
             const companyMatch = companyFilter ? company.toLowerCase().includes(companyFilter.toLowerCase()) : true;
             return symbolMatch && companyMatch;
         });
     }, [news, symbolFilter, companyFilter]);
     
     const currentItems = React.useMemo(() => {
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+        const pageSize = typeof itemsPerPage === 'number' ? itemsPerPage : Number(itemsPerPage) || 20;
+        const indexOfLastItem = currentPage * pageSize;
+        const indexOfFirstItem = indexOfLastItem - pageSize;
         return filteredNews.slice(indexOfFirstItem, indexOfLastItem);
     }, [filteredNews, currentPage, itemsPerPage]);
 
-    const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredNews.length / (typeof itemsPerPage === 'number' ? itemsPerPage : Number(itemsPerPage) || 20));
 
     const handlePageChange = (pageNumber: number) => {
         setCurrentPage(pageNumber);

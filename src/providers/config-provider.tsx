@@ -12,6 +12,7 @@ const initialConfig = new Proxy({}, {
   }
 }) as Config;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const ConfigContext = createContext<Config>(initialConfig);
 
 /**

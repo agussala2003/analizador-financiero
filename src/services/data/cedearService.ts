@@ -16,16 +16,16 @@ export const fetchCedearRatios = async (): Promise<Record<string, number>> => {
     }
 
     // Convertimos el array de objetos en un mapa para un acceso más eficiente (ej: ratios['AAPL'])
-    const ratiosMap = data.reduce((acc, item) => {
+    const ratiosMap = data.reduce((acc: Record<string, number>, item: { symbol: string; ratio: number }) => {
       acc[item.symbol] = item.ratio;
       return acc;
-    }, {} as Record<string, number>);
-    
+    }, {});
+
     return ratiosMap;
 
-  } catch (err: any) {
-    logger.error('CEDEAR_RATIOS_FETCH_FAILED', 'No se pudieron obtener los ratios de CEDEARs.', {
-      errorMessage: err.message,
+  } catch (err) {
+    await logger.error('CEDEAR_RATIOS_FETCH_FAILED', 'No se pudieron obtener los ratios de CEDEARs.', {
+      errorMessage: (err as Error).message,
     });
     // Devolvemos un objeto vacío en caso de error para no romper la aplicación.
     return {};

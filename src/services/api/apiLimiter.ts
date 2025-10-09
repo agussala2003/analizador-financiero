@@ -6,6 +6,13 @@ import { User } from '@supabase/supabase-js';
 import { Profile } from '../../types/auth';
 import { Config, RoleLimits } from '../../types/config';
 
+// Tipo específico para los datos que obtenemos de la base de datos
+interface DbProfileData {
+  api_calls_made: number | null;
+  last_api_call_date: string | null;
+  role: Profile['role'] | null;
+}
+
 /**
  * Verifica si el usuario actual puede realizar una llamada a la API y actualiza su contador.
  * @param user - El objeto de usuario de Supabase.
@@ -30,19 +37,22 @@ export const checkApiLimit = async (
     .eq('id', user.id)
     .single();
 
-  if (profileError) {
+  if (profileError || !dbProfile) {
     toast.error('No se pudo verificar el límite de uso de la API.');
     console.error('API Limit Check Error:', profileError);
     return false;
   }
 
-  const role = dbProfile.role || profile.role;
+  // Garantizar que dbProfile tenga el tipo correcto
+  const typedDbProfile = dbProfile as DbProfileData;
+  
+  const role = typedDbProfile.role ?? profile.role;
   const limit = config.plans.roleLimits[role as keyof RoleLimits] ?? config.plans.roleLimits.basico;
 
-  let calls = dbProfile.api_calls_made ?? 0;
+  let calls = typedDbProfile.api_calls_made ?? 0;
   
   // Si la última llamada fue en un día anterior, reiniciamos el contador
-  if (dbProfile.last_api_call_date !== today) {
+  if (typedDbProfile.last_api_call_date !== today) {
     calls = 0;
   }
 
@@ -55,9 +65,14 @@ export const checkApiLimit = async (
   }
 
   // Si todo está en orden, incrementamos el contador en la base de datos
+  const updateData: Partial<DbProfileData> = {
+    api_calls_made: calls + 1,
+    last_api_call_date: today
+  };
+  
   const { error: updateError } = await supabase
     .from('profiles')
-    .update({ api_calls_made: calls + 1, last_api_call_date: today })
+    .update(updateData)
     .eq('id', user.id);
 
   if (updateError) {

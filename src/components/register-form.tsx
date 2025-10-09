@@ -23,23 +23,25 @@ export function RegisterForm({
   const [password, setPassword] = React.useState("")
   const [loading, setLoading] = React.useState(false)
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault()
-    setLoading(true)
-    
-    try {
-      const { error } = await supabase.auth.signUp({ email: email, password: password });
-      if (error) throw error;
-      logger.info('REGISTER_SUCCESS', `User ${email} registered successfully.`);
-      toast.success('Has creado tu cuenta correctamente.');
-      setTimeout(() => toast.success('Revisa tu correo electrónico para verificar tu cuenta.'), 1000);
-    } catch (error: any) {
-      logger.error('REGISTER_FAILED', `User ${email} failed to register.`, { errorMessage: error.message });
-      toast.error('Error al crear la cuenta. Intenta nuevamente.');
-    } finally {
-      setTimeout(() => setLoading(false), 500);
-    }
-  }
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    setLoading(true);
+    void (async () => {
+      try {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        void logger.info('REGISTER_SUCCESS', `User ${email} registered successfully.`);
+        toast.success('Has creado tu cuenta correctamente.');
+        setTimeout(() => toast.success('Revisa tu correo electrónico para verificar tu cuenta.'), 1000);
+      } catch (error: unknown) {
+        const errorMessage = (typeof error === 'object' && error && 'message' in error) ? (error as { message: string }).message : String(error);
+        void logger.error('REGISTER_FAILED', `User ${email} failed to register.`, { errorMessage });
+        toast.error('Error al crear la cuenta. Intenta nuevamente.');
+      } finally {
+        setTimeout(() => setLoading(false), 500);
+      }
+    })();
+  }  
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -51,7 +53,7 @@ export function RegisterForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Correo Electrónico</Label>
@@ -70,7 +72,7 @@ export function RegisterForm({
               </div>
               <div className="flex flex-col gap-3">
                 {}
-                <Button onClick={handleSubmit} disabled={loading} className="w-full">
+                <Button type="submit" disabled={loading} className="w-full">
                   {loading ? "Cargando..." : "Crear Cuenta"}
                 </Button>
               </div>

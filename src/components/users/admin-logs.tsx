@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -8,13 +8,20 @@ import { Skeleton } from "../ui/skeleton";
 import { useReactTable, getCoreRowModel, getPaginationRowModel, getFilteredRowModel, getSortedRowModel, ColumnDef, SortingState } from "@tanstack/react-table";
 import { AdminLog } from "../../types/admin";
 import { DataTable } from "../dividends/data-table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { ArrowUpDown, Eye, Search } from "lucide-react";
 import { Badge } from "../ui/badge";
 
 // --- Modal para ver Metadatos ---
-const LogMetadataModal = ({ log, isOpen, onClose }: { log: AdminLog | null, isOpen: boolean, onClose: () => void }) => {
+
+interface LogMetadataModalProps {
+  log: AdminLog | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const LogMetadataModal = ({ log, isOpen, onClose }: LogMetadataModalProps) => {
     if (!log) return null;
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -47,17 +54,27 @@ export function AdminLogsPage() {
             setLoading(true);
             try {
                 let query = supabase.from('logs').select('*');
-                
                 if (levelFilter) {
                     query = query.eq('level', levelFilter);
                 }
-
-                const { data, error } = await query.order('created_at', { ascending: false }).limit(1000);
-
-                if (error) throw error;
-                setLogs(data || []);
-            } catch (err: any) {
-                toast.error("Error al cargar los logs.", { description: err.message });
+                const { data, error }: { data: AdminLog[] | null, error: unknown } = await query.order('created_at', { ascending: false }).limit(1000);
+                if (error) {
+                    let errorMsg: string;
+                    if (typeof error === 'object' && error !== null) {
+                        try {
+                            errorMsg = JSON.stringify(error);
+                        } catch {
+                            errorMsg = 'Unknown error';
+                        }
+                    } else {
+                        errorMsg = 'Unknown error';
+                    }
+                    throw (error instanceof Error ? error : new Error(errorMsg));
+                }
+                setLogs(data ?? []);
+            } catch (err: unknown) {
+                const message = (typeof err === 'object' && err && 'message' in err) ? (err as { message: string }).message : String(err);
+                toast.error("Error al cargar los logs.", { description: message });
             } finally {
                 setLoading(false);
             }
@@ -117,7 +134,7 @@ export function AdminLogsPage() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input placeholder="Buscar por mensaje, tipo de evento, etc..." value={filter} onChange={(e) => setFilter(e.target.value)} className="pl-10" />
                         </div>
-                        <Select value={levelFilter} onValueChange={setLevelFilter}>
+                        <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v)}>
                             <SelectTrigger className="w-full sm:w-[180px]">
                                 <SelectValue placeholder="Filtrar por nivel" />
                             </SelectTrigger>

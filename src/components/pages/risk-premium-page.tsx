@@ -61,7 +61,7 @@ const RiskPremiumSkeleton = () => (
       <Table>
         <TableHeader>
           <TableRow>
-            {[...Array(4)].map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <TableHead key={i}>
                 <Skeleton className="h-5 w-24" />
               </TableHead>
@@ -69,9 +69,9 @@ const RiskPremiumSkeleton = () => (
           </TableRow>
         </TableHeader>
         <TableBody>
-          {[...Array(10)].map((_, i) => (
+          {Array.from({ length: 10 }).map((_, i) => (
             <TableRow key={i}>
-              {[...Array(4)].map((_, j) => (
+              {Array.from({ length: 4 }).map((_, j) => (
                 <TableCell key={j}>
                   <Skeleton className="h-5 w-full" />
                 </TableCell>
@@ -96,18 +96,49 @@ export default function RiskPremiumPage() {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 15 });
 
   // --- Lógica de Fetch ---
+  // --- Utilidad para error a string ---
+  function errorToString(error: unknown): string {
+    if (typeof error === 'string') return error;
+    if (error && typeof error === 'object' && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+      return (error as { message: string }).message;
+    }
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
+
+  // --- Config type guard ---
+  function extractFmpProxyEndpoint(raw: unknown): string {
+    if (!raw || typeof raw !== 'object') return '';
+
+    const api = (raw as { api?: unknown }).api;
+    if (!api || typeof api !== 'object') return '';
+
+    const fmpProxyEndpoints = (api as { fmpProxyEndpoints?: unknown }).fmpProxyEndpoints;
+    if (!fmpProxyEndpoints || typeof fmpProxyEndpoints !== 'object') return '';
+
+    const marketRiskPremium = (fmpProxyEndpoints as { marketRiskPremium?: unknown }).marketRiskPremium;
+    if (typeof marketRiskPremium === 'string') {
+      return marketRiskPremium;
+    }
+
+    return '';
+  }
+
   useEffect(() => {
     const fetchRiskPremium = async () => {
       setLoading(true);
       const CACHE_KEY = "market_risk_premium";
       try {
-        const { data: cached, error: cacheError } = await supabase
+        const { data: cached, error: cacheError }: { data: { data: RiskPremiumData[]; last_updated_at: string } | null; error: { code?: string } | null } = await supabase
           .from("asset_data_cache")
           .select("data, last_updated_at")
           .eq("symbol", CACHE_KEY)
           .single();
 
-        if (cacheError && cacheError.code !== "PGRST116") throw cacheError;
+        if (cacheError && cacheError.code !== "PGRST116") throw new Error(errorToString(cacheError));
 
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         if (cached && new Date(cached.last_updated_at) > oneDayAgo) {
@@ -115,16 +146,21 @@ export default function RiskPremiumPage() {
           return;
         }
 
-        const { data: apiData, error: apiError } = await supabase.functions.invoke(
+        const endpoint = extractFmpProxyEndpoint(config);
+        if (!endpoint) throw new Error('No se encontró el endpoint de riesgo país en la configuración.');
+
+        const invokeResult = await supabase.functions.invoke(
           "fmp-proxy",
           {
-            body: { endpointPath: config.api.fmpProxyEndpoints.marketRiskPremium },
+            body: { endpointPath: endpoint },
           }
         );
+        const apiData: RiskPremiumData[] | null = (invokeResult && 'data' in invokeResult) ? (invokeResult.data as RiskPremiumData[] | null) : null;
+        const apiError: unknown = (invokeResult && 'error' in invokeResult) ? invokeResult.error : null;
 
-        if (apiError) throw apiError;
+        if (apiError) throw new Error(errorToString(apiError));
 
-        const sortedData = (apiData || []).sort((a: RiskPremiumData, b: RiskPremiumData) =>
+        const sortedData = (apiData ?? []).sort((a, b) =>
           a.country.localeCompare(b.country)
         );
         setData(sortedData);
@@ -136,15 +172,15 @@ export default function RiskPremiumPage() {
             data: sortedData,
             last_updated_at: new Date().toISOString(),
           });
-      } catch (error: any) {
-        logger.error("RISK_PREMIUM_FETCH_FAILED", error.message);
+      } catch (error: unknown) {
+  void logger.error("RISK_PREMIUM_FETCH_FAILED", errorToString(error));
         toast.error("Error al obtener los datos de riesgo país.");
       } finally {
         setLoading(false);
       }
     };
 
-    if (config) fetchRiskPremium();
+  if (config) void fetchRiskPremium();
   }, [config]);
 
   // --- Colores para el Riesgo ---

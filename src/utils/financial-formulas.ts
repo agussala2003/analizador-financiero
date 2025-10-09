@@ -3,7 +3,7 @@
 import { RawApiData } from "../types/dashboard";
 import { calculateMean, calculateStdDev } from "./math"; // Importamos desde math.ts
 
-export const RISK_FREE_RATE: number = 0.02; // Tasa libre de riesgo (ej: 2%)
+export const RISK_FREE_RATE = 0.02; // Tasa libre de riesgo (ej: 2%)
 
 /**
  * Obtiene el primer valor numérico válido de un objeto buscando en una lista de campos.
@@ -55,7 +55,7 @@ export const computeStdDevPct = (returns: number[]): number | null => {
  */
 export const computeSharpe = (returns: number[], riskFreeAnnual: number = RISK_FREE_RATE): number | null => {
     if (!Array.isArray(returns) || returns.length < 2) return null;
-    
+
     const meanDailyReturn = calculateMean(returns);
     const stdDevDailyReturn = calculateStdDev(returns);
 

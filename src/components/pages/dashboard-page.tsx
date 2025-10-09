@@ -40,7 +40,7 @@ export default function DashboardPage() {
         if (portfolioLoadedRef.current || portfolioLoading || !holdings?.length) return;
         portfolioLoadedRef.current = true;
         const portfolioSymbols = holdings.map(h => h.symbol);
-        Promise.all(portfolioSymbols.map(symbol => addTicker(symbol, { addToSelected: true })));
+        void Promise.all(portfolioSymbols.map(symbol => addTicker(symbol, { addToSelected: true })));
     }, [portfolioLoading, holdings, addTicker]);
 
     const assets: AssetData[] = useMemo(() => {

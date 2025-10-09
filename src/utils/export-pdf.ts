@@ -25,6 +25,33 @@ interface ExportOptions {
     indicatorConfig: IndicatorConfig;
 }
 
+// Extended jsPDF interface to include autoTable properties
+interface ExtendedJsPDF extends jsPDF {
+    lastAutoTable?: {
+        finalY: number;
+    };
+    internal: jsPDF['internal'] & {
+        getNumberOfPages(): number;
+    };
+}
+
+// --- UTILIDADES DE VALIDACIÓN ---
+const safeCellToString = (cellValue: unknown): string => {
+    if (cellValue === null || cellValue === undefined) return '';
+    if (typeof cellValue === 'string') return cellValue;
+    if (typeof cellValue === 'number') return cellValue.toString();
+    if (typeof cellValue === 'boolean') return cellValue.toString();
+    if (typeof cellValue === 'object' && cellValue !== null && 'content' in cellValue) {
+        return safeCellToString((cellValue as { content: unknown }).content);
+    }
+    // Only use String() as last resort for primitive types
+    if (typeof cellValue === 'bigint' || typeof cellValue === 'symbol') {
+        return cellValue.toString();
+    }
+    // For objects without a content property, return empty string to avoid [object Object]
+    return '';
+};
+
 // --- LÓGICA DE ESTILOS Y FORMATO (Funciones internas del módulo) ---
 const resolveTheme = (theme: Theme): 'light' | 'dark' => {
     if (theme === 'system') {
@@ -105,7 +132,7 @@ const getPercentageColor = (value: number, theme: Theme): [number, number, numbe
 
 // --- FUNCIÓN PRINCIPAL DE EXPORTACIÓN ---
 export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicatorConfig }: ExportOptions) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as ExtendedJsPDF;
     const styles = getThemeStyles(theme);
     let finalY = 0;
 
@@ -173,7 +200,7 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
                 if (section.metricKeys && data.section === 'body' && data.column.index > 0) {
                     const metricKey = section.metricKeys[data.row.index];
                     const config = indicatorConfig[metricKey];
-                    const valueStr = String(data.cell.raw).replace('%', '').replace('$', '');
+                    const valueStr = safeCellToString(data.cell.raw).replace('%', '').replace('$', '');
                     const value = parseFloat(valueStr);
 
                     if (config && !isNaN(value)) {
@@ -187,13 +214,14 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
             didDrawCell: (data) => {
                 // Estilos para la Matriz de Correlación
                 if (section.isCorrelation && data.section === 'body' && data.column.index > 0) {
-                    const value = parseFloat(String(data.cell.raw));
+                    const valueStr = safeCellToString(data.cell.raw);
+                    const value = parseFloat(valueStr);
                     if (!isNaN(value)) {
                         const cellStyles = getCorrelationCellStyle(value);
                         doc.setFillColor(cellStyles.fillColor);
                         doc.setTextColor(...cellStyles.textColor);
                         doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                        doc.text(String(data.cell.raw), data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, {
+                        doc.text(safeCellToString(data.cell.raw), data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, {
                             align: 'center', baseline: 'middle'
                         });
                     }
@@ -201,10 +229,10 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
             }
         });
 
-        finalY = (doc as any).lastAutoTable.finalY;
+        finalY = doc.lastAutoTable?.finalY ?? finalY;
     });
 
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);

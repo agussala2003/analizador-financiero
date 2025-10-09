@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+// src/components/portfolio/add-transaction-modal.tsx
+
+import { useState } from 'react';
 import { usePortfolio } from '../../hooks/use-portfolio';
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import { useCedearRatios } from '../../hooks/use-cedear-ratios'; // ✅ Reutilizado
+import { useTransactionForm } from '../../hooks/use-transaction-form'; // ✅ Importamos el nuevo hook
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -14,53 +16,25 @@ interface AddTransactionModalProps {
   currentPrice: number | null;
 }
 
+/**
+ * Modal para registrar una nueva transacción de compra de un activo.
+ */
 export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: AddTransactionModalProps) {
   const { addTransaction } = usePortfolio();
   const [loading, setLoading] = useState(false);
-  const [inputType, setInputType] = useState('shares');
-  const { ratios: cedearRatios } = useCedearRatios();
-  const ratio = ticker ? cedearRatios[ticker] : undefined;
 
-  const [quantity, setQuantity] = useState('');
-  const [price, setPrice] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-
-  const handleTypeChange = useCallback((newType: string) => {
-    if (newType === inputType || !ratio) return;
-    const numQuantity = parseFloat(quantity);
-    const numPrice = parseFloat(price);
-
-    if (!isNaN(numQuantity) && !isNaN(numPrice)) {
-      if (newType === 'cedears') {
-        setQuantity((numQuantity * ratio).toFixed(2));
-        setPrice((numPrice / ratio).toFixed(4));
-      } else {
-        setQuantity((numQuantity / ratio).toFixed(4));
-        setPrice((numPrice * ratio).toFixed(2));
-      }
-    }
-    setInputType(newType);
-  }, [inputType, quantity, price, ratio]);
-
-  useEffect(() => {
-    if (isOpen && ticker) {
-      if (ratio && currentPrice) {
-        setPrice((currentPrice / ratio).toFixed(4));
-        setInputType('cedears');
-      } else if (currentPrice) {
-        setPrice(currentPrice.toFixed(2));
-      } else {
-        setPrice('');
-      }
-      setQuantity('');
-      setDate(new Date().toISOString().slice(0, 10));
-    }
-  }, [isOpen, currentPrice, ratio, ticker]);
+  // ✅ Toda la lógica del formulario ahora reside en el hook
+  const {
+    quantity, setQuantity,
+    price, setPrice,
+    date, setDate,
+  handleTypeChange,
+    ratio, isCedears
+  } = useTransactionForm({ isOpen, ticker, currentPrice });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticker) return;
-
     if (new Date(date) > new Date()) {
       toast.error("La fecha de la transacción no puede ser futura.");
       return;
@@ -71,8 +45,8 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
       const enteredQuantity = parseFloat(quantity);
       const enteredPrice = parseFloat(price);
       
-      const finalQuantityInShares = inputType === 'cedears' && ratio ? enteredQuantity / ratio : enteredQuantity;
-      const finalPricePerShare = inputType === 'cedears' && ratio ? enteredPrice * ratio : enteredPrice;
+      const finalQuantityInShares = isCedears && ratio ? enteredQuantity / ratio : enteredQuantity;
+      const finalPricePerShare = isCedears && ratio ? enteredPrice * ratio : enteredPrice;
 
       await addTransaction({
         symbol: ticker,
@@ -83,14 +57,16 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
       });
       toast.success(`Compra de ${ticker} agregada a tu portafolio.`);
       onClose();
-    } catch (error: any) {
-      toast.error('No se pudo agregar la transacción.', { description: error.message });
+    } catch (error: unknown) {
+      let message = 'Error desconocido';
+      if (typeof error === 'object' && error && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+        message = (error as { message: string }).message;
+      }
+      toast.error('No se pudo agregar la transacción.', { description: message });
     } finally {
       setLoading(false);
     }
   };
-  
-  const isCedears = inputType === 'cedears';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -99,7 +75,7 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
           <DialogTitle>Agregar Compra de <span className="text-primary">{ticker}</span></DialogTitle>
           <DialogDescription>Completa los datos de tu operación.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+  <form onSubmit={e => { e.preventDefault(); void handleSubmit(e); }} className="space-y-4 pt-4">
           {ratio && (
             <div>
               <Label className="mb-2 block">Tipo de Activo</Label>

@@ -16,7 +16,8 @@ export interface Profile {
     can_upload_blog: boolean;
     onboarding_completed: boolean;
     onboarding_step: number;
-    onboarding_profile: Record<string, any>; // Perfil de inversor, intereses, etc.
+  // ✅ Mejora: Evitar `any` usando `unknown` para mantener seguridad de tipos
+  onboarding_profile: Record<string, unknown>; // Perfil de inversor, intereses, etc.
 }
 
 /**
@@ -26,7 +27,10 @@ export interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
-  isLoaded: boolean;
+  // ✅ Mejora: estados explícitos de carga y error para evitar pantallas en blanco y facilitar la UI
+  isLoaded: boolean; // legacy flag para compatibilidad hacia atrás
+  loading: boolean;
+  error: string | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
