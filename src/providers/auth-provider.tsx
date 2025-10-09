@@ -3,11 +3,11 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Session, User } from '@supabase/supabase-js';
-import { Auth, Profile } from '../types/auth';
+import { AuthContextType, Profile } from '../types/auth';
 import { logger } from '../lib/logger';
 import { toast } from 'sonner';
 
-export const AuthContext = createContext<Auth | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const value: Auth = {
+  const value: AuthContextType = {
     session,
     user: session?.user ?? null,
     profile,

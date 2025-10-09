@@ -1,14 +1,27 @@
 // src/providers/portfolio-provider.tsx
 
-import React, { useMemo, useState, useEffect, useCallback, createContext } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
-import { Transaction, Holding, PortfolioContextType, PortfolioAssetData } from '../types/portfolio';
+import { Transaction, PortfolioContextType, PortfolioAssetData } from '../types/portfolio';
 import { useAuth } from '../hooks/use-auth';
 import { useConfig } from '../hooks/use-config';
+import { calculateHoldings, calculateTotalPerformance } from '../utils/portfolio-calculations';
 
-// Creamos el contexto con el tipo definido y un valor inicial de null.
-export const PortfolioContext = createContext<PortfolioContextType | null>(null);
+// Creamos un estado inicial que lanza un error si se usa fuera del provider.
+// Esto elimina la necesidad de `PortfolioContextType | null`.
+const initialState: PortfolioContextType = {
+  transactions: [],
+  holdings: [],
+  totalPerformance: { pl: 0, percent: 0 },
+  portfolioData: {},
+  loading: true,
+  addTransaction: () => Promise.reject(new Error("addTransaction llamado fuera de PortfolioProvider")),
+  deleteAsset: () => Promise.reject(new Error("deleteAsset llamado fuera de PortfolioProvider")),
+  refreshPortfolio: () => Promise.reject(new Error("refreshPortfolio llamado fuera de PortfolioProvider")),
+};
+
+export const PortfolioContext = createContext<PortfolioContextType>(initialState);
 
 export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     const { user, profile } = useAuth();
@@ -61,38 +74,15 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         fetchPortfolioData();
     }, [fetchPortfolioData]);
 
-    const holdings = useMemo((): Holding[] => {
-        const assetMap = new Map<string, { quantity: number; totalCost: number; symbol: string }>();
-        const sortedTransactions = [...transactions].sort((a, b) => new Date(a.purchase_date).getTime() - new Date(b.purchase_date).getTime());
+    const holdings = useMemo(
+        () => calculateHoldings(transactions, portfolioData),
+        [transactions, portfolioData]
+    );
 
-        for (const tx of sortedTransactions) {
-            let asset = assetMap.get(tx.symbol) || { quantity: 0, totalCost: 0, symbol: tx.symbol };
-            
-            if (tx.transaction_type === 'buy') {
-                asset.quantity += Number(tx.quantity);
-                asset.totalCost += Number(tx.quantity) * Number(tx.purchase_price);
-            } else { // 'sell'
-                const proportionSold = asset.quantity > 0 ? Number(tx.quantity) / asset.quantity : 0;
-                asset.totalCost -= asset.totalCost * proportionSold;
-                asset.quantity -= Number(tx.quantity);
-            }
-            assetMap.set(tx.symbol, asset);
-        }
-        
-        const holdingsArray: Holding[] = [];
-        assetMap.forEach((asset, symbol) => {
-            if (asset.quantity > 1e-9) { // Evita problemas de precisión con punto flotante
-                const assetData = portfolioData[symbol] || {};
-                holdingsArray.push({
-                    ...asset,
-                    avgPurchasePrice: asset.quantity > 0 ? asset.totalCost / asset.quantity : 0,
-                    assetData: assetData
-                });
-            }
-        });
-
-        return holdingsArray;
-    }, [transactions, portfolioData]);
+    const totalPerformance = useMemo(
+        () => calculateTotalPerformance(transactions, holdings),
+        [transactions, holdings]
+    );
 
     const addTransaction = async (transaction: Omit<Transaction, 'id' | 'user_id'>): Promise<Transaction[] | null> => {
         if (!user || !profile) {
@@ -138,32 +128,6 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         logger.info('PORTFOLIO_ASSET_DELETE_SUCCESS', `Asset ${symbol} deleted successfully for user ${user.id}.`);
         await fetchPortfolioData();
     };
-    
-    const totalPerformance = useMemo(() => {
-        let totalInvested = 0;
-        let totalSoldValue = 0;
-
-        for (const tx of transactions) {
-            if (tx.transaction_type === 'buy') {
-                totalInvested += Number(tx.quantity) * Number(tx.purchase_price);
-            } else {
-                totalSoldValue += Number(tx.quantity) * Number(tx.purchase_price);
-            }
-        }
-
-        const currentValue = holdings.reduce((sum, h) => {
-            const currentPrice = h.assetData?.currentPrice || 0;
-            return sum + (h.quantity * currentPrice);
-        }, 0);
-        
-        const totalPL = (currentValue + totalSoldValue) - totalInvested;
-        const totalPLPercent = totalInvested > 0 ? (totalPL / totalInvested) * 100 : 0;
-
-        return {
-            pl: totalPL,
-            percent: totalPLPercent
-        };
-    }, [transactions, holdings]);
 
     const value: PortfolioContextType = {
         transactions,
