@@ -5,7 +5,7 @@ import { IndicatorConfig } from "../utils/financial";
 /**
  * Representa cualquier objeto de datos crudos recibido de la API de FMP.
  */
-export type RawApiData = Record<string, any>;
+export type RawApiData = Record<string, string | number | null>;
 
 /**
  * Calificación de un activo (rating).

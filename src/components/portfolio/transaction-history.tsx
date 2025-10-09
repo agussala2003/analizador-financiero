@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Transaction } from "../../types/portfolio";
 import { DataTable } from "../dividends/data-table";

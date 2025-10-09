@@ -15,6 +15,6 @@ export interface AdminLog {
     level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
     event_type: string;
     message: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     user_id?: string;
 }

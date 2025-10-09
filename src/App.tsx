@@ -33,7 +33,7 @@ export default function App() {
           </header>
 
           {/* Área de contenido con scroll interno */}
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1">
             <React.Suspense fallback={<div>Cargando...</div>}>
             <Outlet />
           </React.Suspense>

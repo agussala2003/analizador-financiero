@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, getFilteredRowModel, getSortedRowModel, ColumnDef, SortingState, flexRender } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, getFilteredRowModel, getSortedRowModel, ColumnDef, SortingState } from "@tanstack/react-table";
 import { AdminUser } from "../../types/admin";
 import { DataTable } from "../dividends/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../ui/dialog";
@@ -16,22 +16,30 @@ import { ArrowUpDown, Edit, Search } from "lucide-react";
 import { Badge } from "../ui/badge";
 
 // --- Modal para Editar Usuario ---
-const EditUserModal = ({ user, isOpen, onClose, onUserUpdate }: { user: AdminUser | null, isOpen: boolean, onClose: () => void, onUserUpdate: () => void }) => {
+
+interface EditUserModalProps {
+  user: AdminUser | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onUserUpdate: () => void;
+}
+
+const EditUserModal = ({ user, isOpen, onClose, onUserUpdate }: EditUserModalProps) => {
     const [formData, setFormData] = useState<Partial<AdminUser>>({});
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (user) {
             setFormData({
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
-                role: user.role || 'basico',
-                can_upload_blog: user.can_upload_blog || false,
+                first_name: user.first_name ?? '',
+                last_name: user.last_name ?? '',
+                role: user.role ?? 'basico',
+                can_upload_blog: user.can_upload_blog ?? false,
             });
         }
     }, [user]);
 
-    const handleChange = (field: keyof AdminUser, value: any) => {
+    const handleChange = (field: keyof AdminUser, value: unknown) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
@@ -44,8 +52,9 @@ const EditUserModal = ({ user, isOpen, onClose, onUserUpdate }: { user: AdminUse
             toast.success(`Usuario ${user.email} actualizado.`);
             onUserUpdate();
             onClose();
-        } catch (err: any) {
-            toast.error("Error al actualizar el usuario.", { description: err.message });
+        } catch (err: unknown) {
+            const message = (typeof err === 'object' && err && 'message' in err) ? (err as { message: string }).message : String(err);
+            toast.error("Error al actualizar el usuario.", { description: message });
         } finally {
             setLoading(false);
         }
@@ -64,11 +73,11 @@ const EditUserModal = ({ user, isOpen, onClose, onUserUpdate }: { user: AdminUse
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="firstName">Nombre</Label>
-                            <Input id="firstName" value={formData.first_name || ''} onChange={(e) => handleChange('first_name', e.target.value)} />
+                            <Input id="firstName" value={formData.first_name ?? ''} onChange={(e) => handleChange('first_name', e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="lastName">Apellido</Label>
-                            <Input id="lastName" value={formData.last_name || ''} onChange={(e) => handleChange('last_name', e.target.value)} />
+                            <Input id="lastName" value={formData.last_name ?? ''} onChange={(e) => handleChange('last_name', e.target.value)} />
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -108,11 +117,24 @@ export function AdminUsersPage() {
     const fetchUsers = async () => {
         // No seteamos loading aquí para que la actualización sea en segundo plano
         try {
-            const { data, error } = await supabase.from('profiles').select('*');
-            if (error) throw error;
-            setUsers(data || []);
-        } catch (err: any) {
-            toast.error("Error al cargar los usuarios.", { description: err.message });
+            const { data, error }: { data: AdminUser[] | null, error: unknown } = await supabase.from('profiles').select('*');
+            if (error) {
+                let errorMsg: string;
+                if (typeof error === 'object' && error !== null) {
+                    try {
+                        errorMsg = JSON.stringify(error);
+                    } catch {
+                        errorMsg = JSON.stringify(error);
+                    }
+                } else {
+                    errorMsg = JSON.stringify(error);
+                }
+                throw (error instanceof Error ? error : new Error(errorMsg));
+            }
+            setUsers(data ?? []);
+        } catch (err: unknown) {
+            const message = (typeof err === 'object' && err && 'message' in err) ? (err as { message: string }).message : String(err);
+            toast.error("Error al cargar los usuarios.", { description: message });
         } finally {
             setLoading(false);
         }
@@ -169,7 +191,7 @@ export function AdminUsersPage() {
                 isOpen={!!editingUser} 
                 onClose={() => setEditingUser(null)} 
                 user={editingUser} 
-                onUserUpdate={fetchUsers} 
+                onUserUpdate={() => { void fetchUsers(); }} 
             />
         </>
     );

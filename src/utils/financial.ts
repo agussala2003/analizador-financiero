@@ -1,11 +1,9 @@
 // src/utils/financial.ts
 
-import { RawApiData } from "../types/dashboard";
-
 export interface Indicator {
     label: string;
     apiFields: string[];
-    compute?: (raw: RawApiData) => number | null;
+    compute?: (raw: Record<string, number>) => number | null;
     lowerIsBetter: boolean;
     green: number;
     yellow: number;
@@ -14,9 +12,7 @@ export interface Indicator {
     explanation: string;
 }
 
-export interface IndicatorConfig {
-    [key: string]: Indicator;
-}
+export type IndicatorConfig = Record<string, Indicator>;
 
 /**
  * Configuración central para todos los indicadores financieros de la aplicación.
@@ -27,9 +23,9 @@ export const indicatorConfig = {
   PER: {
     label: 'PER',
     apiFields: ['pe', 'peRatioTTM', 'priceEarningsRatioTTM'],
-    compute: (raw: Record<string, any>) => {
+    compute: (raw: Record<string, number>) => {
       const ey = raw.earningsYieldTTM ?? raw.earningsYield ?? null;
-      const n = (ey === null || ey === undefined || ey === '' || ey === 'None') ? null : Number(ey);
+      const n = (ey === null || ey === undefined) ? null : Number(ey);
       return (n && Number.isFinite(n) && n !== 0) ? (1 / n) : null;
     },
     lowerIsBetter: true, green: 15, yellow: 25,
@@ -171,7 +167,7 @@ export const indicatorConfig = {
   dividendYield: {
     label: 'Rend. Dividendo (%)',
     apiFields: ['dividendYieldTTM', 'dividendYield'],
-    compute: (raw: Record<string, any>) => {
+    compute: (raw: Record<string, number>) => {
       const price = Number(raw.price);
       const div = Number(raw.lastDividend);
       if (Number.isFinite(price) && price > 0 && Number.isFinite(div) && div >= 0) return (div / price); // Quitamos * 100 para que asPercent funcione
@@ -196,7 +192,7 @@ export const indicatorConfig = {
     label: 'FCF Yield (%)',
     apiFields: ['freeCashFlowYieldTTM', 'fcfYieldTTM'],
     lowerIsBetter: false, green: 0.05, yellow: 0.02, asPercent: true,
-    compute: (raw: Record<string, any>) => {
+    compute: (raw: Record<string, number>) => {
       const pfc = Number(raw.priceToFreeCashFlowsRatioTTM);
       return (Number.isFinite(pfc) && pfc > 0) ? (1 / pfc) : null;
     },
@@ -219,7 +215,7 @@ export const indicatorConfig = {
   relativeVolume: {
     label: 'Volumen Relativo',
     apiFields: [], // Es calculado
-    compute: (raw: Record<string, any>) => {
+    compute: (raw: Record<string, number>) => {
       const vol = Number(raw.volume);
       const avgVol = Number(raw.averageVolume);
       return (avgVol > 0 && Number.isFinite(vol)) ? (vol / avgVol) : null;

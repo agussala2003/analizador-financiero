@@ -9,7 +9,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import React from "react";
 
-const friendlyNames: { [key: string]: string } = {
+const friendlyNames: Record<string, string> = {
   "dividends": "Calendario de Dividendos",
   "news": "Noticias",
   "profile": "Perfil",

@@ -66,11 +66,11 @@ export interface Config {
     }[];
   };
   // Puedes expandir estas secciones si necesitas un tipado más estricto para ellas.
-  news: Record<string, any>;
-  suggestions: Record<string, any>;
-  admin: Record<string, any>;
-  dividends: Record<string, any>;
-  infoPage: Record<string, any>;
-  authPages: Record<string, any>;
-  notifications: Record<string, any>[];
+  news: Record<string, unknown>;
+  suggestions: Record<string, unknown>;
+  admin: Record<string, unknown>;
+  dividends: Record<string, unknown>;
+  infoPage: Record<string, unknown>;
+  authPages: Record<string, unknown>;
+  notifications: Record<string, unknown>[];
 }

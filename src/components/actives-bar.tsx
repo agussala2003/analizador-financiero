@@ -1,17 +1,11 @@
-import React from "react";
-import { supabase } from "../lib/supabase";
-import { ArrowDown, ArrowUp } from "lucide-react";
+// src/components/actives-bar.tsx
 
-type TickerData = {
-    dayChange: number;
-};
+import { useEffect, useState, memo } from 'react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
+import { getActiveTickers, ActiveTicker } from '../services/data/market/getActiveTickers';
 
-type CachedAsset = {
-    symbol: string;
-    data: TickerData;
-};
-
-const TickerItem = ({ asset }: { asset: CachedAsset }) => {
+// Componente para un solo item del ticker. Es memorizado para evitar re-renders innecesarios.
+const TickerItem = memo(({ asset }: { asset: Omit<ActiveTicker, 'last_updated_at'> }) => {
     const isPositive = asset.data.dayChange >= 0;
     const colorClass = isPositive ? "text-green-500" : "text-red-500";
     const Icon = isPositive ? ArrowUp : ArrowDown;
@@ -25,58 +19,47 @@ const TickerItem = ({ asset }: { asset: CachedAsset }) => {
             </div>
         </div>
     );
-};
+});
+TickerItem.displayName = 'TickerItem';
 
+/**
+ * Barra superior que muestra un carrusel infinito con el rendimiento diario de activos.
+ * Obtiene los datos de los activos actualizados en el día actual desde el servicio `getActiveTickers`.
+ */
 export default function ActivesBar() {
-    const [activeAssets, setActiveAssets] = React.useState<CachedAsset[]>([]);
-    const [loading, setLoading] = React.useState(true);
+    const [activeAssets, setActiveAssets] = useState<Omit<ActiveTicker, 'last_updated_at'>[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    React.useEffect(() => {
-        const fetchActiveAssets = async () => {
+    useEffect(() => {
+        const loadAssets = async () => {
             setLoading(true);
-            try {
-                const { data, error } = await supabase.from('asset_data_cache').select('symbol, data');
-                if (error) throw error;
-                const filteredData = data?.filter(
-                    (item): item is CachedAsset =>
-                        item.symbol && !item.symbol.includes(' ') && !item.symbol.includes('-') &&
-                        item.data && typeof item.data.dayChange === 'number'
-                );
-                setActiveAssets(filteredData || []);
-            } catch (error) {
-                console.error("Error fetching active assets:", error);
-                setActiveAssets([]);
-            } finally {
-                setLoading(false);
-            }
+            const data = await getActiveTickers();
+            setActiveAssets(data);
+            setLoading(false);
         };
-        fetchActiveAssets();
+        void loadAssets();
     }, []);
 
+    // Renderiza un placeholder si está cargando o no hay activos que mostrar.
     if (loading || activeAssets.length === 0) {
-        return <div className="w-full h-10 border-b border-border" />;
+        return <div className="w-full h-10 border-b border-border" aria-hidden="true" />;
     }
 
+    // Para un bucle perfecto, el número de items debe ser suficientemente grande
+    const items = activeAssets.length > 10 ? activeAssets : [...activeAssets, ...activeAssets];
+
     return (
-        // --- CONTENEDOR MEJORADO ---
-        // 1. El contenedor principal ahora es 'relative' y 'overflow-hidden'.
-        //    Define el tamaño y recorta todo lo que se salga.
         <div className="relative w-full h-10 overflow-hidden border-b bg-background/80 backdrop-blur-sm border-border">
-            
-            {/* 2. El contenido que se anima ahora es 'absolute'.
-                   Esto lo saca del flujo normal del layout, impidiendo que estire a su padre. */}
             <div className="absolute top-0 left-0 flex items-center h-full animate-scroll-infinite">
-                {/* Primera tanda de activos */}
-                {activeAssets.map((asset) => (
-                    <TickerItem key={asset.symbol} asset={asset} />
+                {/* Renderizamos el contenido duplicado para el efecto de bucle infinito */}
+                {items.map((asset, index) => (
+                    <TickerItem key={`${asset.symbol}-${index}`} asset={asset} />
                 ))}
-                {/* Segunda tanda (duplicado) para el bucle infinito */}
-                {activeAssets.map((asset) => (
-                    <TickerItem key={`${asset.symbol}-duplicate`} asset={asset} />
+                {items.map((asset, index) => (
+                    <TickerItem key={`${asset.symbol}-duplicate-${index}`} asset={asset} />
                 ))}
             </div>
-
-            {/* 3. El degradado para los bordes se mantiene por encima */}
+            {/* Degradado en los bordes para un efecto de desvanecimiento suave */}
             <div className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-r from-background via-transparent to-background" />
         </div>
     );

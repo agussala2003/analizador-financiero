@@ -13,7 +13,7 @@ import { Label } from "../components/ui/label"
 import React from "react";
 
 // Definiendo un tipo para los datos del dividendo para mayor claridad
-type Dividend = {
+interface Dividend {
     symbol: string;
     dividend: number;
     paymentDate: string;

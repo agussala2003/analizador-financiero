@@ -19,17 +19,24 @@ interface Suggestion {
   status: 'nueva' | 'en revisión' | 'completada' | 'rechazada' | 'planeada';
 }
 
-const SuggestionCard = ({ suggestion }: { suggestion: Suggestion }) => {
-  const statusConfig = {
-    nueva: { label: 'Nueva', variant: 'default', icon: null },
-    'en revisión': { label: 'En revisión', variant: 'secondary', icon: null },
-    completada: { label: 'Completada', variant: 'success', icon: '✅' },
-    rechazada: { label: 'Rechazada', variant: 'destructive', icon: '❌' },
-    planeada: { label: 'Planeada', variant: 'outline', icon: '📅' },
-  } as const;
 
+type SuggestionStatus = Suggestion['status'];
+interface StatusConfig {
+  label: string;
+  variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  icon: string | null;
+}
+
+const statusConfig: Record<SuggestionStatus, StatusConfig> = {
+  nueva: { label: 'Nueva', variant: 'default', icon: null },
+  'en revisión': { label: 'En revisión', variant: 'secondary', icon: null },
+  completada: { label: 'Completada', variant: 'secondary', icon: '✅' }, // 'success' not allowed, use 'secondary'
+  rechazada: { label: 'Rechazada', variant: 'destructive', icon: '❌' },
+  planeada: { label: 'Planeada', variant: 'outline', icon: '📅' },
+};
+
+const SuggestionCard: React.FC<{ suggestion: Suggestion }> = ({ suggestion }) => {
   const config = statusConfig[suggestion.status];
-  
   return (
     <motion.div
       layout
@@ -64,7 +71,7 @@ const SuggestionCard = ({ suggestion }: { suggestion: Suggestion }) => {
 
 const SuggestionSkeleton = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {[...Array(3)].map((_, i) => (
+    {Array.from({ length: 3 }).map((_, i) => (
       <Card key={i} className="h-full">
         <CardHeader className="pb-3">
           <div className="flex justify-between">
@@ -82,9 +89,48 @@ const SuggestionSkeleton = () => (
   </div>
 );
 
+interface SuggestionsConfig {
+  suggestions: {
+    minLength: number;
+    maxLength: number;
+  };
+}
+
+function errorToString(error: unknown): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+    return (error as { message: string }).message;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 export default function SuggestionsPage() {
   const { user } = useAuth();
-  const config = useConfig();
+  const configRaw = useConfig();
+  // Type guard for suggestions config
+  function extractSuggestionsConfig(raw: unknown): { minLength: number; maxLength: number } {
+    if (
+      raw &&
+      typeof raw === 'object' &&
+      'minLength' in raw &&
+      typeof (raw as Record<string, unknown>).minLength === 'number' &&
+      'maxLength' in raw &&
+      typeof (raw as Record<string, unknown>).maxLength === 'number'
+    ) {
+      return {
+        minLength: (raw as { minLength: number }).minLength,
+        maxLength: (raw as { maxLength: number }).maxLength,
+      };
+    }
+    return { minLength: 10, maxLength: 500 };
+  }
+  const config: SuggestionsConfig = {
+    suggestions: extractSuggestionsConfig(configRaw?.suggestions),
+  };
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [newSuggestion, setNewSuggestion] = useState('');
   const [loading, setLoading] = useState(true);
@@ -98,18 +144,19 @@ export default function SuggestionsPage() {
         return;
       }
       try {
-        const { data, error } = await supabase
+        const { data, error }: { data: Suggestion[] | null; error: unknown } = await supabase
           .from('suggestions')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        setSuggestions(data);
+        if (error) throw new Error(errorToString(error));
+        setSuggestions(data ?? []);
         void logger.info('SUGGESTIONS_FETCHED', 'User suggestions fetched successfully.');
-      } catch (error: any) {
+      } catch (error: unknown) {
         toast.error('No se pudieron cargar tus sugerencias.');
-        void logger.error('SUGGESTIONS_FETCH_FAILED', error.message);
+        const msg = errorToString(error);
+        void logger.error('SUGGESTIONS_FETCH_FAILED', msg);
       } finally {
         setLoading(false);
       }
@@ -131,21 +178,22 @@ export default function SuggestionsPage() {
     const toastId = toast.loading('Enviando tu idea...');
 
     try {
-      const { data, error } = await supabase
+      const { data, error }: { data: Suggestion | null; error: unknown } = await supabase
         .from('suggestions')
         .insert({ content: trimmed, user_id: user!.id })
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) throw new Error(errorToString(error));
 
-      setSuggestions([data, ...suggestions]);
+      setSuggestions(data ? [data, ...suggestions] : suggestions);
       setNewSuggestion('');
       toast.success('¡Gracias por tu aporte! 🙌', { id: toastId });
-      void logger.info('SUGGESTION_SUBMITTED', 'Suggestion submitted successfully.', { suggestionId: data.id });
-    } catch (error: any) {
+      void logger.info('SUGGESTION_SUBMITTED', 'Suggestion submitted successfully.', { suggestionId: data?.id });
+    } catch (error: unknown) {
       toast.error('Hubo un problema al enviar tu sugerencia.', { id: toastId, description: 'Por favor, inténtalo de nuevo.' });
-      void logger.error('SUGGESTION_SUBMISSION_FAILED', error.message);
+      const msg = errorToString(error);
+      void logger.error('SUGGESTION_SUBMISSION_FAILED', msg);
     } finally {
       setFormLoading(false);
     }

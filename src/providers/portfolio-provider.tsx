@@ -7,27 +7,23 @@ import { Transaction, PortfolioContextType, PortfolioAssetData } from '../types/
 import { useAuth } from '../hooks/use-auth';
 import { useConfig } from '../hooks/use-config';
 import { calculateHoldings, calculateTotalPerformance } from '../utils/portfolio-calculations';
+import { LoadingScreen } from '../components/ui/loading-screen';
+import { ErrorScreen } from '../components/ui/error-screen';
 
-// Creamos un estado inicial que lanza un error si se usa fuera del provider.
-// Esto elimina la necesidad de `PortfolioContextType | null`.
-const initialState: PortfolioContextType = {
-  transactions: [],
-  holdings: [],
-  totalPerformance: { pl: 0, percent: 0 },
-  portfolioData: {},
-  loading: true,
-  addTransaction: () => Promise.reject(new Error("addTransaction llamado fuera de PortfolioProvider")),
-  deleteAsset: () => Promise.reject(new Error("deleteAsset llamado fuera de PortfolioProvider")),
-  refreshPortfolio: () => Promise.reject(new Error("refreshPortfolio llamado fuera de PortfolioProvider")),
-};
-
-export const PortfolioContext = createContext<PortfolioContextType>(initialState);
+// ✅ Mejora: Contexto con guard que lanza si se usa fuera del Provider
+// eslint-disable-next-line react-refresh/only-export-components
+export const PortfolioContext = createContext<PortfolioContextType>(new Proxy({}, {
+    get: () => {
+        throw new Error('usePortfolio debe ser utilizado dentro de un PortfolioProvider');
+    }
+}) as PortfolioContextType);
 
 export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     const { user, profile } = useAuth();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [portfolioData, setPortfolioData] = useState<Record<string, PortfolioAssetData>>({});
     const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const config = useConfig();
 
     const fetchPortfolioData = useCallback(async () => {
@@ -45,21 +41,23 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
             .order('purchase_date', { ascending: false });
         
         if (transError) {
+            setError('No se pudo obtener tus transacciones.');
             console.error("Error al traer transacciones:", transError);
             setTransactions([]);
         } else {
             setTransactions(transData || []);
         }
 
-        const symbols = [...new Set((transData || []).map(t => t.symbol))];
+    const symbols = [...new Set((transData ?? []).map((t: Transaction) => t.symbol))];
         if (symbols.length > 0) {
             try {
-                const { data: assetData, error: assetError } = await supabase.functions.invoke('get-asset-data', {
+                const resp = await supabase.functions.invoke('get-asset-data', {
                     body: { symbols },
                 });
-                if (assetError) throw assetError;
-                setPortfolioData(assetData || {});
+                if (resp.error) throw resp.error;
+                setPortfolioData((resp.data as unknown as Record<string, PortfolioAssetData>) ?? {});
             } catch (error) {
+                setError('No se pudieron obtener datos de mercado.');
                 console.error("Error al traer datos de activos:", error);
                 setPortfolioData({});
             }
@@ -71,7 +69,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     }, [user]);
 
     useEffect(() => {
-        fetchPortfolioData();
+        void fetchPortfolioData();
     }, [fetchPortfolioData]);
 
     const holdings = useMemo(
@@ -95,7 +93,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         const isNewAsset = !holdings.some(h => h.symbol === transaction.symbol);
 
         if (isNewAsset && holdings.length >= limit) {
-            logger.warn('PORTFOLIO_LIMIT_REACHED', `User ${user.id} tried to add a new asset but reached their limit of ${limit}.`);
+            void logger.warn('PORTFOLIO_LIMIT_REACHED', `User ${user.id} tried to add a new asset but reached their limit of ${limit}.`);
             throw new Error(`Has alcanzado el límite de ${limit} activos diferentes para tu plan.`);
         }
 
@@ -107,13 +105,13 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error;
         
         await fetchPortfolioData();
-        return data;
+        return data as unknown as Transaction[];
     };
 
     const deleteAsset = async (symbol: string): Promise<void> => {
         if (!user) throw new Error("Usuario no autenticado.");
         
-        logger.info('PORTFOLIO_ASSET_DELETE_START', `User ${user.id} is deleting asset ${symbol}.`);
+        void logger.info('PORTFOLIO_ASSET_DELETE_START', `User ${user.id} is deleting asset ${symbol}.`);
         const { error } = await supabase
             .from('transactions')
             .delete()
@@ -121,28 +119,43 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
             .eq('symbol', symbol);
         
         if (error) {
-            logger.error('PORTFOLIO_ASSET_DELETE_FAILED', `Failed to delete asset ${symbol} for user ${user.id}.`, { error: error.message });
+            void logger.error('PORTFOLIO_ASSET_DELETE_FAILED', `Failed to delete asset ${symbol} for user ${user.id}.`, { error: error.message });
             throw error;
         }
         
-        logger.info('PORTFOLIO_ASSET_DELETE_SUCCESS', `Asset ${symbol} deleted successfully for user ${user.id}.`);
+        void logger.info('PORTFOLIO_ASSET_DELETE_SUCCESS', `Asset ${symbol} deleted successfully for user ${user.id}.`);
         await fetchPortfolioData();
     };
 
-    const value: PortfolioContextType = {
+        const value: PortfolioContextType = {
         transactions,
         holdings,
         totalPerformance,
         portfolioData,
-        loading,
+                loading,
+                error,
         addTransaction,
         deleteAsset,
         refreshPortfolio: fetchPortfolioData,
     };
 
-    return (
-        <PortfolioContext.Provider value={value}>
-            {children}
-        </PortfolioContext.Provider>
-    );
+        // ✅ Mejora: Evitar pantallas en blanco y mostrar errores genéricos
+        if (loading) {
+            return <LoadingScreen message="Cargando portafolio..." />;
+        }
+        if (error) {
+            return (
+                        <ErrorScreen
+                            title="Error al cargar el portafolio"
+                            message={error}
+                            onRetry={() => { void fetchPortfolioData(); }}
+                        />
+            );
+        }
+
+        return (
+                <PortfolioContext.Provider value={value}>
+                        {children}
+                </PortfolioContext.Provider>
+        );
 }

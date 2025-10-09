@@ -103,7 +103,7 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
             profitability: <TrendingUp className="w-5 h-5 text-green-500" />,
             financial_health: <Shield className="w-5 h-5 text-indigo-500" />,
         };
-        return icons[key] || <PieChart className="w-5 h-5" />;
+        return icons[key] ?? <PieChart className="w-5 h-5" />;
     };
 
     return (

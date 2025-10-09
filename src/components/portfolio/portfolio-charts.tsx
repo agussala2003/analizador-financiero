@@ -6,7 +6,6 @@ import {
   ResponsiveContainer,
   Bar,
   BarChart,
-  XAxis,
   YAxis,
   CartesianGrid,
   LabelList,
@@ -16,33 +15,44 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartConfig,
 } from "../ui/chart";
 import { Holding } from "../../types/portfolio";
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
 
 // --- Funciones de formato ---
 const formatCurrency = (value: number) =>
-  `$${Number(value || 0).toLocaleString("en-US", {
+  `$${Number(value ?? 0).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
-const formatPercent = (value: number) => `${Number(value || 0).toFixed(2)}%`;
+const formatPercent = (value: number) => `${Number(value ?? 0).toFixed(2)}%`;
+
+// --- Tipos explícitos para los datos de los gráficos ---
+interface AllocationDatum {
+  name: string;
+  value: number;
+  percentage: number;
+  [key: string]: string | number;
+}
+interface PlDatum { symbol: string; pl: number; }
+
+// --- ChartConfig index signature para acceso dinámico ---
+type ChartConfigFixed = Record<string, { label?: React.ReactNode; color?: string; icon?: React.ComponentType }>;
 
 // --- Hook para procesar y configurar los datos de los gráficos ---
 const useChartData = (holdings: Holding[]) => {
   return useMemo(() => {
     if (!holdings || holdings.length === 0) {
-      return { allocationData: [], plData: [], chartConfig: {} };
+      return { allocationData: [] as AllocationDatum[], plData: [] as PlDatum[], chartConfig: {} as ChartConfigFixed, totalValue: 0 };
     }
 
     const totalValue = holdings.reduce(
-      (acc, h) => acc + h.quantity * (h.assetData.currentPrice || 0),
+      (acc, h) => acc + h.quantity * (h.assetData.currentPrice ?? 0),
       0
     );
 
-    const allocationData = holdings.map((h) => {
-      const value = h.quantity * (h.assetData.currentPrice || 0);
+    const allocationData: AllocationDatum[] = holdings.map((h) => {
+      const value = h.quantity * (h.assetData.currentPrice ?? 0);
       const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
       return {
         name: h.symbol,
@@ -51,8 +61,8 @@ const useChartData = (holdings: Holding[]) => {
       };
     });
 
-    const plData = holdings.map((h) => {
-      const marketValue = h.quantity * (h.assetData.currentPrice || 0);
+    const plData: PlDatum[] = holdings.map((h) => {
+      const marketValue = h.quantity * (h.assetData.currentPrice ?? 0);
       const plPercent = h.totalCost > 0 ? ((marketValue - h.totalCost) / h.totalCost) * 100 : 0;
       return {
         symbol: h.symbol,
@@ -70,7 +80,7 @@ const useChartData = (holdings: Holding[]) => {
       "var(--chart-6)",
     ];
 
-    const chartConfig: ChartConfig = {};
+    const chartConfig: ChartConfigFixed = {};
     allocationData.forEach((item, index) => {
       chartConfig[item.name] = {
         label: item.name,
@@ -116,9 +126,9 @@ export function PortfolioCharts({ holdings }: { holdings: Holding[] }) {
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      formatter={(value, name) => {
+                      formatter={(_, name) => {
                         const entry = allocationData.find((d) => d.name === name);
-                        return [formatCurrency(entry?.value || 0), `${name} (${entry?.percentage.toFixed(1)}%)`];
+                        return [formatCurrency(entry?.value ?? 0), `${name} (${entry?.percentage.toFixed(1) ?? '0.0'}%)`];
                       }}
                       hideLabel
                     />
@@ -126,7 +136,7 @@ export function PortfolioCharts({ holdings }: { holdings: Holding[] }) {
                 />
                 <Pie data={allocationData} dataKey="value" nameKey="name">
                   {allocationData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={chartConfig[entry.name]?.color} />
+                    <Cell key={`cell-${entry.name}`} fill={chartConfig[entry.name]?.color ?? `var(--chart-${(allocationData.indexOf(entry) % 6) + 1})`} />
                   ))}
                 </Pie>
               </PieChart>
@@ -139,7 +149,7 @@ export function PortfolioCharts({ holdings }: { holdings: Holding[] }) {
             {allocationData.map((entry) => (
               <LegendItem
                 key={entry.name}
-                color={chartConfig[entry.name]?.color || `var(--chart-${(allocationData.indexOf(entry) % 6) + 1})`}
+                color={chartConfig[entry.name]?.color ?? `var(--chart-${(allocationData.indexOf(entry) % 6) + 1})`}
                 label={`${entry.name} (${entry.percentage.toFixed(1)}%)`}
               />
             ))}
@@ -179,7 +189,7 @@ export function PortfolioCharts({ holdings }: { holdings: Holding[] }) {
                 <Bar dataKey="pl" radius={4}>
                   <LabelList
                     dataKey="symbol"
-                    position={(props: any) => (props.value >= 0 ? "top" : "bottom")}
+                    position="top"
                     offset={8}
                     className="fill-foreground text-xs font-medium"
                   />

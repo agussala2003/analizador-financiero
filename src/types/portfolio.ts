@@ -57,6 +57,8 @@ export interface PortfolioContextType {
     };
     portfolioData: Record<string, PortfolioAssetData>;
     loading: boolean;
+    // ✅ Mejora: exponer estado de error explícito
+    error: string | null;
     addTransaction: (transaction: Omit<Transaction, 'id' | 'user_id'>) => Promise<Transaction[] | null>;
     deleteAsset: (symbol: string) => Promise<void>;
     refreshPortfolio: () => Promise<void>;

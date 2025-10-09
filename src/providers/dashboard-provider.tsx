@@ -15,17 +15,20 @@ import { checkApiLimit } from "../services/api/apiLimiter";
 import { processAssetData } from "../services/data/assetProcessor";
 import { indicatorConfig } from "../utils/financial";
 
-const initialState: DashboardContextType = {
-    selectedTickers: [],
-    assetsData: {},
-    loading: false,
-    error: '',
-    addTicker: () => Promise.resolve(),
-    removeTicker: () => {},
-    indicatorConfig,
-};
+// Tipos auxiliares para respuestas FMP estrechadas mínimamente
+type FmpArray<T = Record<string, unknown>> = T[];
 
-export const DashboardContext = createContext<DashboardContextType>(initialState);
+// Importar el tipo correcto desde assetProcessor
+type HistoricalDataResponse = Parameters<typeof processAssetData>[1];
+type RevenueApiResponse = Parameters<typeof processAssetData>[2];
+
+// ✅ Mejora: Contexto con guard que lanza si se usa fuera del Provider
+// eslint-disable-next-line react-refresh/only-export-components
+export const DashboardContext = createContext<DashboardContextType>(new Proxy({}, {
+    get: () => {
+        throw new Error('useDashboard debe ser utilizado dentro de un DashboardProvider');
+    }
+}) as DashboardContextType);
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const { user, profile } = useAuth();
@@ -59,12 +62,27 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
             for (const result of results) if (result.error) throw result.error;
             
-            const [profileRes, keyMetricsRes, quoteRes, historicalRes, priceTargetRes, dcfRes, ratingRes, geoRes, prodRes] = results.map(r => r.data);
+            const [profileRes, keyMetricsRes, quoteRes, historicalRes, priceTargetRes, dcfRes, ratingRes, geoRes, prodRes] = results.map(r => r.data as unknown);
 
             if (!Array.isArray(profileRes) || profileRes.length === 0) throw new Error('Ticker no encontrado.');
             
-            const raw: RawApiData = { ...profileRes[0], ...keyMetricsRes[0], ...quoteRes[0], ...priceTargetRes[0], ...dcfRes[0] };
-            const processed = processAssetData(raw, historicalRes, { geo: geoRes, prod: prodRes }, ratingRes);
+                                    const raw: RawApiData = {
+                                        ...(Array.isArray(profileRes) ? (profileRes as FmpArray)[0] : {}),
+                                        ...(Array.isArray(keyMetricsRes) ? (keyMetricsRes as FmpArray)[0] : {}),
+                                        ...(Array.isArray(quoteRes) ? (quoteRes as FmpArray)[0] : {}),
+                                        ...(Array.isArray(priceTargetRes) ? (priceTargetRes as FmpArray)[0] : {}),
+                                        ...(Array.isArray(dcfRes) ? (dcfRes as FmpArray)[0] : {}),
+                                    } as RawApiData;
+
+                                    const processed = processAssetData(
+                                        raw,
+                                        historicalRes as HistoricalDataResponse,
+                                        { 
+                                            geo: Array.isArray(geoRes) ? geoRes : [], 
+                                            prod: Array.isArray(prodRes) ? prodRes : [] 
+                                        } as RevenueApiResponse,
+                                        (Array.isArray(ratingRes) ? ratingRes : []) as unknown[]
+                                    );
             
             await supabase.from('asset_data_cache').upsert({ 
                 symbol: ticker, 
@@ -74,9 +92,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
             return processed;
 
-        } catch (e: any) {
-            const msg = e?.message || 'Error al consultar datos del activo.';
-            logger.error('API_FETCH_FAILED', `Failed to fetch data for ${ticker}`, { ticker, errorMessage: msg });
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Error al consultar datos del activo.';
+            void logger.error('API_FETCH_FAILED', `Failed to fetch data for ${ticker}`, { ticker, errorMessage: msg });
             showError('No pudimos traer los datos del activo.', { detail: msg });
             return null;
         }
@@ -92,7 +110,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             return;
         }
         
-        const role = profile?.role || 'basico';
+    const role = profile?.role ?? 'basico';
         if (role === 'basico' && !config.plans.freeTierSymbols.includes(ticker)) {
             if (!fromPortfolio) showError(`El símbolo ${ticker} no está disponible en el plan Básico.`);
             return;
@@ -115,24 +133,25 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
             let assetData: AssetData | null = null;
     
-            if (cached && new Date(cached.last_updated_at) > oneHourAgo) {
-                assetData = cached.data as AssetData;
+            if (cached && new Date(cached.last_updated_at as unknown as string) > oneHourAgo) {
+                assetData = cached.data as unknown as AssetData;
             } else {
                 assetData = await fetchTickerData(ticker);
                 if (!assetData && cached) {
-                    assetData = cached.data as AssetData;
+                    assetData = cached.data as unknown as AssetData;
                     showError(`No se pudieron actualizar los datos para ${ticker}. Mostrando la última versión disponible.`);
                 }
             }
     
             if (assetData) {
-                setAssetsData(prev => ({ ...prev, [ticker]: assetData! }));
+                setAssetsData(prev => ({ ...prev, [ticker]: assetData }));
                 if (addToSelected) {
                     setSelectedTickers(prev => [...prev, ticker]);
                 }
             }
-        } catch (e: any) {
-            showError('Ocurrió un error inesperado al agregar el activo.', { detail: e.message });
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Error inesperado';
+            showError('Ocurrió un error inesperado al agregar el activo.', { detail: msg });
         } finally {
             setLoading(false);
         }

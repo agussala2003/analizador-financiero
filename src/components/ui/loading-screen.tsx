@@ -1,19 +1,24 @@
 // src/components/ui/loading-screen.tsx
-import { LoaderCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface LoadingScreenProps {
+  /** Mensaje opcional a mostrar debajo del spinner */
   message?: string;
 }
 
 /**
- * Un componente genérico para mostrar una pantalla de carga a pantalla completa.
- * Ideal para cargas iniciales de la aplicación o de vistas principales.
+ * Pantalla genérica de carga a pantalla completa para evitar pantallas en blanco.
+ * Se usa desde Providers y páginas mientras se resuelven efectos iniciales.
+ *
+ * @param message Texto opcional a mostrar.
+ * @returns JSX.Element
  */
-export function LoadingScreen({ message = "Cargando..." }: LoadingScreenProps) {
+export function LoadingScreen({ message = 'Cargando…' }: LoadingScreenProps) {
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
-      <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
-      <p className="text-lg text-muted-foreground">{message}</p>
+    <div className="bg-[#010d16] flex h-screen w-full flex-col items-center justify-center gap-4">
+      {/* ✅ Mejora: Spinner accesible y visible con animación */}
+      <Loader2 className="h-10 w-10 animate-spin text-primary" aria-label="Cargando" />
+      <p className="text-sm text-white">{message}</p>
     </div>
   );
 }

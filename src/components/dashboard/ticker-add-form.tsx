@@ -21,7 +21,7 @@ export function TickerAddForm({ onAddTicker, isLoading }: TickerAddFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-2">
+    <form onSubmit={() => void handleSubmit} className="flex flex-col sm:flex-row items-center gap-2">
       <SearchIcon className="w-5 h-5 text-muted-foreground hidden sm:block" />
       <Input
         placeholder="Añadir símbolo (ej: AAPL, MELI)..."

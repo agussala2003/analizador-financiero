@@ -27,7 +27,7 @@ export function NavUser({
   user, signOut, profile
 }: {
   user: User
-  signOut: () => void,
+  signOut: () => void
   profile: Profile
 }) {
   const { isMobile } = useSidebar()

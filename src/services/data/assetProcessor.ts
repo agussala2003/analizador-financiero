@@ -4,6 +4,22 @@ import { AssetData, RawApiData, HistoricalHolding, RevenueSegment, AssetRating }
 import { indicatorConfig } from '../../utils/financial';
 import { getFirstPresent, findCloseByDate, computeSharpe, computeStdDevPct } from '../../utils/financial-formulas';
 
+// Types for API responses
+interface RevenueDataItem {
+    data: Record<string, number>;
+}
+
+interface RevenueApiResponse {
+    geo?: RevenueDataItem[];
+    prod?: RevenueDataItem[];
+}
+
+interface HistoricalApiResponse {
+    historical?: HistoricalHolding[];
+}
+
+type HistoricalDataResponse = HistoricalHolding[] | HistoricalApiResponse;
+
 /**
  * Procesa los datos crudos de la API y los transforma en una estructura AssetData limpia y completa.
  * @param raw - Objeto con todos los datos com binados de las diferentes llamadas a la API.
@@ -14,45 +30,51 @@ import { getFirstPresent, findCloseByDate, computeSharpe, computeStdDevPct } fro
  */
 export function processAssetData(
     raw: RawApiData,
-    historicalData: any, // La API puede devolver un array o un objeto { historical: [] }
-    revenueData: { geo: any; prod: any },
-    ratingData: any[]
+    historicalData: HistoricalDataResponse,
+    revenueData: RevenueApiResponse,
+    ratingData: unknown[]
 ): AssetData {
 
     // 1. Transformar datos de segmentación de ingresos
     const geoRevenue: RevenueSegment[] = revenueData.geo?.[0]?.data
-        ? Object.entries(revenueData.geo[0].data).map(([name, value]) => ({ name: name.replace('Segment', '').trim(), value: value as number }))
+        ? Object.entries(revenueData.geo[0].data).map(([name, value]) => ({ 
+            name: name.replace('Segment', '').trim(), 
+            value: typeof value === 'number' ? value : 0 
+        }))
         : [];
     const prodRevenue: RevenueSegment[] = revenueData.prod?.[0]?.data
-        ? Object.entries(revenueData.prod[0].data).map(([name, value]) => ({ name: name.trim(), value: value as number }))
+        ? Object.entries(revenueData.prod[0].data).map(([name, value]) => ({ 
+            name: name.trim(), 
+            value: typeof value === 'number' ? value : 0 
+        }))
         : [];
 
     // 2. Inicializar el objeto AssetData con datos básicos del perfil y la cotización
     const processed: AssetData = {
-        symbol: raw.symbol,
-        companyName: raw.companyName,
-        currency: raw.currency,
-        exchangeFullName: raw.exchangeFullName,
-        industry: raw.industry,
-        website: raw.website,
-        description: raw.description,
-        ceo: raw.ceo,
-        sector: raw.sector,
-        country: raw.country,
-        employees: raw.fullTimeEmployees,
-        image: raw.image,
-        marketCap: Number(raw.marketCap),
-        lastDividend: Number(raw.lastDividend),
-        averageVolume: Number(raw.averageVolume),
-        lastMonthAvgPriceTarget: Number(raw.lastMonthAvgPriceTarget),
-        range: raw.range,
-        volume: Number(raw.volume),
-        beta: Number(raw.beta),
+        symbol: String(raw.symbol ?? ''),
+        companyName: String(raw.companyName ?? ''),
+        currency: String(raw.currency ?? ''),
+        exchangeFullName: String(raw.exchangeFullName ?? ''),
+        industry: String(raw.industry ?? ''),
+        website: String(raw.website ?? ''),
+        description: String(raw.description ?? ''),
+        ceo: String(raw.ceo ?? ''),
+        sector: String(raw.sector ?? ''),
+        country: String(raw.country ?? ''),
+        employees: raw.fullTimeEmployees ? Number(raw.fullTimeEmployees) : 0,
+        image: String(raw.image ?? ''),
+        marketCap: Number(raw.marketCap) || 0,
+        lastDividend: Number(raw.lastDividend) || 0,
+        averageVolume: Number(raw.averageVolume) || 0,
+        lastMonthAvgPriceTarget: Number(raw.lastMonthAvgPriceTarget) || 0,
+        range: String(raw.range ?? ''),
+        volume: Number(raw.volume) || 0,
+        beta: Number(raw.beta) || 0,
         data: {},
         historicalReturns: [],
         historicalRaw: [],
-        currentPrice: Number(raw.price),
-        dayChange: Number(raw.changePercentage),
+        currentPrice: Number(raw.price) || 0,
+        dayChange: Number(raw.changePercentage) || 0,
         weekChange: 'N/A', monthChange: 'N/A', quarterChange: 'N/A', yearChange: 'N/A', ytdChange: 'N/A',
         stdDev: 'N/A', sharpeRatio: 'N/A',
         dcf: typeof raw.equityValuePerShare === 'number' ? raw.equityValuePerShare : 'N/A',
@@ -67,7 +89,15 @@ export function processAssetData(
         let val: number | null = getFirstPresent(raw, cfg.apiFields);
 
         if ((val === null || val === undefined) && 'compute' in cfg && typeof cfg.compute === 'function') {
-            const computed = cfg.compute(raw);
+            // Create a safe object for the compute function
+            const safeRaw: Record<string, number> = {};
+            Object.keys(raw).forEach(key => {
+                const value = raw[key];
+                if (typeof value === 'number' && Number.isFinite(value)) {
+                    safeRaw[key] = value;
+                }
+            });
+            const computed = cfg.compute(safeRaw);
             if (computed !== null && Number.isFinite(computed)) val = computed;
         }
 
@@ -78,9 +108,17 @@ export function processAssetData(
 
     // 4. Procesar datos históricos y calcular métricas de rendimiento y técnicas
     const histArray = Array.isArray(historicalData) ? historicalData : (historicalData?.historical ?? []);
+    
+    // Type guard for historical data items
+    const isValidHistoricalItem = (d: unknown): d is HistoricalHolding => {
+        return d !== null && typeof d === 'object' && 
+               'date' in d && typeof d.date === 'string' &&
+               'close' in d && d.close != null;
+    };
+
     const historyAsc = histArray
-        .filter((d: any): d is HistoricalHolding => d && d.date && d.close != null)
-        .map((d: any) => ({ ...d, close: Number(d.close) }))
+        .filter(isValidHistoricalItem)
+        .map((d) => ({ ...d, close: Number(d.close) }))
         .sort((a: HistoricalHolding, b: HistoricalHolding) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     processed.historicalRaw = historyAsc;
@@ -111,7 +149,8 @@ export function processAssetData(
             d.setDate(d.getDate() - days);
             const p = findCloseByDate(historyAsc, d.toISOString().slice(0, 10));
             if (p && p > 0) {
-                (processed as any)[key] = ((latestPrice / p) - 1) * 100;
+                const periodKey = key as keyof Pick<AssetData, 'weekChange' | 'monthChange' | 'quarterChange' | 'yearChange'>;
+                processed[periodKey] = ((latestPrice / p) - 1) * 100;
             }
         }
         

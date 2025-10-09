@@ -2,7 +2,7 @@ import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { AssetData } from "../../types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { ChartContainer, ChartTooltip, ChartLegend, ChartLegendContent, ChartConfig } from "../ui/chart"
+import { ChartContainer, ChartTooltip, ChartLegend, ChartLegendContent } from "../ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Checkbox } from "../ui/checkbox"
 import { AreaChartIcon } from "lucide-react"
@@ -23,7 +23,7 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
     setVisibleAssets(prev => {
       const next = { ...prev };
       assets.forEach(a => {
-        if (next[a.symbol] === undefined) next[a.symbol] = true;
+        next[a.symbol] ??= true;
       });
       Object.keys(next).forEach(k => {
         if (!assets.some(a => a.symbol === k)) delete next[k];
@@ -32,9 +32,14 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
     });
   }, [assets]);
 
+  interface ChartRow {
+    day: string;
+    [symbol: string]: string | number | null;
+  }
+  type ChartConfigLocal = Record<string, { label: string; color: string }>;
   const { chartData, chartConfig } = React.useMemo(() => {
     if (assets.length === 0) {
-      return { chartData: [], chartConfig: {} as ChartConfig };
+      return { chartData: [] as ChartRow[], chartConfig: {} as ChartConfigLocal };
     }
 
     // 1. Crear un mapa de precios por fecha para cada activo.
@@ -56,8 +61,8 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
     const sortedDates = Array.from(allDates).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
     // 3. Construir el `finalChartData` unificado.
-    let finalChartData = sortedDates.map(dateStr => {
-      const entry: any = {
+    let finalChartData: ChartRow[] = sortedDates.map(dateStr => {
+      const entry: ChartRow = {
         day: new Date(dateStr).toLocaleDateString("es-ES", {
           year: "numeric",
           month: "short",
@@ -79,20 +84,24 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
         case '30d': daysToTake = 30; break;
         case '90d': daysToTake = 90; break;
         case '1y': daysToTake = 365; break;
-        case 'ytd':
+        case 'ytd': {
           const currentDate = new Date();
           const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
           // Cuenta los días desde el inicio del año en el array de datos, no en el calendario real.
-          const startIndex = finalChartData.findIndex(d => new Date(d.day) >= startOfYear);
+          const startIndex = finalChartData.findIndex(d => {
+            const date = new Date(d.day);
+            return date >= startOfYear;
+          });
           daysToTake = startIndex !== -1 ? dataLength - startIndex : dataLength;
           break;
+        }
         default: daysToTake = dataLength;
       }
       finalChartData = finalChartData.slice(Math.max(0, dataLength - daysToTake));
     }
 
     // 5. Construir la configuración del gráfico.
-    const config: ChartConfig = {};
+    const config: ChartConfigLocal = {};
     assets.forEach((asset, index) => {
       config[asset.symbol] = {
         label: asset.symbol,
@@ -100,7 +109,7 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
       };
     });
 
-    return { chartData: finalChartData, chartConfig: config as ChartConfig };
+    return { chartData: finalChartData, chartConfig: config };
   }, [assets, timeRange]);
 
   const yDomain = React.useMemo(() => {
@@ -114,7 +123,7 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
     chartData.forEach(row => {
       symbols.forEach(s => {
         const v = row[s];
-        if (v !== null && Number.isFinite(v)) {
+        if (typeof v === 'number' && Number.isFinite(v)) {
           if (v < minVal) minVal = v;
           if (v > maxVal) maxVal = v;
         }
@@ -193,8 +202,9 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
               axisLine={false}
               tickMargin={8}
               minTickGap={30}
-              tickFormatter={(value, index) => {
-                return index % 4 === 0 ? value : "";
+              tickFormatter={(value: unknown, index: number) => {
+                // Only show every 4th tick, and only if value is a string
+                return index % 4 === 0 && typeof value === 'string' ? value : "";
               }}
             />
             <YAxis
@@ -207,28 +217,45 @@ export function HistoricalPerformanceChart({ assets }: HistoricalPerformanceChar
             />
             <ChartTooltip
               cursor={false}
-              content={({ payload, label }) => (
-                <Card className="p-2 text-sm">
-                  <CardHeader className="p-1 font-bold">{label}</CardHeader>
-                  <CardContent className="p-1 space-y-1">
-                    {payload?.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                        <div className="flex gap-1">
-                          <span>{item.name}: </span>
-                          <span className="font-semibold">
-                            {typeof item.value === 'number'
-                              ? `$${(item.value as number).toFixed(2)}`
-                              : 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
+              content={({ payload, label }: { payload?: unknown[]; label?: React.ReactNode }) => {
+                interface AreaTooltipItem {
+                  color?: string;
+                  name?: string;
+                  value?: number | null;
+                }
+                return (
+                  <Card className="p-2 text-sm">
+                    <CardHeader className="p-1 font-bold">{label}</CardHeader>
+                    <CardContent className="p-1 space-y-1">
+                      {Array.isArray(payload) && payload.map((itemRaw, index) => {
+                        const item = itemRaw as AreaTooltipItem;
+                        const color = typeof item.color === 'string' ? item.color : undefined;
+                        const name = typeof item.name === 'string' ? item.name : '';
+                        const value = typeof item.value === 'number' ? item.value : null;
+                        return (
+                          <div key={index} className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                            <div className="flex gap-1">
+                              <span>{name}: </span>
+                              <span className="font-semibold">
+                                {value !== null ? `$${value.toFixed(2)}` : 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                );
+              }}
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend content={<ChartLegendContent payload={assets.map(asset => ({
+              value: asset.symbol,
+              color: chartConfig[asset.symbol]?.color ?? `var(--chart-1)`,
+              type: 'line',
+              dataKey: asset.symbol,
+              payload: {},
+            }))} />} />
             {assets.map((asset) => {
               if (!visibleAssets[asset.symbol]) return null;
               const color = chartConfig[asset.symbol]?.color ?? `var(--chart-1)`;

@@ -20,7 +20,7 @@ export function calculateHoldings(
   );
 
   for (const tx of sortedTransactions) {
-    let asset = assetMap.get(tx.symbol) || { quantity: 0, totalCost: 0, symbol: tx.symbol };
+    const asset = assetMap.get(tx.symbol) ?? { quantity: 0, totalCost: 0, symbol: tx.symbol };
 
     if (tx.transaction_type === 'buy') {
       asset.quantity += Number(tx.quantity);
@@ -71,7 +71,7 @@ export function calculateTotalPerformance(
   }
 
   const currentValue = holdings.reduce((sum, h) => {
-    const currentPrice = h.assetData?.currentPrice || 0;
+    const currentPrice = h.assetData?.currentPrice ?? 0;
     return sum + (h.quantity * currentPrice);
   }, 0);
 

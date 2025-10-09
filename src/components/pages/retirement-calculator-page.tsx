@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -11,7 +11,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
   Legend,
 } from "recharts";
@@ -34,16 +33,7 @@ const formatCurrency = (value: number) => {
 };
 
 // --- Componente de Parámetro Editable ---
-const ParameterControl = ({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
-  unit,
-  id,
-}: {
+interface ParameterControlProps {
   label: string;
   value: number;
   onChange: (val: number) => void;
@@ -52,6 +42,16 @@ const ParameterControl = ({
   step: number;
   unit: string;
   id: string;
+}
+const ParameterControl: React.FC<ParameterControlProps> = ({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  unit,
+  id,
 }) => {
   return (
     <div className="space-y-2">
@@ -85,16 +85,17 @@ const ParameterControl = ({
 };
 
 // --- Componente de Resultado Mejorado ---
-const ResultCard = ({
-  title,
-  value,
-  colorClass,
-  subtitle,
-}: {
+interface ResultCardProps {
   title: string;
   value: string;
   colorClass?: string;
   subtitle?: string;
+}
+const ResultCard: React.FC<ResultCardProps> = ({
+  title,
+  value,
+  colorClass,
+  subtitle,
 }) => (
   <div className="bg-muted/40 p-4 rounded-lg text-center border">
     <p className="text-sm text-muted-foreground mb-1">{title}</p>
@@ -110,8 +111,13 @@ export default function RetirementCalculatorPage() {
   const [years, setYears] = useState(30);
   const [annualReturn, setAnnualReturn] = useState(8);
 
-  const chartData = useMemo(() => {
-    const data = [];
+  interface ChartDatum {
+    year: string;
+    'Solo Ahorro': number;
+    'Invirtiendo': number;
+  }
+  const chartData = useMemo<ChartDatum[]>(() => {
+    const data: ChartDatum[] = [];
     let savedTotal = initialInvestment;
     const monthlyRate = annualReturn / 100 / 12;
 
@@ -140,10 +146,10 @@ export default function RetirementCalculatorPage() {
     return data;
   }, [initialInvestment, monthlyContribution, years, annualReturn]);
 
-  const finalAhorro = chartData.length > 0 ? chartData[chartData.length - 1]['Solo Ahorro'] : 0;
-  const finalInversion = chartData.length > 0 ? chartData[chartData.length - 1]['Invirtiendo'] : 0;
-  const diferencia = finalInversion - finalAhorro;
-  const porcentajeMejor = finalAhorro > 0 ? ((diferencia / finalAhorro) * 100) : 0;
+  const finalAhorro: number = chartData.length > 0 ? chartData[chartData.length - 1]["Solo Ahorro"] : 0;
+  const finalInversion: number = chartData.length > 0 ? chartData[chartData.length - 1].Invirtiendo : 0;
+  const diferencia: number = finalInversion - finalAhorro;
+  const porcentajeMejor: number = finalAhorro > 0 ? ((diferencia / finalAhorro) * 100) : 0;
 
   const chartConfig: ChartConfig = {
     'Solo Ahorro': {

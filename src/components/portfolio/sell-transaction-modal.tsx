@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+// src/components/portfolio/sell-transaction-modal.tsx
+
+import { useState } from 'react';
 import { usePortfolio } from '../../hooks/use-portfolio';
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import { Holding } from '../../types/portfolio';
-import { useCedearRatios } from '../../hooks/use-cedear-ratios';
-
-type HoldingWithMetrics = Holding & { currentPrice: number };
+import { HoldingWithMetrics } from '../../types/portfolio';
+import { useTransactionForm } from '../../hooks/use-transaction-form'; // ✅ Importamos el mismo hook
 
 interface SellTransactionModalProps {
   isOpen: boolean;
@@ -16,40 +16,28 @@ interface SellTransactionModalProps {
   holding: HoldingWithMetrics | null;
 }
 
+/**
+ * Modal para registrar una transacción de venta de un activo existente en el portafolio.
+ */
 export function SellTransactionModal({ isOpen, onClose, holding }: SellTransactionModalProps) {
   const { addTransaction } = usePortfolio();
   const [loading, setLoading] = useState(false);
-  const [inputType, setInputType] = useState('shares');
-  const { ratios: cedearRatios } = useCedearRatios();
-  const ratio = holding ? cedearRatios[holding.symbol] : undefined;
 
-  const [quantity, setQuantity] = useState('');
-  const [price, setPrice] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  // ✅ Reutilizamos el hook para manejar el estado del formulario
+  const {
+    quantity, setQuantity,
+    price, setPrice,
+    date, setDate,
+  handleTypeChange,
+    ratio, isCedears,
+  } = useTransactionForm({ 
+    isOpen, 
+  ticker: holding?.symbol ?? null,
+  currentPrice: holding?.currentPrice ?? null
+  });
 
-  const maxShares = holding?.quantity || 0;
+  const maxShares = holding?.quantity ?? 0;
   const maxCedears = ratio ? maxShares * ratio : 0;
-  
-  const handleTypeChange = useCallback((newType: string) => {
-    if (newType === inputType || !ratio) return;
-    setInputType(newType);
-  }, [inputType, ratio]);
-
-  useEffect(() => {
-    if (isOpen && holding) {
-      if (ratio && holding.currentPrice) {
-        setPrice((holding.currentPrice / ratio).toFixed(4));
-        setInputType('cedears');
-      } else if (holding.currentPrice) {
-        setPrice(holding.currentPrice.toFixed(2));
-        setInputType('shares');
-      } else {
-        setPrice('');
-      }
-      setQuantity('');
-      setDate(new Date().toISOString().slice(0, 10));
-    }
-  }, [isOpen, holding, ratio]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,13 +50,13 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
         throw new Error("La cantidad debe ser un número positivo.");
       }
 
-      const finalQuantityInShares = inputType === 'cedears' && ratio ? enteredQuantity / ratio : enteredQuantity;
+      const finalQuantityInShares = isCedears && ratio ? enteredQuantity / ratio : enteredQuantity;
 
-      if (finalQuantityInShares > maxShares) {
+      if (finalQuantityInShares > maxShares + 1e-9) { // Pequeña tolerancia para errores de punto flotante
         throw new Error(`No puedes vender más de lo que posees (${isCedears ? maxCedears.toFixed(2) : maxShares.toFixed(4)}).`);
       }
       
-      const finalPricePerShare = inputType === 'cedears' && ratio ? parseFloat(price) * ratio : parseFloat(price);
+      const finalPricePerShare = isCedears && ratio ? parseFloat(price) * ratio : parseFloat(price);
 
       await addTransaction({
         symbol: holding.symbol,
@@ -79,25 +67,27 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
       });
       toast.success(`Venta de ${holding.symbol} registrada.`);
       onClose();
-    } catch (error: any) {
-      toast.error('No se pudo registrar la venta.', { description: error.message });
+    } catch (error: unknown) {
+      let message = 'Error desconocido';
+      if (typeof error === 'object' && error && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+        message = (error as { message: string }).message;
+      }
+      toast.error('No se pudo registrar la venta.', { description: message });
     } finally {
       setLoading(false);
     }
   };
   
-  const isCedears = inputType === 'cedears';
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Vender <span className="text-primary">{holding?.symbol}</span></DialogTitle>
           <DialogDescription>
-            Posees {maxShares.toFixed(4)} acciones {ratio ? `(${maxCedears.toFixed(2)} CEDEARs)` : ''}.
+            Posees {maxShares.toFixed(4)} acciones {ratio ? `(~${maxCedears.toFixed(2)} CEDEARs)` : ''}.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+  <form onSubmit={e => { e.preventDefault(); void handleSubmit(e); }} className="space-y-4 pt-4">
           {ratio && (
             <div>
               <Label className="mb-2 block">Vender como</Label>

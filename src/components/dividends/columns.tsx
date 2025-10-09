@@ -5,7 +5,7 @@ import { CalculateDividendModal } from "../calculate-dividend";
 import { Dialog, DialogTrigger } from "../ui/dialog";
 import { DateRange } from "react-day-picker";
 
-export type Dividend = {
+export interface Dividend {
     symbol: string;
     date: string;
     recordDate: string;
@@ -72,38 +72,53 @@ export const columns: ColumnDef<Dividend>[] = [
     {
         accessorKey: "date",
         header: "Fecha Ex-Dividendo",
-        cell: ({ row }) => new Date(row.getValue("date")).toLocaleDateString("es-ES"),
+        cell: ({ row }) => {
+            const value = row.getValue("date");
+            const date = value instanceof Date ? value : new Date(value as string | number);
+            return isNaN(date.getTime()) ? <span>-</span> : date.toLocaleDateString("es-ES");
+        },
     },
     {
         accessorKey: "paymentDate",
         header: "Fecha de Pago",
-        cell: ({ row }) => new Date(row.getValue("paymentDate")).toLocaleDateString("es-ES"),
+        cell: ({ row }) => {
+            const value = row.getValue("paymentDate");
+            const date = value instanceof Date ? value : new Date(value as string | number);
+            return isNaN(date.getTime()) ? <span>-</span> : date.toLocaleDateString("es-ES");
+        },
         filterFn: dateInRangeFilterFn, // Aplicamos el filtro de rango
     },
     {
         accessorKey: "declarationDate",
         header: "Fecha de Declaración",
         cell: ({ row }) => {
-            const date = new Date(row.getValue("declarationDate"));
+            const value = row.getValue("declarationDate");
+            const date = value instanceof Date ? value : new Date(value as string | number);
             return isNaN(date.getTime()) ? <span>-</span> : date.toLocaleDateString("es-ES");
         },
     },
     {
         accessorKey: "dividend",
         header: "Dividendo",
-        cell: ({ row }) => `$${(row.getValue("dividend") as number).toFixed(2)}`,
+        cell: ({ row }) => {
+            const dividend = row.getValue("dividend");
+            return typeof dividend === 'number' && !isNaN(dividend) ? `$${dividend.toFixed(2)}` : <span>-</span>;
+        },
     },
     {
         accessorKey: "yield",
         header: "Rendimiento",
-        cell: ({ row }) => `${(row.getValue("yield") as number).toFixed(2)}%`,
+        cell: ({ row }) => {
+            const yieldValue = row.getValue("yield");
+            return typeof yieldValue === 'number' && !isNaN(yieldValue) ? `${yieldValue.toFixed(2)}%` : <span>-</span>;
+        },
     },
     {
         accessorKey: "frequency",
         header: "Frecuencia",
         cell: ({ row }) => {
-            const frequency = row.getValue("frequency") as string;
-            return <span className="capitalize">{frequency ? frequency.toLowerCase() : '-'}</span>;
+            const frequency = row.getValue("frequency");
+            return <span className="capitalize">{typeof frequency === 'string' && frequency ? frequency.toLowerCase() : '-'}</span>;
         },
         filterFn: "equalsString",
     },

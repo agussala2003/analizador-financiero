@@ -84,6 +84,19 @@ const ProfileSkeleton = () => (
   </div>
 );
 
+
+interface OnboardingProfile {
+  investorProfile?: string;
+  experience?: string;
+  interests?: Record<string, boolean>;
+}
+
+interface UserProfile {
+  first_name?: string;
+  last_name?: string;
+  onboarding_profile?: OnboardingProfile | null;
+}
+
 export default function ProfilePage() {
   const { user, profile, refreshProfile, isLoaded } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -94,13 +107,26 @@ export default function ProfilePage() {
   const [experience, setExperience] = useState("");
   const [interests, setInterests] = useState<Record<string, boolean>>({});
 
+  function extractOnboardingProfile(raw: unknown): OnboardingProfile {
+    if (raw && typeof raw === 'object') {
+      const obj = raw as Partial<OnboardingProfile>;
+      return {
+        investorProfile: typeof obj.investorProfile === 'string' ? obj.investorProfile : '',
+        experience: typeof obj.experience === 'string' ? obj.experience : '',
+  interests: typeof obj.interests === 'object' && obj.interests !== null ? obj.interests : {},
+      };
+    }
+    return { investorProfile: '', experience: '', interests: {} };
+  }
+
   useEffect(() => {
     if (profile) {
-      setFirstName(profile.first_name ?? "");
-      setLastName(profile.last_name ?? "");
-      setInvestorProfile((profile.onboarding_profile as any)?.investorProfile ?? "");
-      setExperience((profile.onboarding_profile as any)?.experience ?? "");
-      setInterests((profile.onboarding_profile as any)?.interests ?? {});
+      setFirstName((profile as UserProfile).first_name ?? "");
+      setLastName((profile as UserProfile).last_name ?? "");
+      const onboarding = extractOnboardingProfile((profile as UserProfile).onboarding_profile);
+      setInvestorProfile(onboarding.investorProfile ?? "");
+      setExperience(onboarding.experience ?? "");
+      setInterests(onboarding.interests ?? {});
     }
   }, [profile]);
 
@@ -115,10 +141,10 @@ export default function ProfilePage() {
     setLoading(true);
     const toastId = toast.loading("Guardando cambios...");
 
-    const onboardingProfile = { investorProfile, experience, interests };
+    const onboardingProfile: OnboardingProfile = { investorProfile, experience, interests };
 
     try {
-      const { error } = await supabase
+      const { error }: { error: unknown } = await supabase
         .from("profiles")
         .update({
           first_name: firstName,
@@ -127,14 +153,20 @@ export default function ProfilePage() {
         })
         .eq("id", user.id);
 
-      if (error) throw error;
+      if (error) throw new Error(
+        (typeof error === 'object' && error && 'message' in error && typeof (error as { message?: unknown }).message === 'string')
+          ? (error as { message: string }).message
+          : JSON.stringify(error)
+      );
 
       await refreshProfile();
       toast.success("¡Perfil actualizado con éxito!", { id: toastId });
       void logger.info("PROFILE_UPDATE_SUCCESS", `User ${user.id} updated their profile.`);
     } catch (error: unknown) {
       toast.error("No se pudo actualizar el perfil.", { id: toastId });
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage = (typeof error === 'object' && error && 'message' in error && typeof (error as { message?: unknown }).message === 'string')
+        ? (error as { message: string }).message
+        : 'Unknown error occurred';
       void logger.error("PROFILE_UPDATE_FAILED", `Failed to update profile for user ${user.id}`, {
         error: errorMessage,
       });
