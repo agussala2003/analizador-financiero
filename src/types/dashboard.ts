@@ -90,10 +90,10 @@ export interface AssetData {
  */
 export interface DashboardContextType {
     selectedTickers: string[];
-    assetsData: Record<string, AssetData>;
-    loading: boolean;
-    error: string;
-    addTicker: (tickerRaw: string, options: { fromPortfolio?: boolean, addToSelected?: boolean }) => Promise<void>;
+    assetsData?: Record<string, AssetData>; // Opcional
+    loading?: boolean; // Opcional
+    error?: string; // Opcional
+    addTicker: (tickerRaw: string) => void;
     removeTicker: (ticker: string) => void;
     indicatorConfig: IndicatorConfig;
 }
