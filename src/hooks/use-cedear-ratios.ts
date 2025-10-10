@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 // ✅ Importamos la nueva función del servicio
-import { fetchCedearRatios } from '../services/data/cedearService';
+import { fetchCedearRatios } from '../services/data/cedear-service';
 
 /**
  * Hook personalizado para obtener y cachear los ratios de conversión de CEDEARs.

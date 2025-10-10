@@ -1,17 +1,17 @@
 // src/App.tsx
 
 import { Outlet } from "react-router-dom";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider } from "./components/ui/theme-provider";
 import {
   SidebarProvider,
   SidebarTrigger,
   SidebarInset,
 } from "./components/ui/sidebar";
-import { AppSidebar } from "./components/app-sidebar";
+import { AppSidebar } from "./components/ui/app-sidebar";
 import { Toaster } from "sonner";
-import { ModeToggle } from "./components/mode-toggle";
-import GenericBreadcrumb from "./components/breadcrumb-demo";
-import ActivesBar from "./components/actives-bar";
+import { ModeToggle } from "./components/ui/mode-toggle";
+import GenericBreadcrumb from "./components/ui/breadcrumb-demo";
+import ActivesBar from "./components/ui/actives-bar";
 import React from "react";
 
 export default function App() {
