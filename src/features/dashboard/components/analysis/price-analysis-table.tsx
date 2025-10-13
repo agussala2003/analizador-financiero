@@ -10,6 +10,7 @@ import { AddTransactionModal } from "../../../portfolio/components";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../../components/ui/dropdown-menu";
+import { usePrefetchAsset } from "../../../../hooks/use-prefetch-asset";
 
 // --- Props del Componente ---
 interface PriceAnalysisTableProps {
@@ -63,6 +64,7 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
     const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: "symbol", dir: "asc" });
     const { theme } = useTheme();
     const [buyModalInfo, setBuyModalInfo] = useState({ isOpen: false, ticker: null as string | null, price: null as number | null });
+    const { prefetchAssetIfNotCached } = usePrefetchAsset();
 
     const sortedAssets = useMemo(() => {
         return [...assets].sort((a, b) => {
@@ -168,15 +170,18 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                     {sortedAssets.map((asset) => (
                                         <TableRow key={asset.symbol}>
                                             <TableCell className="font-medium">
-                                                {/* V V V INICIO DEL CAMBIO V V V */}
-                                                <Link to={`/asset/${asset.symbol}`} className="flex items-center gap-3 group">
+                                                <Link 
+                                                    to={`/asset/${asset.symbol}`} 
+                                                    className="flex items-center gap-3 group"
+                                                    onMouseEnter={() => prefetchAssetIfNotCached(asset.symbol)}
+                                                    onFocus={() => prefetchAssetIfNotCached(asset.symbol)}
+                                                >
                                                     <img src={asset.image} alt={asset.companyName} className="w-8 h-8 rounded-full bg-muted object-contain border" />
                                                     <div>
                                                         <div className="font-bold group-hover:text-primary transition-colors">{asset.symbol}</div>
                                                         <div className="text-xs text-muted-foreground truncate max-w-[200px]">{asset.companyName}</div>
                                                     </div>
                                                 </Link>
-                                                {/* ^ ^ ^ FIN DEL CAMBIO ^ ^ ^ */}
                                             </TableCell>
                                             <TableCell className="text-center font-semibold">{formatCurrency(asset.currentPrice)}</TableCell>
                                             <TableCell className="text-center">{pctNode(asset.dayChange)}</TableCell>

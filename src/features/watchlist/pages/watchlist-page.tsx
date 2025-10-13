@@ -1,6 +1,7 @@
 // src/features/watchlist/pages/watchlist-page.tsx
 
 import { useWatchlist } from '../../../hooks/use-watchlist';
+import { usePrefetchAsset } from '../../../hooks/use-prefetch-asset';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Star, TrendingUp } from 'lucide-react';
@@ -10,6 +11,7 @@ import { Skeleton } from '../../../components/ui/skeleton';
 export default function WatchlistPage() {
   const { data: watchlist = [], isLoading, error } = useWatchlist();
   const navigate = useNavigate();
+  const { prefetchAssetIfNotCached } = usePrefetchAsset();
 
   if (isLoading) {
     return (
@@ -97,6 +99,9 @@ export default function WatchlistPage() {
             key={item.id}
             className="cursor-pointer hover:shadow-lg transition-shadow"
             onClick={() => void navigate(`/asset/${item.symbol}`)}
+            onMouseEnter={() => prefetchAssetIfNotCached(item.symbol)}
+            onFocus={() => prefetchAssetIfNotCached(item.symbol)}
+            tabIndex={0}
           >
             <CardHeader>
               <div className="flex items-start justify-between">

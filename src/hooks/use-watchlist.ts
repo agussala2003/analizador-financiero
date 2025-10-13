@@ -93,14 +93,49 @@ export function useWatchlistMutations() {
 
       return result.data as WatchlistItem;
     },
+    // ✨ OPTIMISTIC UPDATE: Actualizar UI instantáneamente
+    onMutate: async (dto) => {
+      // Cancelar refetch en curso para evitar race conditions
+      await queryClient.cancelQueries({ queryKey });
+
+      // Snapshot del estado actual (para rollback)
+      const previousWatchlist = queryClient.getQueryData<WatchlistItem[]>(queryKey);
+
+      // Crear item optimista
+      const optimisticItem: WatchlistItem = {
+        id: `temp-${Date.now()}`, // ID temporal
+        user_id: user?.id ?? '',
+        symbol: dto.symbol,
+        notes: dto.notes,
+        added_at: new Date().toISOString(),
+      };
+
+      // Actualizar caché optimistamente
+      queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => [optimisticItem, ...old]);
+
+      // Mostrar feedback instantáneo
+      toast.success(`${dto.symbol} agregado a watchlist`);
+
+      // Retornar context para rollback
+      return { previousWatchlist };
+    },
     onSuccess: (data) => {
-      // Actualizar caché
-      queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => [data, ...old]);
-      toast.success(`${data.symbol} agregado a watchlist`);
+      // Reemplazar item optimista con datos reales del servidor
+      queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => 
+        old.map(item => item.id.toString().startsWith('temp-') && item.symbol === data.symbol ? data : item)
+      );
       void logger.info('WATCHLIST_ADDED', 'Asset added to watchlist', { symbol: data.symbol });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      // Rollback: Restaurar estado anterior
+      if (context?.previousWatchlist) {
+        queryClient.setQueryData(queryKey, context.previousWatchlist);
+      }
       toast.error(error.message || 'Error al agregar a watchlist');
+    },
+    // Siempre refetch después de settled (success o error) para sincronizar
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey });
     },
   });
 
@@ -122,16 +157,38 @@ export function useWatchlistMutations() {
         throw new Error('No se pudo eliminar de watchlist');
       }
     },
-    onSuccess: (_data, symbol) => {
-      // Actualizar caché
+    // ✨ OPTIMISTIC UPDATE: Remover de UI instantáneamente
+    onMutate: async (symbol) => {
+      // Cancelar refetch en curso
+      await queryClient.cancelQueries({ queryKey });
+
+      // Snapshot del estado actual
+      const previousWatchlist = queryClient.getQueryData<WatchlistItem[]>(queryKey);
+
+      // Remover optimistamente
       queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => 
         old.filter(item => item.symbol !== symbol)
       );
+
+      // Feedback instantáneo
       toast.success(`${symbol} eliminado de watchlist`);
+
+      // Retornar context para rollback
+      return { previousWatchlist };
+    },
+    onSuccess: (_data, symbol) => {
       void logger.info('WATCHLIST_REMOVED', 'Asset removed from watchlist', { symbol });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _symbol, context) => {
+      // Rollback: Restaurar estado anterior
+      if (context?.previousWatchlist) {
+        queryClient.setQueryData(queryKey, context.previousWatchlist);
+      }
       toast.error(error.message || 'Error al eliminar de watchlist');
+    },
+    // Refetch para sincronizar
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey });
     },
   });
 
@@ -157,16 +214,42 @@ export function useWatchlistMutations() {
 
       return result.data as WatchlistItem;
     },
+    // ✨ OPTIMISTIC UPDATE: Actualizar notas instantáneamente
+    onMutate: async ({ symbol, dto }) => {
+      // Cancelar refetch en curso
+      await queryClient.cancelQueries({ queryKey });
+
+      // Snapshot del estado actual
+      const previousWatchlist = queryClient.getQueryData<WatchlistItem[]>(queryKey);
+
+      // Actualizar optimistamente
+      queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => 
+        old.map(item => item.symbol === symbol ? { ...item, notes: dto.notes } : item)
+      );
+
+      // Feedback instantáneo
+      toast.success('Notas actualizadas');
+
+      // Retornar context para rollback
+      return { previousWatchlist };
+    },
     onSuccess: (data) => {
-      // Actualizar caché
+      // Asegurar que los datos del servidor estén sincronizados
       queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => 
         old.map(item => item.symbol === data.symbol ? data : item)
       );
-      toast.success('Notas actualizadas');
       void logger.info('WATCHLIST_UPDATED', 'Watchlist item updated', { symbol: data.symbol });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      // Rollback: Restaurar estado anterior
+      if (context?.previousWatchlist) {
+        queryClient.setQueryData(queryKey, context.previousWatchlist);
+      }
       toast.error(error.message || 'Error al actualizar');
+    },
+    // Refetch para sincronizar
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey });
     },
   });
 
@@ -187,13 +270,78 @@ export function useWatchlistMutations() {
 
       if (existing) {
         // Remover
-        await removeFromWatchlist.mutateAsync(symbol);
+        const { error } = await supabase
+          .from('watchlist')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('symbol', symbol);
+
+        if (error) throw error;
         return 'removed';
       } else {
         // Agregar
-        await addToWatchlist.mutateAsync({ symbol });
+        const result = await supabase
+          .from('watchlist')
+          .insert({
+            user_id: user.id,
+            symbol,
+            notes: null,
+          })
+          .select()
+          .single();
+
+        if (result.error) throw result.error;
         return 'added';
       }
+    },
+    // ✨ OPTIMISTIC UPDATE: Toggle instantáneo
+    onMutate: async (symbol) => {
+      // Cancelar refetch en curso
+      await queryClient.cancelQueries({ queryKey });
+
+      // Snapshot del estado actual
+      const previousWatchlist = queryClient.getQueryData<WatchlistItem[]>(queryKey);
+
+      // Determinar acción optimista
+      const currentWatchlist = previousWatchlist ?? [];
+      const isInWatchlist = currentWatchlist.some(item => item.symbol === symbol);
+
+      if (isInWatchlist) {
+        // Remover optimistamente
+        queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => 
+          old.filter(item => item.symbol !== symbol)
+        );
+        toast.success(`${symbol} eliminado de watchlist`);
+      } else {
+        // Agregar optimistamente
+        const optimisticItem: WatchlistItem = {
+          id: `temp-${Date.now()}`,
+          user_id: user?.id ?? '',
+          symbol,
+          notes: null,
+          added_at: new Date().toISOString(),
+        };
+        queryClient.setQueryData<WatchlistItem[]>(queryKey, (old = []) => [optimisticItem, ...old]);
+        toast.success(`${symbol} agregado a watchlist`);
+      }
+
+      // Retornar context para rollback
+      return { previousWatchlist };
+    },
+    onSuccess: (action, symbol) => {
+      void logger.info('WATCHLIST_TOGGLED', `Asset ${action} watchlist`, { symbol, action });
+    },
+    onError: (error: Error, _symbol, context) => {
+      // Rollback: Restaurar estado anterior
+      if (context?.previousWatchlist) {
+        queryClient.setQueryData(queryKey, context.previousWatchlist);
+      }
+      toast.error('Error al actualizar watchlist');
+      void logger.error('WATCHLIST_TOGGLE_ERROR', 'Error toggling watchlist', { error });
+    },
+    // Refetch para sincronizar
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey });
     },
   });
 
