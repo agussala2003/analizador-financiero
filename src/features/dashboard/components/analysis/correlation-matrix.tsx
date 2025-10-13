@@ -7,6 +7,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../
 import { Download, GitCompareArrows } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../../components/ui/dropdown-menu";
 import { Button } from "../../../../components/ui/button";
+import { exportToPdf } from "../../../../utils/export-pdf";
+import { indicatorConfig } from "../../../../utils/financial";
+import { useTheme } from "../../../../components/ui/theme-provider";
 
 // --- Props del Componente ---
 interface CorrelationMatrixProps {
@@ -46,6 +49,8 @@ const getCellStyle = (value: number | null): React.CSSProperties => {
 
 // --- Componente Principal ---
 export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets }: CorrelationMatrixProps) {
+    const { theme } = useTheme();
+    
     const correlationMatrix = useMemo(() => {
         const matrix: (number | null)[][] = [];
         if (assets.length < 2) return [];
@@ -68,6 +73,37 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
         }
         return matrix;
     }, [assets]);
+
+    const handlePdfExport = () => {
+        const title = "Matriz de Correlación";
+        const subtitle = "Análisis de correlación entre los retornos históricos de los activos seleccionados.";
+        
+        // Crear cabecera con los símbolos de los activos
+        const head = [['Activo', ...assets.map(asset => asset.symbol)]];
+        
+        // Crear cuerpo de la matriz
+        const body = assets.map((rowAsset, i) => [
+            rowAsset.symbol,
+            ...assets.map((_, j) => {
+                const value = correlationMatrix[i]?.[j];
+                return typeof value === 'number' ? value.toFixed(2) : 'N/A';
+            })
+        ]);
+
+        void exportToPdf({
+            title,
+            subtitle,
+            sections: [{
+                title: 'Matriz de Correlación',
+                head,
+                body,
+                isCorrelation: true // Flag para aplicar colores de correlación
+            }],
+            assets,
+            theme,
+            indicatorConfig,
+        });
+    };
 
     if (assets.length < 2) {
         return (
@@ -104,7 +140,7 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
                         <DropdownMenuContent>
                             {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
                             <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
-                            <DropdownMenuItem>Exportar a PDF</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

@@ -107,8 +107,13 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                         return [
                             config.label,
                             ...assets.map(asset => {
-                                const value = asset.data?.[key];
-                                return formatValue(config, value);
+                                const rawValue = asset.data?.[key];
+                                const formattedValue = formatValue(config, rawValue);
+                                // Store both raw and formatted values for PDF export
+                                return {
+                                    content: formattedValue,
+                                    rawValue: rawValue
+                                };
                             })
                         ];
                     })

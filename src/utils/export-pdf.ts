@@ -2,15 +2,21 @@
 
 import type { AssetData } from '../types/dashboard';
 import type { Indicator, IndicatorConfig } from './financial';
-import type { CellHookData } from 'jspdf-autotable';
+// Importamos el tipo 'HookData' que necesitaremos para el hook
+import type { HookData } from 'jspdf-autotable';
 
 // --- TIPOS Y INTERFACES ---
 type Theme = 'light' | 'dark' | 'system';
 
+interface CellWithRawValue {
+    content: string;
+    rawValue: number | 'N/A';
+}
+
 interface PdfSection {
     title: string;
     head: string[][];
-    body: (string | number)[][];
+    body: (string | number | CellWithRawValue)[][];
     metricKeys?: string[];
     isCorrelation?: boolean;
 }
@@ -24,7 +30,6 @@ interface ExportOptions {
     indicatorConfig: IndicatorConfig;
 }
 
-// Extended jsPDF interface to include autoTable properties
 interface ExtendedJsPDF {
     lastAutoTable?: {
         finalY: number;
@@ -55,15 +60,13 @@ const safeCellToString = (cellValue: unknown): string => {
     if (typeof cellValue === 'object' && cellValue !== null && 'content' in cellValue) {
         return safeCellToString((cellValue as { content: unknown }).content);
     }
-    // Only use String() as last resort for primitive types
     if (typeof cellValue === 'bigint' || typeof cellValue === 'symbol') {
         return cellValue.toString();
     }
-    // For objects without a content property, return empty string to avoid [object Object]
     return '';
 };
 
-// --- LÓGICA DE ESTILOS Y FORMATO (Funciones internas del módulo) ---
+// --- LÓGICA DE ESTILOS Y FORMATO ---
 const resolveTheme = (theme: Theme): 'light' | 'dark' => {
     if (theme === 'system') {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -85,17 +88,14 @@ const getThemeStyles = (theme: Theme) => {
 };
 
 const getTrafficLightColor = (config: Indicator, value: number, theme: Theme): [number, number, number] | undefined => {
-
     const { green, yellow, lowerIsBetter } = config;
     const resolvedTheme = resolveTheme(theme);
     const isDark = resolvedTheme === 'dark';
-
     const colors = {
-        green: isDark ? [74, 222, 128] as [number, number, number] : [22, 163, 74] as [number, number, number],   // text-green-400 / text-green-600
-        yellow: isDark ? [234, 179, 8] as [number, number, number] : [202, 138, 4] as [number, number, number],    // text-yellow-500 / text-yellow-600
-        red: isDark ? [239, 68, 68] as [number, number, number] : [220, 38, 38] as [number, number, number],        // text-red-500 / text-red-600
+        green: isDark ? [74, 222, 128] as [number, number, number] : [22, 163, 74] as [number, number, number],
+        yellow: isDark ? [234, 179, 8] as [number, number, number] : [202, 138, 4] as [number, number, number],
+        red: isDark ? [239, 68, 68] as [number, number, number] : [220, 38, 38] as [number, number, number],
     };
-
     if (lowerIsBetter) {
         if (value <= green) return colors.green;
         if (value <= yellow) return colors.yellow;
@@ -108,51 +108,59 @@ const getTrafficLightColor = (config: Indicator, value: number, theme: Theme): [
 };
 
 const getCorrelationCellStyle = (value: number) => {
-
-    const negColor = { h: 0, s: 90, l: 55 };
-    const midColor = { h: 60, s: 25, l: 97 };
-    const posColor = { h: 120, s: 80, l: 45 };
-    let h, s, l;
-
-    if (value < 0) {
-        const t = Math.abs(value);
-        h = midColor.h + (negColor.h - midColor.h) * t;
-        s = midColor.s + (negColor.s - midColor.s) * t;
-        l = midColor.l + (negColor.l - midColor.l) * t;
+    const v = Math.min(1, Math.max(0, value));
+    const hue = v * 120;
+    const saturation = 100;
+    const lightness = 45;
+    const h = hue / 360;
+    const s = saturation / 100;
+    const l = lightness / 100;
+    let r: number, g: number, b: number;
+    if (s === 0) {
+        r = g = b = l;
     } else {
-        const t = value;
-        h = midColor.h + (posColor.h - midColor.h) * t;
-        s = midColor.s + (posColor.s - midColor.s) * t;
-        l = midColor.l + (posColor.l - midColor.l) * t;
+        const hue2rgb = (p: number, q: number, t: number) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
     }
-    const textColor: [number, number, number] = l > 75 ? [10, 10, 10] : [253, 253, 253];
-    return { fillColor: `hsl(${h}, ${s}%, ${l}%)`, textColor };
+    return { 
+        fillColor: [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)] as [number, number, number],
+    };
 };
 
 const getPercentageColor = (value: number, theme: Theme): [number, number, number] => {
-
     const resolvedTheme = resolveTheme(theme);
     const isDark = resolvedTheme === 'dark';
     if (value >= 0) {
-        // Colores más vibrantes para mejor visibilidad en PDF
-        return isDark ? [34, 197, 94] : [22, 163, 74]; // text-green-500 / text-green-600
+        return isDark ? [34, 197, 94] : [22, 163, 74];
     } else {
-        return isDark ? [239, 68, 68] : [220, 38, 38]; // text-red-500 / text-red-600
+        return isDark ? [239, 68, 68] : [220, 38, 38];
     }
 };
 
-// --- FUNCIÓN PRINCIPAL DE EXPORTACIÓN (con lazy loading) ---
+// --- FUNCIÓN PRINCIPAL DE EXPORTACIÓN ---
 export const exportToPdf = async ({ title, subtitle, sections, assets, theme, indicatorConfig }: ExportOptions) => {
-    // Lazy load heavy dependencies only when export is triggered
-    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    const [jsPDFModule, { default: autoTable }] = await Promise.all([
         import('jspdf'),
         import('jspdf-autotable')
     ]);
     
+    const jsPDF = jsPDFModule.default;
     const doc = new jsPDF() as unknown as ExtendedJsPDF;
     const styles = getThemeStyles(theme);
     let finalY = 0;
 
+    // Esto dibuja el fondo para la PÁGINA 1
     const resolvedTheme = resolveTheme(theme);
     if (resolvedTheme === 'dark') {
         doc.setFillColor(styles.backgroundColor);
@@ -176,9 +184,37 @@ export const exportToPdf = async ({ title, subtitle, sections, assets, theme, in
         doc.setTextColor(styles.textColor[0], styles.textColor[1], styles.textColor[2]);
         doc.text(section.title, 14, finalY + 10);
 
-        // Procesar el cuerpo de la tabla para añadir estilos de color
-        const processedBody = section.body.map(row =>
-            row.map(cell => {
+        const processedBody = section.body.map((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+                if (section.metricKeys && colIndex > 0) {
+                    const metricKey = section.metricKeys[rowIndex];
+                    const config = metricKey ? indicatorConfig[metricKey] : undefined;
+                    if (typeof cell === 'object' && cell !== null && 'rawValue' in cell && config) {
+                        const rawValue = cell.rawValue;
+                        const value = typeof rawValue === 'number' ? rawValue : null;
+                        if (value !== null) {
+                            const color = getTrafficLightColor(config, value, theme);
+                            if (color) {
+                                return { content: cell.content, styles: { textColor: color } };
+                            }
+                        }
+                        return cell.content;
+                    }
+                }
+                
+                if (section.isCorrelation && colIndex > 0) {
+                    const cellValue = safeCellToString(cell);
+                    const value = parseFloat(cellValue);
+                    if (!isNaN(value)) {
+                        const cellStyles = getCorrelationCellStyle(value);
+                        return { content: cellValue, styles: { textColor: cellStyles.fillColor } };
+                    }
+                }
+                
+                if (typeof cell === 'object' && cell !== null && 'content' in cell) {
+                    return cell.content;
+                }
+                
                 const cellValue = String(cell);
                 const isPercentage = cellValue.includes('%') && cellValue !== 'N/A' && cellValue !== '-';
 
@@ -186,10 +222,7 @@ export const exportToPdf = async ({ title, subtitle, sections, assets, theme, in
                     const numericValue = parseFloat(cellValue.replace('%', ''));
                     if (!isNaN(numericValue)) {
                         const color = getPercentageColor(numericValue, theme);
-                        return {
-                            content: cellValue,
-                            styles: { textColor: color }
-                        };
+                        return { content: cellValue, styles: { textColor: color } };
                     }
                 }
                 return cell;
@@ -212,43 +245,26 @@ export const exportToPdf = async ({ title, subtitle, sections, assets, theme, in
                 textColor: styles.textColor,
                 fontStyle: 'bold',
             },
-            willDrawCell: (data: CellHookData) => {
-                // Estilos para la Tabla de Fundamentales con indicadores específicos
-                if (section.metricKeys && data.section === 'body' && data.column.index > 0) {
-                    const metricKey = section.metricKeys[data.row.index];
-                    const config = indicatorConfig[metricKey];
-                    const valueStr = safeCellToString(data.cell.raw).replace('%', '').replace('$', '');
-                    const value = parseFloat(valueStr);
-
-                    if (config && !isNaN(value)) {
-                        const color = getTrafficLightColor(config, value, theme);
-                        if (color) {
-                            data.cell.styles.textColor = color;
-                        }
-                    }
-                }
-            },
-            didDrawCell: (data: CellHookData) => {
-                // Estilos para la Matriz de Correlación
-                if (section.isCorrelation && data.section === 'body' && data.column.index > 0) {
-                    const valueStr = safeCellToString(data.cell.raw);
-                    const value = parseFloat(valueStr);
-                    if (!isNaN(value)) {
-                        const cellStyles = getCorrelationCellStyle(value);
-                        doc.setFillColor(cellStyles.fillColor);
-                        doc.setTextColor(...cellStyles.textColor);
-                        doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                        doc.text(safeCellToString(data.cell.raw), data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, {
-                            align: 'center', baseline: 'middle'
-                        });
-                    }
+            // ==================================================================
+            // INICIO DEL CÓDIGO AÑADIDO
+            // ==================================================================
+            willDrawPage: (data: HookData) => {
+                // Este hook dibuja el fondo en CADA PÁGINA que la tabla crea.
+                // No lo aplicamos a la página 1 porque ya lo hicimos manualmente.
+                if (data.pageNumber > 1 && resolvedTheme === 'dark') {
+                    doc.setFillColor(styles.backgroundColor);
+                    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
                 }
             }
+            // ==================================================================
+            // FIN DEL CÓDIGO AÑADIDO
+            // ==================================================================
         });
 
         finalY = doc.lastAutoTable?.finalY ?? finalY;
     });
 
+    // El footer se dibuja sobre el fondo correcto en todas las páginas
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
