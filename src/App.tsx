@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 import { ModeToggle } from "./components/ui/mode-toggle";
 import GenericBreadcrumb from "./components/ui/breadcrumb-demo";
 import ActivesBar from "./components/ui/actives-bar";
+import { CommandMenu } from "./components/search/command-menu";
 import React from "react";
 
 export default function App() {
@@ -29,7 +30,10 @@ export default function App() {
               <SidebarTrigger />
               <GenericBreadcrumb />
             </div>
-            <ModeToggle />
+            <div className="flex items-center gap-2">
+              <CommandMenu />
+              <ModeToggle />
+            </div>
           </header>
 
           {/* Área de contenido con scroll interno */}
