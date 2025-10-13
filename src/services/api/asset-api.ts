@@ -104,7 +104,7 @@ export async function fetchTickerData({
         void logger.error('API_FETCH_FAILED', `Failed to fetch data for ${ticker}`, { ticker, errorMessage: msg });
         
         if (cached?.data) {
-            toast.warning(`No se pudieron actualizar los datos para ${ticker}. Mostrando la última versión disponible.`);
+            // toast.warning(`No se pudieron actualizar los datos para ${ticker}. Mostrando la última versión disponible.`);
             return cached.data as AssetData;
         }
 

@@ -13,11 +13,13 @@ import { ModeToggle } from "./components/ui/mode-toggle";
 import GenericBreadcrumb from "./components/ui/breadcrumb-demo";
 import ActivesBar from "./components/ui/actives-bar";
 import { CommandMenu } from "./components/search/command-menu";
+import { ErrorBoundary } from "./components/error-boundary";
 import React from "react";
 
 export default function App() {
   return (
-    <SidebarProvider>
+    <ErrorBoundary level="root">
+      <SidebarProvider>
       <Toaster position="top-right" richColors />
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         {/* Sidebar y SidebarInset se encargan del layout */}
@@ -39,11 +41,12 @@ export default function App() {
           {/* Área de contenido con scroll interno */}
           <main className="flex-1">
             <React.Suspense fallback={<div>Cargando...</div>}>
-            <Outlet />
-          </React.Suspense>
+              <Outlet />
+            </React.Suspense>
           </main>
         </SidebarInset>
       </ThemeProvider>
     </SidebarProvider>
+    </ErrorBoundary>
   );
 }

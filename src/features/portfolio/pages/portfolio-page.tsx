@@ -16,8 +16,9 @@ import {
   SellTransactionModal,
   PortfolioSkeleton,
 } from '../components';
+import { ErrorBoundary } from '../../../components/error-boundary';
 
-export default function PortfolioPage() {
+function PortfolioPageContent() {
   const { holdings, transactions, totalPerformance, loading, deleteAsset, portfolioData } = usePortfolio();
 
   const [addModalInfo, setAddModalInfo] = useState<AddModalInfo>({
@@ -104,5 +105,13 @@ export default function PortfolioPage() {
         holding={sellModalHolding}
       />
     </>
+  );
+}
+
+export default function PortfolioPage() {
+  return (
+    <ErrorBoundary level="feature" featureName="Portfolio">
+      <PortfolioPageContent />
+    </ErrorBoundary>
   );
 }

@@ -20,8 +20,9 @@ import { SelectedTickersList } from "../components/ticker-input/selected-tickers
 import { DashboardTabs } from "../components/tabs/dashboard-tabs";
 import { DashboardSkeleton } from "../components/skeleton/dashboard-skeleton";
 import { AssetData } from "../../../types/dashboard";
+import { ErrorBoundary } from "../../../components/error-boundary";
 
-export default function DashboardPage() {
+function DashboardPageContent() {
     const { addTicker, removeTicker, selectedTickers } = useDashboard();
     const { holdings, loading: portfolioLoading } = usePortfolio();
     const { user, profile } = useAuth();
@@ -86,5 +87,13 @@ export default function DashboardPage() {
                 <DashboardTabs assets={assets} isLoading={isLoading} />
             )}
         </div>
+    );
+}
+
+export default function DashboardPage() {
+    return (
+        <ErrorBoundary level="feature" featureName="Dashboard">
+            <DashboardPageContent />
+        </ErrorBoundary>
     );
 }
