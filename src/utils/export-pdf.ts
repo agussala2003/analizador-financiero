@@ -2,6 +2,7 @@
 
 import type { AssetData } from '../types/dashboard';
 import type { Indicator, IndicatorConfig } from './financial';
+import type { CellHookData } from 'jspdf-autotable';
 
 // --- TIPOS Y INTERFACES ---
 type Theme = 'light' | 'dark' | 'system';
@@ -211,42 +212,32 @@ export const exportToPdf = async ({ title, subtitle, sections, assets, theme, in
                 textColor: styles.textColor,
                 fontStyle: 'bold',
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            willDrawCell: (data: any) => {
+            willDrawCell: (data: CellHookData) => {
                 // Estilos para la Tabla de Fundamentales con indicadores específicos
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (section.metricKeys && data.section === 'body' && data.column.index > 0) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    const metricKey = section.metricKeys[data.row.index as number];
+                    const metricKey = section.metricKeys[data.row.index];
                     const config = indicatorConfig[metricKey];
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     const valueStr = safeCellToString(data.cell.raw).replace('%', '').replace('$', '');
                     const value = parseFloat(valueStr);
 
                     if (config && !isNaN(value)) {
                         const color = getTrafficLightColor(config, value, theme);
                         if (color) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             data.cell.styles.textColor = color;
                         }
                     }
                 }
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            didDrawCell: (data: any) => {
+            didDrawCell: (data: CellHookData) => {
                 // Estilos para la Matriz de Correlación
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (section.isCorrelation && data.section === 'body' && data.column.index > 0) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     const valueStr = safeCellToString(data.cell.raw);
                     const value = parseFloat(valueStr);
                     if (!isNaN(value)) {
                         const cellStyles = getCorrelationCellStyle(value);
                         doc.setFillColor(cellStyles.fillColor);
                         doc.setTextColor(...cellStyles.textColor);
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
                         doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
                         doc.text(safeCellToString(data.cell.raw), data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, {
                             align: 'center', baseline: 'middle'
                         });
