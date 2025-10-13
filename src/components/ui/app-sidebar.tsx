@@ -13,8 +13,8 @@ import {
 } from "./sidebar";
 import {
   Wallet, LogIn, UserPlus, Home, ChartCandlestick, LayoutDashboard,
-  Divide, Newspaper, BookCopy, BookMarked, FilePenLine,
-  MessageSquareHeart, Shield, User, Globe, PiggyBank, Star
+  Divide, Newspaper, BookCopy, BookMarked, FilePenLine, FileEdit,
+  MessageSquareHeart, Shield, User, Globe, PiggyBank, Star, Bookmark
 } from "lucide-react";
 import { useAuth } from "../../hooks/use-auth";
 import { useConfig } from "../../hooks/use-config";
@@ -59,7 +59,7 @@ SidebarHeaderContent.displayName = "SidebarHeaderContent";
 const SidebarNavigation = React.memo(({ isLoaded, config, user, profile }: { isLoaded: boolean; config: Config; user: SupabaseUser | null; profile: Profile | null }) => {
   const iconMap = {
     Home, ChartCandlestick, LayoutDashboard, Divide, Newspaper, BookCopy,
-    BookMarked, FilePenLine, MessageSquareHeart, Shield, User, Globe, PiggyBank, Star
+    BookMarked, FilePenLine, FileEdit, Bookmark, MessageSquareHeart, Shield, User, Globe, PiggyBank, Star
   };
 
   if (!isLoaded) {

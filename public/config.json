@@ -219,15 +219,9 @@
         "label": "Contenido",
         "items": [
           { "to": "/news", "label": "Noticias", "icon": "Newspaper", "requiresAuth": true },
-          { "to": "/blogs", "label": "Blogs", "icon": "BookCopy", "requiresAuth": true },
-          { "to": "/blogs/my-bookmarks", "label": "Mis Favoritos", "icon": "BookMarked", "requiresAuth": true },
-          {
-            "to": "/blogs/my-posts",
-            "label": "Mis Publicaciones",
-            "icon": "FilePenLine",
-            "requiresAuth": true,
-            "requiresPermission": "can_upload_blog"
-          }
+          { "to": "/blog", "label": "Blog", "icon": "BookCopy", "requiresAuth": true },
+          { "to": "/mis-blogs", "label": "Mis Artículos", "icon": "FileEdit", "requiresAuth": true, "requiresPermission": "can_upload_blog" },
+          { "to": "/guardados", "label": "Artículos Guardados", "icon": "Bookmark", "requiresAuth": true }
         ]
       },
       {
@@ -236,7 +230,7 @@
           { "to": "/suggestions", "label": "Sugerencias", "icon": "MessageSquareHeart", "requiresAuth": true },
           {
             "to": "/admin",
-            "label": "Admin",
+            "label": "Administración",
             "icon": "Shield",
             "requiresAuth": true,
             "requiresRole": "administrador"

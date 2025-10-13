@@ -1,15 +1,16 @@
 // src/features/admin/components/admin-tabs.tsx
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { Users, FileText, BarChart2 } from 'lucide-react';
+import { Users, FileText, BarChart2, BookCopy } from 'lucide-react';
 import { AdminUsersTable } from './users/admin-users-table';
 import { AdminLogsTable } from './logs/admin-logs-table';
+import { AdminBlogsSection } from './blogs/admin-blogs-section';
 
 /**
  * Componente de pestañas (tabs) para las diferentes secciones del panel de admin.
  * Incluye:
  * - Gestión de Usuarios (activa)
- * - Blogs (deshabilitada - próximamente)
+ * - Gestión de Blogs (activa)
  * - Logs del Sistema (activa)
  * - Estadísticas (deshabilitada - próximamente)
  * 
@@ -29,8 +30,8 @@ export function AdminTabs() {
           <Users className="w-4 h-4 mr-2" />
           Usuarios
         </TabsTrigger>
-        <TabsTrigger value="blogs" disabled>
-          <FileText className="w-4 h-4 mr-2" />
+        <TabsTrigger value="blogs">
+          <BookCopy className="w-4 h-4 mr-2" />
           Blogs
         </TabsTrigger>
         <TabsTrigger value="logs">
@@ -48,9 +49,7 @@ export function AdminTabs() {
       </TabsContent>
 
       <TabsContent value="blogs" className="mt-6">
-        <div className="text-center text-muted-foreground">
-          Próximamente...
-        </div>
+        <AdminBlogsSection />
       </TabsContent>
 
       <TabsContent value="logs" className="mt-6">
