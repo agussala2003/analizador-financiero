@@ -92,7 +92,7 @@ export const RadarComparison = React.memo(function RadarComparison({ assets }: R
             <Card className="flex items-center justify-center h-96">
                 <div className="text-center text-muted-foreground">
                     <p className="font-semibold">Sin activos para comparar</p>
-                    <p className="text-sm">Añade al menos un activo para ver el gráfico radar.</p>
+                    <p className="body-sm">Añade al menos un activo para ver el gráfico radar.</p>
                 </div>
             </Card>
         );

@@ -74,7 +74,7 @@ export function DataTable<TData>({
                         onPageChange={onPageChange}
                     />
                 )}
-                <div className="text-sm text-muted-foreground text-nowrap">
+                <div className="body-sm text-muted-foreground text-nowrap">
                     {table.getFilteredRowModel().rows.length} resultados
                 </div>
             </div>

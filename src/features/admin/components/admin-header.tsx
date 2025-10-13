@@ -31,7 +31,7 @@ export function AdminHeader({ title, description }: AdminHeaderProps) {
         <Shield className="w-8 h-8 text-primary" />
       </div>
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+        <h1 className="heading-2 font-bold tracking-tight">{title}</h1>
         <p className="text-muted-foreground">{description}</p>
       </div>
     </div>

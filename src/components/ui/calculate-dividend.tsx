@@ -75,7 +75,7 @@ export function CalculateDividendModal({ dividend }: { dividend: Dividend }) {
                 {/* --- SECCIÓN DEL RESULTADO FINAL CON ÉNFASIS --- */}
                 <div className="p-4 text-center border-2 border-green-500 rounded-lg bg-green-50">
                     <Label className="body-sm font-semibold text-green-800">TOTAL ESTIMADO A RECIBIR</Label>
-                    <div className="mt-1 text-3xl font-bold tracking-tight text-green-700">
+                    <div className="mt-1 heading-2 font-bold tracking-tight text-green-700">
                         ${totalEstimado.toFixed(2)}
                     </div>
                 </div>

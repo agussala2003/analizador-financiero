@@ -24,7 +24,7 @@ interface TickerBadgeProps {
  */
 export function TickerBadge({ ticker, onRemove }: TickerBadgeProps) {
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium rounded-full bg-secondary text-secondary-foreground">
+    <div className="flex items-center gap-1.5 px-3 py-1 body-sm font-medium rounded-full bg-secondary text-secondary-foreground">
       <span>{ticker}</span>
       <Button
         variant="ghost"
