@@ -136,12 +136,12 @@ function BlogListPage() {
   }, [filterAndSortBlogs]);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container-wide stack-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Blog Financiero</h1>
-          <p className="text-muted-foreground">
+          <h1 className="heading-1 mb-2">Blog Financiero</h1>
+          <p className="body text-muted-foreground">
             Artículos, análisis y noticias del mundo financiero
           </p>
         </div>
@@ -149,7 +149,7 @@ function BlogListPage() {
         {/* Botón crear blog (solo si tiene permisos) */}
         {user && profile?.can_upload_blog && (
           <Link to="/blog/crear">
-            <Button size="lg">
+            <Button size="lg" className="btn-press">
               <Plus className="w-5 h-5 mr-2" />
               Crear Artículo
             </Button>

@@ -32,18 +32,18 @@ export default function RetirementCalculatorPage() {
 
   return (
     <motion.div
-      className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
+      className="container-wide stack-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
     >
-      <div className="flex items-start gap-4 mb-8">
+      <div className="flex items-start gap-4">
         <div className="p-3 bg-primary/10 rounded-xl">
           <PiggyBank className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calculadora de Retiro</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="heading-2">Calculadora de Retiro</h1>
+          <p className="body text-muted-foreground mt-1">
             Descubre el poder del interés compuesto: cómo invertir puede multiplicar tu patrimonio a largo plazo.
           </p>
         </div>

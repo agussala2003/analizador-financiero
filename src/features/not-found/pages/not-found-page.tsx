@@ -38,7 +38,7 @@ export default function NotFoundPage() {
         </motion.p>
         <motion.div variants={itemVariants}>
           <NavLink to="/">
-            <Button size="lg">Volver al Inicio</Button>
+            <Button size="lg" className="btn-press">Volver al Inicio</Button>
           </NavLink>
         </motion.div>
       </motion.div>

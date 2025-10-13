@@ -62,18 +62,18 @@ function PortfolioPageContent() {
   return (
     <>
       <motion.div
-        className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8"
+        className="container-wide stack-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="flex items-center gap-4 pb-4 mb-6 border-b">
+        <div className="flex items-center gap-4 section-divider">
           <div className="p-2 bg-primary/10 rounded-lg">
             <LayoutDashboard className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Mi Portafolio</h1>
-            <p className="text-muted-foreground">Un resumen de tus inversiones, rendimiento y distribución.</p>
+            <h1 className="heading-2">Mi Portafolio</h1>
+            <p className="body text-muted-foreground">Un resumen de tus inversiones, rendimiento y distribución.</p>
           </div>
         </div>
 

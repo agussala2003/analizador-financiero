@@ -63,14 +63,14 @@ function DashboardPageContent() {
     }
 
     return (
-        <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="container-wide stack-6">
             <PageHeader
                 icon={<ChartCandlestick className="w-8 h-8 text-primary" />}
                 title="Dashboard de Análisis"
                 description="Monitorea y analiza tus activos financieros favoritos en un solo lugar."
             />
 
-            <Card className="mb-6">
+            <Card className="card-static">
                 <CardHeader>
                     <TickerAddForm onAddTicker={addTicker} />
                     <SelectedTickersList tickers={selectedTickers} onRemoveTicker={removeTicker} />
@@ -78,10 +78,15 @@ function DashboardPageContent() {
             </Card>
 
             {selectedTickers.length === 0 ? (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-20 px-6 border-2 border-dashed rounded-lg">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ duration: 0.3 }}
+                    className="text-center py-20 px-6 border-2 border-dashed rounded-lg transition-smooth"
+                >
                     <Briefcase className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h2 className="text-xl font-semibold mb-2">Tu dashboard está vacío</h2>
-                    <p className="text-muted-foreground">Comienza añadiendo un activo desde la barra de búsqueda superior.</p>
+                    <h2 className="heading-4 mb-2">Tu dashboard está vacío</h2>
+                    <p className="body text-muted-foreground">Comienza añadiendo un activo desde la barra de búsqueda superior.</p>
                 </motion.div>
             ) : (
                 <DashboardTabs assets={assets} isLoading={isLoading} />

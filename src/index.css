@@ -331,4 +331,275 @@
     /* Ajusta la duración para cambiar la velocidad (ej: 40s para más lento) */
     animation: scroll-infinite 40s linear infinite;
   }
+
+  /* ==============================
+     LAYOUT CONTAINERS
+     ============================== */
+
+  /* Wide container for dashboards, blogs, admin tables */
+  .container-wide {
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8;
+  }
+
+  /* Narrow container for forms, profiles, focused content */
+  .container-narrow {
+    @apply mx-auto w-full max-w-4xl px-4 py-8 sm:px-6;
+  }
+
+  /* Full width container for admin tables, wide data */
+  .container-full {
+    @apply w-full px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  /* Standard container with consistent spacing */
+  .container-standard {
+    @apply mx-auto w-full max-w-screen-xl px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  /* ==============================
+     TYPOGRAPHY SCALE
+     ============================== */
+  .heading-1 {
+    @apply text-4xl font-bold tracking-tight lg:text-5xl;
+  }
+
+  .heading-2 {
+    @apply text-3xl font-bold tracking-tight lg:text-4xl;
+  }
+
+  .heading-3 {
+    @apply text-2xl font-semibold tracking-tight lg:text-3xl;
+  }
+
+  .heading-4 {
+    @apply text-xl font-semibold tracking-tight lg:text-2xl;
+  }
+
+  .body-lg {
+    @apply text-lg leading-relaxed;
+  }
+
+  .body {
+    @apply text-base leading-normal;
+  }
+
+  .body-sm {
+    @apply text-sm leading-normal;
+  }
+
+  .caption {
+    @apply text-xs text-muted-foreground;
+  }
+
+  /* ==============================
+     CARD VARIANTS
+     ============================== */
+  .card-interactive {
+    @apply cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-lg active:scale-[0.99];
+  }
+
+  .card-static {
+    @apply transition-shadow duration-200;
+  }
+
+  .card-highlight {
+    @apply border-primary/50 bg-primary/5 transition-all duration-200;
+  }
+
+  /* ==============================
+     INTERACTION ENHANCEMENTS
+     ============================== */
+  .btn-press {
+    @apply active:scale-[0.98] transition-transform;
+  }
+
+  .link-hover {
+    @apply transition-colors duration-200 hover:text-primary;
+  }
+
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .focus-ring-enhanced {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* ==============================
+     LAYOUT UTILITIES
+     ============================== */
+  .section-divider {
+    @apply mb-6 border-b pb-4;
+  }
+
+  /* Grid Patterns */
+  .grid-cards-3 {
+    @apply grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .grid-cards-2 {
+    @apply grid grid-cols-1 gap-6 lg:grid-cols-2;
+  }
+
+  .grid-cards-4 {
+    @apply grid grid-cols-2 gap-4 lg:grid-cols-4;
+  }
+
+  /* Vertical Spacing */
+  .stack-4 {
+    @apply space-y-4;
+  }
+
+  .stack-6 {
+    @apply space-y-6;
+  }
+
+  .stack-8 {
+    @apply space-y-8;
+  }
+
+  /* Horizontal Spacing */
+  .row-4 {
+    @apply flex flex-wrap gap-4;
+  }
+
+  .row-6 {
+    @apply flex flex-wrap gap-6;
+  }
+
+  /* ==============================
+     ANIMATION ENHANCEMENTS
+     ============================== */
+
+  /* Fade in animation */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  /* Slide up animation */
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+
+  /* Slide down animation */
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.3s ease-out;
+  }
+
+  /* Scale in animation */
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out;
+  }
+
+  /* Shimmer loading effect */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Pulse glow for important elements */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 20px 5px hsl(var(--primary) / 0.2);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Bounce subtle for CTAs */
+  @keyframes bounce-subtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
+  }
+
+  /* Respeta prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-slide-down,
+    .animate-scale-in,
+    .animate-shimmer,
+    .animate-pulse-glow,
+    .animate-bounce-subtle,
+    .animate-scroll-infinite {
+      animation: none;
+    }
+
+    .card-interactive,
+    .btn-press,
+    .link-hover,
+    .transition-smooth {
+      transition: none;
+    }
+  }
 }

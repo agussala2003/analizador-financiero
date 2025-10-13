@@ -15,12 +15,12 @@ export default function WatchlistPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container-wide stack-6">
         <div>
-          <h1 className="text-3xl font-bold">Mi Watchlist</h1>
-          <p className="text-muted-foreground">Tus assets favoritos</p>
+          <h1 className="heading-2">Mi Watchlist</h1>
+          <p className="body text-muted-foreground">Tus assets favoritos</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid-cards-3">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
               <CardHeader>
@@ -36,10 +36,10 @@ export default function WatchlistPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <Card>
+      <div className="container-wide">
+        <Card className="card-static">
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">
+            <div className="text-center text-destructive body">
               Error al cargar watchlist: {error.message}
             </div>
           </CardContent>
@@ -50,10 +50,10 @@ export default function WatchlistPage() {
 
   if (watchlist.length === 0) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Mi Watchlist</h1>
-          <p className="text-muted-foreground">Tus assets favoritos</p>
+      <div className="container-wide stack-6">
+        <div>
+          <h1 className="heading-2">Mi Watchlist</h1>
+          <p className="body text-muted-foreground">Tus assets favoritos</p>
         </div>
         
         <Card>
@@ -78,26 +78,26 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container-wide stack-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Mi Watchlist</h1>
-          <p className="text-muted-foreground">
+          <h1 className="heading-2">Mi Watchlist</h1>
+          <p className="body text-muted-foreground">
             {watchlist.length} {watchlist.length === 1 ? 'asset' : 'assets'} en seguimiento
           </p>
         </div>
-        <Button variant="outline" onClick={() => void navigate('/dashboard')}>
+        <Button variant="outline" onClick={() => void navigate('/dashboard')} className="btn-press">
           Explorar Más
         </Button>
       </div>
 
       {/* Watchlist Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid-cards-3">
         {watchlist.map((item) => (
           <Card 
             key={item.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="card-interactive"
             onClick={() => void navigate(`/asset/${item.symbol}`)}
             onMouseEnter={() => prefetchAssetIfNotCached(item.symbol)}
             onFocus={() => prefetchAssetIfNotCached(item.symbol)}

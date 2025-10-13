@@ -68,10 +68,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.3, delay: 0.15 }}
       >
         <Link to={ctaLink}>
-          <Button size="lg" className="text-base py-2.5 px-6 shadow-sm hover:shadow-md transition-shadow">
+          <Button size="lg" className="btn-press text-base py-2.5 px-6 shadow-sm hover:shadow-md transition-shadow">
             {ctaText}
           </Button>
         </Link>

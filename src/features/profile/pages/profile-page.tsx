@@ -91,23 +91,23 @@ export default function ProfilePage() {
 
   return (
     <motion.div
-      className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8"
+      className="container-narrow stack-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.3 }}
     >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
       >
-        <div className="flex items-center gap-4 pb-4 mb-6 border-b">
+        <div className="flex items-center gap-4 section-divider">
           <div className="p-2 bg-primary/10 rounded-lg">
             <UserCircle className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="heading-2">
               Mi Perfil
             </h1>
             <p className="text-muted-foreground">

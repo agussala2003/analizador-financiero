@@ -13,6 +13,8 @@ import { Label } from '../../../../components/ui/label';
  * @property onChange - Callback cuando cambia el valor
  * @property required - Si el campo es requerido
  * @property autoComplete - Valor de autocomplete HTML
+ * @property error - Mensaje de error opcional
+ * @property success - Mensaje de éxito opcional
  */
 interface FormInputProps {
   id: string;
@@ -23,6 +25,8 @@ interface FormInputProps {
   onChange: (value: string) => void;
   required?: boolean;
   autoComplete?: string;
+  error?: string;
+  success?: string;
 }
 
 /**
@@ -50,10 +54,14 @@ export function FormInput({
   onChange,
   required = false,
   autoComplete,
+  error,
+  success,
 }: FormInputProps) {
   return (
     <div className="grid gap-3">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id} className={error ? 'text-destructive' : undefined}>
+        {label}
+      </Label>
       <Input
         id={id}
         type={type}
@@ -64,7 +72,14 @@ export function FormInput({
         }
         required={required}
         autoComplete={autoComplete}
+        className={error ? 'border-destructive focus-visible:ring-destructive' : success ? 'border-green-500 focus-visible:ring-green-500' : undefined}
       />
+      {error && (
+        <p className="text-sm text-destructive animate-slide-down">{error}</p>
+      )}
+      {success && (
+        <p className="text-sm text-green-600 dark:text-green-500 animate-slide-down">{success}</p>
+      )}
     </div>
   );
 }

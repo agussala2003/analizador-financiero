@@ -176,7 +176,7 @@ function MyBlogsPage() {
           </p>
         </div>
         <Link to="/blog/crear">
-          <Button size="lg">
+          <Button size="lg" className="btn-press">
             <Plus className="w-5 h-5 mr-2" />
             Crear Artículo
           </Button>

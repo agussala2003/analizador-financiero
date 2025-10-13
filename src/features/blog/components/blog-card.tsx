@@ -59,7 +59,7 @@ export function BlogCard({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col">
+    <Card className="card-interactive group overflow-hidden h-full flex flex-col">
       {/* Imagen destacada */}
       <Link to={`/blog/${slug}`} className="relative block">
         <div className="relative w-full h-48 bg-muted overflow-hidden">

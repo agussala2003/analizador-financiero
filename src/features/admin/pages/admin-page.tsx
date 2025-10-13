@@ -24,7 +24,7 @@ import { AdminTabs } from '../components/admin-tabs';
  */
 export default function AdminPage() {
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+    <div className="container-full stack-8">
       <AdminHeader
         title="Panel de Administración"
         description="Gestiona usuarios, contenido y estadísticas de la aplicación."
