@@ -42,6 +42,7 @@ const RiskPremiumPage = React.lazy(() => import('./features/risk-premium/pages/r
 const SuggestionsPage = React.lazy(() => import('./features/suggestions/pages/suggestion-page.tsx'));
 const AdminPage = React.lazy(() => import('./features/admin/pages/admin-page.tsx'));
 const RetirementCalculatorPage = React.lazy(() => import('./features/retirement/pages/retirement-calculator-page.tsx'));
+const WatchlistPage = React.lazy(() => import('./features/watchlist/pages/watchlist-page.tsx'));
 
 const router = createBrowserRouter([
     {
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
                     { path: "dashboard", element: <Suspense fallback={<DashboardSkeleton />}><DashboardPage /></Suspense> },
                     { path: "asset/:symbol", element: <Suspense fallback={<AssetDetailSkeleton />}><AssetDetailPage /></Suspense> },
                     { path: "portfolio", element: <Suspense fallback={<PortfolioSkeleton />}><PortfolioPage /></Suspense> },
+                    { path: "watchlist", element: <Suspense fallback={<PageSkeleton />}><WatchlistPage /></Suspense> },
                     { path: "dividends", element: <Suspense fallback={<PageSkeleton />}><DividendsPage /></Suspense> },
                     { path: "news", element: <Suspense fallback={<PageSkeleton />}><NewsPage /></Suspense> },
                     { path: "profile", element: <Suspense fallback={<PageSkeleton />}><ProfilePage /></Suspense> },

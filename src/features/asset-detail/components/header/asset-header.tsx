@@ -3,6 +3,7 @@
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { formatPrice, formatPercentage } from '../../lib/asset-formatters';
 import type { AssetData } from '../../../../types/dashboard';
+import { WatchlistToggleButton } from '../../../watchlist/components/watchlist-toggle-button';
 
 /**
  * Props para el componente AssetHeader.
@@ -38,12 +39,17 @@ export function AssetHeader({ asset }: AssetHeaderProps) {
         }}
       />
       <div className="flex-1 min-w-0">
-        <h1 className="text-2xl sm:text-3xl font-bold truncate">
-          {asset.companyName} ({asset.symbol})
-        </h1>
-        <p className="text-lg sm:text-xl text-muted-foreground">
-          {asset.exchangeFullName}
-        </p>
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold truncate">
+              {asset.companyName} ({asset.symbol})
+            </h1>
+            <p className="text-lg sm:text-xl text-muted-foreground">
+              {asset.exchangeFullName}
+            </p>
+          </div>
+          <WatchlistToggleButton symbol={asset.symbol} variant="outline" />
+        </div>
         <div className="flex items-baseline gap-4 flex-wrap">
           <span className="text-2xl sm:text-3xl font-bold">
             {formatPrice(asset.currentPrice)}

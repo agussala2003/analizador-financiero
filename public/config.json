@@ -208,6 +208,7 @@
           { "to": "/", "label": "Inicio", "icon": "Home" },
           { "to": "/dashboard", "label": "Dashboard", "icon": "ChartCandlestick", "requiresAuth": true },
           { "to": "/portfolio", "label": "Portafolio", "icon": "LayoutDashboard", "requiresAuth": true },
+          { "to": "/watchlist", "label": "Watchlist", "icon": "Star", "requiresAuth": true },
           { "to": "/dividends", "label": "Dividendos", "icon": "Divide", "requiresAuth": true },
           { "to": "/risk-premium", "label": "Riesgo País", "icon": "Globe", "requiresAuth": true },
           { "to": "/profile", "label": "Mi Perfil", "icon": "User", "requiresAuth": true },
