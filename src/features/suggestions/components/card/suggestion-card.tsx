@@ -23,7 +23,7 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
       <Card className="h-full flex flex-col transition-shadow hover:shadow-md">
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
-            <p className="text-xs text-muted-foreground">
+            <p className="caption text-muted-foreground">
               {formatSuggestionDate(suggestion.created_at)}
             </p>
             <Badge variant={config.variant} className="whitespace-nowrap">
@@ -33,7 +33,7 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
           </div>
         </CardHeader>
         <CardContent className="pt-0 flex-grow">
-          <p className="text-sm leading-relaxed text-foreground/90">
+          <p className="body-sm leading-relaxed text-foreground/90">
             {suggestion.content}
           </p>
         </CardContent>

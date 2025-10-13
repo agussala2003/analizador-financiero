@@ -158,7 +158,7 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                     <div className="flex items-center gap-4">
                         <div className="flex items-center space-x-2">
                             <Checkbox id="hideNA" checked={hideNA} onCheckedChange={(checked: boolean) => setHideNA(!!checked)} />
-                            <label htmlFor="hideNA" className="text-sm font-medium leading-none">Ocultar N/A</label>
+                            <label htmlFor="hideNA" className="body-sm font-medium leading-none">Ocultar N/A</label>
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -181,7 +181,7 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                     {indicatorSections.map(section => (
                         visibleKeysBySection[section.id].length > 0 && (
                             <AccordionItem value={section.id} key={section.id}>
-                                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                                <AccordionTrigger className="heading-4 hover:no-underline">
                                     {section.title}
                                 </AccordionTrigger>
                                 <AccordionContent>

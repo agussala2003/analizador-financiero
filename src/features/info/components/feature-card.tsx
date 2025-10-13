@@ -35,8 +35,8 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, descripti
       <div className="mb-4 inline-block p-3 rounded-lg bg-muted/50 border border-border/50">
         {icon}
       </div>
-      <h3 className="text-xl font-bold mb-2 text-foreground">{title}</h3>
-      <p className="text-muted-foreground leading-relaxed">{description}</p>
+      <h3 className="heading-4 mb-2 text-foreground">{title}</h3>
+      <p className="body text-muted-foreground leading-relaxed">{description}</p>
     </div>
   </div>
 );

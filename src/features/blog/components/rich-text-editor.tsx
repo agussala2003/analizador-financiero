@@ -61,9 +61,9 @@ export function RichTextEditor({ value, onChange, placeholder = "Escribe el cont
     let html = text;
     
     // Títulos
-    html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-6 mb-3">$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-8 mb-4">$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>');
+    html = html.replace(/^### (.*$)/gim, '<h3 class="heading-3 mt-6 mb-3">$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2 class="heading-2 stack-4">$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1 class="heading-1 stack-4">$1</h1>');
     
     // Negrita e itálica
     html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
@@ -77,7 +77,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Escribe el cont
     html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />');
     
     // Código inline
-    html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-2 py-1 rounded text-sm">$1</code>');
+    html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-2 py-1 rounded body-sm">$1</code>');
     
     // Citas
     html = html.replace(/^&gt; (.*$)/gim, '<blockquote class="border-l-4 border-blue-500 pl-4 italic my-4">$1</blockquote>');
@@ -140,10 +140,10 @@ export function RichTextEditor({ value, onChange, placeholder = "Escribe el cont
             className={cn(
               "w-full min-h-[400px] p-4 rounded-lg border bg-background",
               "focus:outline-none focus:ring-2 focus:ring-ring",
-              "font-mono text-sm resize-y"
+              "font-mono body-sm resize-y"
             )}
           />
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="caption text-muted-foreground mt-2">
             💡 Tip: Usa Markdown para dar formato. Selecciona texto y usa los botones de la barra de herramientas.
           </p>
         </TabsContent>

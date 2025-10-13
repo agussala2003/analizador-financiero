@@ -262,34 +262,34 @@ export function AdminBlogsSection() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
-            <div className="text-sm font-medium text-muted-foreground">Total</div>
+            <div className="body-sm font-medium text-muted-foreground">Total</div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{statusCounts.all}</div>
+            <div className="heading-1 font-bold">{statusCounts.all}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <div className="text-sm font-medium text-muted-foreground">En Revisión</div>
+            <div className="body-sm font-medium text-muted-foreground">En Revisión</div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-600">{statusCounts.pending_review}</div>
+            <div className="heading-1 font-bold text-yellow-600">{statusCounts.pending_review}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <div className="text-sm font-medium text-muted-foreground">Aprobados</div>
+            <div className="body-sm font-medium text-muted-foreground">Aprobados</div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">{statusCounts.approved}</div>
+            <div className="heading-1 font-bold text-green-600">{statusCounts.approved}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <div className="text-sm font-medium text-muted-foreground">Rechazados</div>
+            <div className="body-sm font-medium text-muted-foreground">Rechazados</div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">{statusCounts.rejected}</div>
+            <div className="heading-1 font-bold text-red-600">{statusCounts.rejected}</div>
           </CardContent>
         </Card>
       </div>
@@ -323,8 +323,8 @@ export function AdminBlogsSection() {
       {filteredBlogs.length === 0 ? (
         <Card className="p-12 text-center">
           <div className="space-y-4">
-            <h3 className="text-2xl font-semibold">No hay artículos</h3>
-            <p className="text-muted-foreground">
+            <h3 className="heading-2">No hay artículos</h3>
+            <p className="body text-muted-foreground">
               {searchQuery || statusFilter !== 'all'
                 ? 'No se encontraron artículos con los filtros aplicados.'
                 : 'No hay artículos para revisar en este momento.'}
@@ -357,7 +357,7 @@ export function AdminBlogsSection() {
                       <Badge variant="outline">{blog.category}</Badge>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold line-clamp-2">
+                  <h3 className="heading-3 line-clamp-2">
                     {blog.title}
                   </h3>
                 </CardHeader>
@@ -369,18 +369,18 @@ export function AdminBlogsSection() {
                       <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 body-sm">
                         <User className="w-3 h-3 text-muted-foreground" />
                         <span className="font-medium truncate">{authorName}</span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-muted-foreground line-clamp-3 mb-4">
+                  <p className="body text-muted-foreground line-clamp-3 mb-4">
                     {blog.excerpt}
                   </p>
 
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 body-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
                       <span>{blog.stats.likes}</span>
@@ -395,7 +395,7 @@ export function AdminBlogsSection() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground mt-4">
+                  <div className="flex items-center gap-1 body-sm text-muted-foreground mt-4">
                     <Calendar className="w-3 h-3" />
                     {formatDistanceToNow(new Date(blog.created_at), { addSuffix: true, locale: es })}
                   </div>
@@ -476,7 +476,7 @@ export function AdminBlogsSection() {
           
           {reviewAction?.action === 'reject' && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Motivo del rechazo (opcional)</label>
+              <label className="body-sm font-medium">Motivo del rechazo (opcional)</label>
               <Textarea
                 placeholder="Explica por qué el artículo fue rechazado..."
                 value={rejectionReason}
@@ -534,14 +534,14 @@ export function AdminBlogsSection() {
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Estado Actual</label>
+              <label className="body-sm font-medium">Estado Actual</label>
               <div className="p-3 bg-muted rounded-md">
                 {statusChangeDialog && getStatusBadge(statusChangeDialog.currentStatus)}
               </div>
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">Nuevo Estado</label>
+              <label className="body-sm font-medium">Nuevo Estado</label>
               <Select value={newStatus} onValueChange={(value) => setNewStatus(value as AdminBlog['status'])}>
                 <SelectTrigger>
                   <SelectValue />

@@ -179,7 +179,7 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                                     <img src={asset.image} alt={asset.companyName} className="w-8 h-8 rounded-full bg-muted object-contain border" />
                                                     <div>
                                                         <div className="font-bold group-hover:text-primary transition-colors">{asset.symbol}</div>
-                                                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">{asset.companyName}</div>
+                                                        <div className="caption text-muted-foreground truncate max-w-[200px]">{asset.companyName}</div>
                                                     </div>
                                                 </Link>
                                             </TableCell>
@@ -214,12 +214,12 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                         <img src={asset.image} alt={asset.companyName} className="w-8 h-8 rounded-full bg-muted object-contain border" />
                                         <div>
                                             <div>{asset.symbol}</div>
-                                            <div className="text-xs text-muted-foreground font-normal truncate max-w-[150px]">{asset.companyName}</div>
+                                            <div className="caption text-muted-foreground font-normal truncate max-w-[150px]">{asset.companyName}</div>
                                         </div>
                                     </div>
-                                    <span className="font-semibold text-lg">{formatCurrency(asset.currentPrice)}</span>
+                                    <span className="font-semibold heading-4">{formatCurrency(asset.currentPrice)}</span>
                                 </div>
-                                <div className="space-y-2 text-sm border-t pt-3 mt-3">
+                                <div className="space-y-2 body-sm border-t pt-3 mt-3">
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Diaria</span>{pctNode(asset.dayChange)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Mensual</span>{pctNode(asset.monthChange)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Anual</span>{pctNode(asset.yearChange)}</div>

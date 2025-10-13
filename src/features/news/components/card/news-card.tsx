@@ -18,13 +18,13 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
       className="h-full"
     >
-      <Card className="flex flex-col h-full transition-shadow duration-300 shadow-sm hover:shadow-lg">
+      <Card className="card-interactive flex flex-col h-full">
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
-            <CardTitle className="text-lg leading-tight">
+            <CardTitle className="heading-4 leading-tight">
               <a
                 href={news.newsURL}
                 target="_blank"
@@ -39,7 +39,7 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="flex-grow space-y-3 text-sm">
+        <CardContent className="flex-grow space-y-3 body-sm">
           {news.newGrade && (
             <p>
               <span className="font-semibold text-muted-foreground">Calificación:</span>{" "}
@@ -59,7 +59,7 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
             </p>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between text-xs text-muted-foreground pt-4 border-t">
+        <CardFooter className="flex justify-between caption text-muted-foreground pt-4 border-t">
           <span>{company}</span>
           <span>{formattedDate}</span>
         </CardFooter>

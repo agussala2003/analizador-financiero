@@ -112,10 +112,10 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
                 </CardHeader>
                 <CardContent>
                     <div className="bg-primary/5 dark:bg-primary/10 p-4 rounded-lg border border-primary/20">
-                        <h3 className="font-bold text-lg text-primary mb-2">
+                        <h3 className="font-bold heading-4 text-primary mb-2">
                             🏆 Activo Destacado: {winner.asset.symbol}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="body-sm text-muted-foreground">
                             <strong>{winner.asset.companyName}</strong> se posiciona como la opción más robusta y equilibrada del grupo, obteniendo la puntuación más alta en el análisis combinado de métricas de valoración, rentabilidad y salud financiera.
                         </p>
                     </div>
@@ -154,12 +154,12 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
                         {analysis.rankedAssets.map((item, index) => (
                             <div key={item.asset.symbol} className="flex items-center justify-between p-3 border-b last:border-none">
                                 <div className="flex items-center gap-3">
-                                    <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                                    <span className={`flex items-center justify-center w-6 h-6 rounded-full caption font-bold ${index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                                         {index + 1}
                                     </span>
                                     <span className="font-semibold">{item.asset.symbol}</span>
                                 </div>
-                                <div className="text-sm">
+                                <div className="body-sm">
                                     <span className="font-bold">{item.score}</span>
                                     <span className="text-muted-foreground"> pts</span>
                                 </div>

@@ -20,7 +20,7 @@ export function StatCard({ title, value, description, icon: Icon, trend, classNa
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-muted-foreground">{title}</div>
+          <div className="body-sm font-medium text-muted-foreground">{title}</div>
           {Icon && (
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
               <Icon className="h-5 w-5 text-primary" />
@@ -30,9 +30,9 @@ export function StatCard({ title, value, description, icon: Icon, trend, classNa
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          <div className="text-3xl font-bold">{value}</div>
+          <div className="heading-2 font-bold">{value}</div>
           {(description ?? trend) && (
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 body-sm">
               {trend && (
                 <span className={cn(
                   'font-medium',

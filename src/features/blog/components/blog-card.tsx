@@ -94,14 +94,14 @@ export function BlogCard({
       {/* Contenido */}
       <CardHeader className="pb-3">
         <Link to={`/blog/${slug}`}>
-          <h3 className="text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="heading-4 line-clamp-2 group-hover:text-primary transition-colors">
             {title}
           </h3>
         </Link>
       </CardHeader>
 
       <CardContent className="flex-1 pb-3">
-        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+        <p className="body-sm text-muted-foreground line-clamp-3 mb-4">
           {excerpt}
         </p>
         
@@ -109,12 +109,12 @@ export function BlogCard({
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {tags.slice(0, 3).map(tag => (
-              <Badge key={tag} variant="secondary" className="text-xs">
+              <Badge key={tag} variant="secondary" className="caption">
                 {tag}
               </Badge>
             ))}
             {tags.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="caption">
                 +{tags.length - 3}
               </Badge>
             )}
@@ -127,11 +127,11 @@ export function BlogCard({
         {/* Autor y fecha */}
         <div className="flex items-center gap-3 w-full">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            <AvatarFallback className="caption">{initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{authorName}</p>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <p className="body-sm font-medium truncate">{authorName}</p>
+            <div className="flex items-center gap-1 caption text-muted-foreground">
               <Calendar className="w-3 h-3" />
               {formatDistanceToNow(new Date(created_at), { addSuffix: true, locale: es })}
             </div>
@@ -139,7 +139,7 @@ export function BlogCard({
         </div>
 
         {/* Estadísticas */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground w-full">
+        <div className="flex items-center gap-4 body-sm text-muted-foreground w-full">
           <div className="flex items-center gap-1">
             <Heart className="w-4 h-4" />
             <span>{stats.likes}</span>

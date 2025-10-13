@@ -145,7 +145,7 @@ export function BlogEditorForm({
           className={errors.title ? 'border-red-500' : ''}
         />
         {errors.title && (
-          <p className="text-sm text-red-500">{errors.title}</p>
+          <p className="body-sm text-red-500">{errors.title}</p>
         )}
       </div>
 
@@ -160,9 +160,9 @@ export function BlogEditorForm({
           className={errors.slug ? 'border-red-500' : ''}
         />
         {errors.slug && (
-          <p className="text-sm text-red-500">{errors.slug}</p>
+          <p className="body-sm text-red-500">{errors.slug}</p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="caption text-muted-foreground">
           URL: /blog/{formData.slug || 'titulo-del-articulo'}
         </p>
       </div>
@@ -179,9 +179,9 @@ export function BlogEditorForm({
           className={errors.excerpt ? 'border-red-500' : ''}
         />
         {errors.excerpt && (
-          <p className="text-sm text-red-500">{errors.excerpt}</p>
+          <p className="body-sm text-red-500">{errors.excerpt}</p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="caption text-muted-foreground">
           {formData.excerpt.length}/160 caracteres
         </p>
       </div>
@@ -319,14 +319,14 @@ export function BlogEditorForm({
           onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
         />
         {errors.content && (
-          <p className="text-sm text-red-500">{errors.content}</p>
+          <p className="body-sm text-red-500">{errors.content}</p>
         )}
       </div>
 
       {/* Alerta de estado */}
       {formData.status === 'draft' && (
         <Card className="p-4 bg-muted">
-          <p className="text-sm text-muted-foreground">
+          <p className="body-sm text-muted-foreground">
             Este artículo está guardado como borrador. Cambia el estado a "Pendiente de Revisión" cuando esté listo para publicar.
           </p>
         </Card>
