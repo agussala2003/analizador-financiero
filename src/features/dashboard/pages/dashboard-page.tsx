@@ -15,10 +15,10 @@ import { Card, CardHeader } from "../../../components/ui/card";
 import { Briefcase, ChartCandlestick } from "lucide-react";
 import { motion } from "framer-motion";
 import { PageHeader } from "../../../components/ui/page-header";
-import { TickerAddForm } from "../components/ticker-add-form";
-import { SelectedTickersList } from "../components/selected-tickers-list";
-import { DashboardTabs } from "../components/dashboard-tabs";
-import { DashboardSkeleton } from "../components/dashboard-skeleton";
+import { TickerAddForm } from "../components/ticker-input/ticker-add-form";
+import { SelectedTickersList } from "../components/ticker-input/selected-tickers-list";
+import { DashboardTabs } from "../components/tabs/dashboard-tabs";
+import { DashboardSkeleton } from "../components/skeleton/dashboard-skeleton";
 import { AssetData } from "../../../types/dashboard";
 
 export default function DashboardPage() {

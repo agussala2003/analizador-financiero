@@ -7,13 +7,14 @@ import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { useReactTable, getCoreRowModel, getPaginationRowModel, getFilteredRowModel, getSortedRowModel, ColumnDef, SortingState } from "@tanstack/react-table";
 import { AdminUser } from "../../../types/admin";
-import { DataTable } from "../../dividends/components/data-table";
+import { DataTable } from '../../dividends/components';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../../../components/ui/dialog";
 import { Label } from "../../../components/ui/label";
 import { Switch } from "../../../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { ArrowUpDown, Edit, Search } from "lucide-react";
 import { Badge } from "../../../components/ui/badge";
+import { useDebounce } from "../../../hooks/use-debounce";
 
 // --- Modal para Editar Usuario ---
 
@@ -114,6 +115,8 @@ export function AdminUsersPage() {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
 
+    const debouncedFilter = useDebounce(filter, 300);
+
     const fetchUsers = async () => {
         // No seteamos loading aquí para que la actualización sea en segundo plano
         try {
@@ -154,7 +157,7 @@ export function AdminUsersPage() {
     const table = useReactTable({
         data: users,
         columns,
-        state: { sorting, globalFilter: filter },
+        state: { sorting, globalFilter: debouncedFilter },
         onSortingChange: setSorting,
         onGlobalFilterChange: setFilter,
         getCoreRowModel: getCoreRowModel(),

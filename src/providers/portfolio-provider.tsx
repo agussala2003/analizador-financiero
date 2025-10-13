@@ -1,161 +1,145 @@
 // src/providers/portfolio-provider.tsx
 
-import React, { useState, useEffect, useCallback, createContext, useMemo } from 'react';
+import React, { createContext, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { logger } from '../lib/logger';
-import { Transaction, PortfolioContextType, PortfolioAssetData } from '../types/portfolio';
+import { Transaction, PortfolioContextType, PortfolioAssetData, Holding } from '../types/portfolio';
 import { useAuth } from '../hooks/use-auth';
-import { useConfig } from '../hooks/use-config';
 import { calculateHoldings, calculateTotalPerformance } from '../utils/portfolio-calculations';
 import { LoadingScreen } from '../components/ui/loading-screen';
 import { ErrorScreen } from '../components/ui/error-screen';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePortfolioMutations } from '../features/portfolio/hooks/use-portfolio-mutations';
+import { toast } from 'sonner';
+import { logger } from '../lib/logger';
+import { errorToString } from '../utils/type-guards';
 
-// ✅ Mejora: Contexto con guard que lanza si se usa fuera del Provider
+
 // eslint-disable-next-line react-refresh/only-export-components
-export const PortfolioContext = createContext<PortfolioContextType>(new Proxy({}, {
-    get: () => {
-        throw new Error('usePortfolio debe ser utilizado dentro de un PortfolioProvider');
+export const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
+
+const fetchPortfolioData = async (userId: string | undefined) => {
+    if (!userId) {
+        return { transactions: [], portfolioData: {} };
     }
-}) as PortfolioContextType);
+
+    const transResult = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('purchase_date', { ascending: false });
+
+    if (transResult.error) {
+        throw new Error('No se pudo obtener tus transacciones.');
+    }
+
+    const transactions = (transResult.data || []) as Transaction[];
+    const symbols = [...new Set(transactions.map((t: Transaction) => t.symbol))];
+    let portfolioData: Record<string, PortfolioAssetData> = {};
+
+    if (symbols.length > 0) {
+        try {
+            const assetResult = await supabase.functions.invoke('get-asset-data', {
+                body: { symbols },
+            });
+            if (assetResult.error) throw assetResult.error;
+            portfolioData = (assetResult.data as Record<string, PortfolioAssetData>) ?? {};
+        } catch (error) {
+             console.error("Error al traer datos de activos:", error);
+             portfolioData = {};
+        }
+    }
+
+    return { transactions, portfolioData };
+};
+
 
 export function PortfolioProvider({ children }: { children: React.ReactNode }) {
-    const { user, profile } = useAuth();
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [portfolioData, setPortfolioData] = useState<Record<string, PortfolioAssetData>>({});
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const config = useConfig();
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
 
-    const fetchPortfolioData = useCallback(async () => {
+    const { data, isLoading, isError, error, refetch } = useQuery({
+        queryKey: ['portfolio', user?.id],
+        queryFn: () => fetchPortfolioData(user?.id),
+        enabled: !!user,
+    });
+
+    const { addTransaction: addTransactionMutation } = usePortfolioMutations();
+
+    const transactions = useMemo(() => data?.transactions ?? [], [data?.transactions]);
+    const portfolioData = useMemo(() => data?.portfolioData ?? {}, [data?.portfolioData]);
+    
+    const holdings: Holding[] = useMemo(() => calculateHoldings(transactions, portfolioData), [transactions, portfolioData]);
+    const totalPerformance = useMemo(() => calculateTotalPerformance(transactions, holdings), [transactions, holdings]);
+    
+    const addTransaction = (transaction: Omit<Transaction, 'id' | 'user_id'>) => {
         if (!user) {
-            setLoading(false);
-            setTransactions([]);
+            toast.error("Debes iniciar sesión para agregar una transacción.");
+            return;
+        };
+        addTransactionMutation.mutate({ ...transaction, userId: user.id });
+    };
+
+    const deleteAsset = async (symbol: string) => {
+        if (!user) {
+            toast.error("Debes iniciar sesión para eliminar un activo.");
             return;
         }
-        setLoading(true);
-
-        const { data: transData, error: transError } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('purchase_date', { ascending: false });
         
-        if (transError) {
-            setError('No se pudo obtener tus transacciones.');
-            console.error("Error al traer transacciones:", transError);
-            setTransactions([]);
-        } else {
-            setTransactions(transData || []);
+        const toastId = toast.loading(`Eliminando ${symbol}...`);
+        try {
+            const result = await supabase
+                .from('transactions')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('symbol', symbol);
+            
+            if (result.error) throw result.error;
+
+            toast.success(`Activo ${symbol} y su historial eliminados.`, { id: toastId });
+            void logger.info('PORTFOLIO_ASSET_DELETE_SUCCESS', `Asset ${symbol} deleted for user ${user.id}.`);
+            
+            // Invalidamos la query para que se vuelva a cargar con los datos actualizados
+            await queryClient.invalidateQueries({ queryKey: ['portfolio', user?.id] });
+
+        } catch (err: unknown) {
+            toast.error('No se pudo eliminar el activo.', { id: toastId, description: errorToString(err) });
+            void logger.error('PORTFOLIO_ASSET_DELETE_FAILED', `Failed to delete ${symbol} for user ${user.id}.`, { error: errorToString(err) });
         }
-
-    const symbols = [...new Set((transData ?? []).map((t: Transaction) => t.symbol))];
-        if (symbols.length > 0) {
-            try {
-                const resp = await supabase.functions.invoke('get-asset-data', {
-                    body: { symbols },
-                });
-                if (resp.error) throw resp.error;
-                setPortfolioData((resp.data as unknown as Record<string, PortfolioAssetData>) ?? {});
-            } catch (error) {
-                setError('No se pudieron obtener datos de mercado.');
-                console.error("Error al traer datos de activos:", error);
-                setPortfolioData({});
-            }
-        } else {
-            setPortfolioData({});
-        }
-
-        setLoading(false);
-    }, [user]);
-
-    useEffect(() => {
-        void fetchPortfolioData();
-    }, [fetchPortfolioData]);
-
-    const holdings = useMemo(
-        () => calculateHoldings(transactions, portfolioData),
-        [transactions, portfolioData]
-    );
-
-    const totalPerformance = useMemo(
-        () => calculateTotalPerformance(transactions, holdings),
-        [transactions, holdings]
-    );
-
-    const addTransaction = async (transaction: Omit<Transaction, 'id' | 'user_id'>): Promise<Transaction[] | null> => {
-        if (!user || !profile) {
-            throw new Error("Usuario no autenticado.");
-        }
-        
-        const userRole = profile.role as keyof typeof config.plans.portfolioLimits;
-        const limit = config.plans.portfolioLimits[userRole] || 5;
-        
-        const isNewAsset = !holdings.some(h => h.symbol === transaction.symbol);
-
-        if (isNewAsset && holdings.length >= limit) {
-            void logger.warn('PORTFOLIO_LIMIT_REACHED', `User ${user.id} tried to add a new asset but reached their limit of ${limit}.`);
-            throw new Error(`Has alcanzado el límite de ${limit} activos diferentes para tu plan.`);
-        }
-
-        const { data, error } = await supabase
-            .from('transactions')
-            .insert({ ...transaction, user_id: user.id })
-            .select();
-        
-        if (error) throw error;
-        
-        await fetchPortfolioData();
-        return data as unknown as Transaction[];
     };
 
-    const deleteAsset = async (symbol: string): Promise<void> => {
-        if (!user) throw new Error("Usuario no autenticado.");
-        
-        void logger.info('PORTFOLIO_ASSET_DELETE_START', `User ${user.id} is deleting asset ${symbol}.`);
-        const { error } = await supabase
-            .from('transactions')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('symbol', symbol);
-        
-        if (error) {
-            void logger.error('PORTFOLIO_ASSET_DELETE_FAILED', `Failed to delete asset ${symbol} for user ${user.id}.`, { error: error.message });
-            throw error;
-        }
-        
-        void logger.info('PORTFOLIO_ASSET_DELETE_SUCCESS', `Asset ${symbol} deleted successfully for user ${user.id}.`);
-        await fetchPortfolioData();
-    };
-
-        const value: PortfolioContextType = {
+    const value: PortfolioContextType = {
         transactions,
         holdings,
         totalPerformance,
         portfolioData,
-                loading,
-                error,
-        addTransaction,
+        loading: isLoading,
+        error: isError ? error.message : null,
+        addTransaction: (transaction) => {
+            addTransaction(transaction);
+            return Promise.resolve(null);
+        },
         deleteAsset,
-        refreshPortfolio: fetchPortfolioData,
+        refreshPortfolio: async () => {
+            await refetch();
+        },
     };
 
-        // ✅ Mejora: Evitar pantallas en blanco y mostrar errores genéricos
-        if (loading) {
-            return <LoadingScreen message="Cargando portafolio..." />;
-        }
-        if (error) {
-            return (
-                        <ErrorScreen
-                            title="Error al cargar el portafolio"
-                            message={error}
-                            onRetry={() => { void fetchPortfolioData(); }}
-                        />
-            );
-        }
-
+    if (isLoading && !data) {
+        return <LoadingScreen message="Cargando portafolio..." />;
+    }
+    if (isError) {
         return (
-                <PortfolioContext.Provider value={value}>
-                        {children}
-                </PortfolioContext.Provider>
+            <ErrorScreen
+                title="Error al Cargar el Portafolio"
+                message={error.message}
+                onRetry={() => void refetch()}
+            />
         );
+    }
+
+    return (
+        <PortfolioContext.Provider value={value}>
+            {children}
+        </PortfolioContext.Provider>
+    );
 }

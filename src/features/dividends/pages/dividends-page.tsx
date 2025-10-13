@@ -1,51 +1,27 @@
+// src/features/dividends/pages/dividends-page.tsx
+
 import React from "react";
-import { columns } from "../components/columns";
-import { DataTable } from "../components/data-table";
+import { columns, DataTable, DividendsFilters, DividendsSkeleton, Dividend } from "../components";
 import { supabase } from "../../../lib/supabase";
 import { logger } from "../../../lib/logger";
 import { toast } from "sonner";
-import { Skeleton } from "../../../components/ui/skeleton";
 import { useConfig } from "../../../hooks/use-config";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader } from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { CalendarIcon, Divide, XIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../components/ui/popover";
-import { format } from "date-fns";
-import { Calendar } from "../../../components/ui/calendar";
-import { es } from "date-fns/locale";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, getFilteredRowModel, getSortedRowModel, ColumnFiltersState, SortingState } from "@tanstack/react-table";
-import { Dividend } from "../components/columns";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { Divide } from "lucide-react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  ColumnFiltersState,
+  SortingState,
+} from "@tanstack/react-table";
 import { DateRange } from "react-day-picker";
 import { isDividend } from "../../../utils/type-guards";
-
-// ... (Componente Skeleton sin cambios)
-const TableSkeleton: React.FC = () => (
-  <Card>
-    <CardHeader className="p-4 border-b">
-      <div className="flex flex-wrap items-center gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className={`w-full h-9 rounded-md sm:w-${i % 2 === 0 ? 40 : 48}`} />
-        ))}
-      </div>
-    </CardHeader>
-    <CardContent className="p-0">
-      <div className="p-4 space-y-2">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <Skeleton key={i} className="w-full h-12 rounded-md" />
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// --- Type for asset_data_cache row ---
-interface AssetDataCacheRow {
-  data?: unknown;
-  last_updated_at: string;
-}
+import { AssetDataCacheRow } from "../types/dividends.types";
+import { extractUniqueFrequencies, validateConfig, getDividendsEndpoint } from "../lib/dividends.utils";
 
 const DividendsPage: React.FC = () => {
   const [data, setData] = React.useState<Dividend[]>([]);
@@ -61,7 +37,7 @@ const DividendsPage: React.FC = () => {
   const [paymentDateRange, setPaymentDateRange] = React.useState<DateRange | undefined>();
   const [frequencyFilter, setFrequencyFilter] = React.useState<string>("");
 
-  const frequencyOptions = React.useMemo(() => Array.from(new Set(data.map(d => d.frequency).filter(Boolean))), [data]);
+  const frequencyOptions = React.useMemo(() => extractUniqueFrequencies(data), [data]);
 
   React.useEffect(() => {
     const fetchDividends = async () => {
@@ -75,18 +51,11 @@ const DividendsPage: React.FC = () => {
           setData(arr.filter(isDividend));
           return;
         }
-        // Defensive: check config shape
-        if (
-          !config || typeof config !== 'object' || config === null ||
-          !('api' in config) || typeof ((config as unknown as Record<string, unknown>).api) !== 'object' || ((config as unknown as Record<string, unknown>).api) === null ||
-          !('fmpProxyEndpoints' in ((config as unknown as Record<string, unknown>).api as Record<string, unknown>))
-        ) {
+        // Validate config and get endpoint
+        if (!validateConfig(config)) {
           throw new Error("Configuración inválida");
         }
-        const apiObj = ((config as unknown as Record<string, unknown>).api) as Record<string, unknown>;
-        const fmpProxyEndpoints = apiObj.fmpProxyEndpoints as Record<string, unknown>;
-        const endpointPath = typeof fmpProxyEndpoints?.dividendsCalendar === 'string' ? fmpProxyEndpoints.dividendsCalendar : undefined;
-        if (!endpointPath) throw new Error("Endpoint de dividendos no definido en la configuración");
+        const endpointPath = getDividendsEndpoint(config);
         const invokeResult = await supabase.functions.invoke('fmp-proxy', { body: { endpointPath } });
         const invokeResultObj = invokeResult as unknown as Record<string, unknown>;
         const apiData = invokeResultObj.data;
@@ -157,50 +126,24 @@ const DividendsPage: React.FC = () => {
         </div>
       </motion.div>
 
-      {loading ? <TableSkeleton /> : (
+      {loading ? (
+        <DividendsSkeleton />
+      ) : (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7 }}>
           <Card>
             {/* --- BARRA DE FILTROS CON RANGO DE FECHAS --- */}
             <CardHeader className="p-4 border-b">
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  placeholder="Filtrar por Símbolo..."
-                  value={symbolFilter}
-                  onChange={(e) => setSymbolFilter(e.target.value)}
-                  className="h-9 w-full sm:w-auto sm:max-w-[160px]"
-                />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={`h-9 w-full sm:w-64 justify-start text-left font-normal ${!paymentDateRange?.from && "text-muted-foreground"}`}>
-                      <CalendarIcon className="w-4 h-4 mr-2" />
-                      {paymentDateRange?.from ? format(paymentDateRange.from, "dd/MM/yy") : <span>Fecha Pago (Desde)</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar className="w-[250px]" mode="single" selected={paymentDateRange?.from} onSelect={(date) => setPaymentDateRange((prev) => prev ? { ...prev, from: date ?? undefined, to: prev.to ?? undefined } : { from: date ?? undefined, to: undefined })} locale={es} initialFocus />
-                  </PopoverContent>
-                </Popover>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={`h-9 w-full sm:w-64 justify-start text-left font-normal ${!paymentDateRange?.to && "text-muted-foreground"}`}>
-                      <CalendarIcon className="w-4 h-4 mr-2" />
-                      {paymentDateRange?.to ? format(paymentDateRange.to, "dd/MM/yy") : <span>Fecha Pago (Hasta)</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar className="w-[250px]" mode="single" selected={paymentDateRange?.to} onSelect={(date) => setPaymentDateRange((prev) => prev ? { ...prev, to: date ?? undefined, from: prev.from ?? undefined } : { from: undefined, to: date ?? undefined })} locale={es} initialFocus />
-                  </PopoverContent>
-                </Popover>
-                <Select value={frequencyFilter} onValueChange={setFrequencyFilter}>
-                  <SelectTrigger className="h-9 w-full sm:w-auto sm:min-w-[150px]"><SelectValue placeholder="Frecuencia" /></SelectTrigger>
-                  <SelectContent>{frequencyOptions.map(freq => <SelectItem key={freq} value={freq}>{freq}</SelectItem>)}</SelectContent>
-                </Select>
-                {activeFiltersCount > 0 && (
-                  <Button variant="ghost" onClick={handleClearAllFilters} className="h-9 w-full sm:w-auto">
-                    <XIcon className="w-4 h-4 mr-2" /> Limpiar
-                  </Button>
-                )}
-              </div>
+              <DividendsFilters
+                symbolFilter={symbolFilter}
+                onSymbolFilterChange={setSymbolFilter}
+                paymentDateRange={paymentDateRange}
+                onPaymentDateRangeChange={setPaymentDateRange}
+                frequencyFilter={frequencyFilter}
+                onFrequencyFilterChange={setFrequencyFilter}
+                frequencyOptions={frequencyOptions}
+                activeFiltersCount={activeFiltersCount}
+                onClearAllFilters={handleClearAllFilters}
+              />
             </CardHeader>
             <CardContent className="p-0">
               <DataTable

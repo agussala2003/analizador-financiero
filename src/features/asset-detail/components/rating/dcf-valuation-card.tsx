@@ -1,0 +1,86 @@
+// src/features/asset-detail/components/rating/dcf-valuation-card.tsx
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../../../../components/ui/card';
+import { Scale, TrendingUp, TrendingDown } from 'lucide-react';
+import { formatPrice, calculateDCFDifference } from '../../lib/asset-formatters';
+
+/**
+ * Props para el componente DCFValuationCard.
+ * @property currentPrice - Precio actual del activo
+ * @property dcf - Valor DCF del activo (o "N/A")
+ */
+interface DCFValuationCardProps {
+  currentPrice: number;
+  dcf: number | 'N/A';
+}
+
+/**
+ * Tarjeta que muestra la valoración DCF completa con comparación.
+ * Incluye:
+ * - Precio actual
+ * - Valor intrínseco (DCF)
+ * - Diferencia porcentual con indicador visual de sobrevaloración/infravaloración
+ * 
+ * @example
+ * ```tsx
+ * <DCFValuationCard currentPrice={150.5} dcf={180.2} />
+ * <DCFValuationCard currentPrice={150.5} dcf="N/A" />
+ * ```
+ */
+export function DCFValuationCard({ currentPrice, dcf }: DCFValuationCardProps) {
+  const dcfValue = typeof dcf === 'number' ? dcf : null;
+  const dcfDifference =
+    dcfValue !== null ? calculateDCFDifference(currentPrice, dcfValue) : null;
+
+  return (
+    <Card className="border-l-4 border-l-primary/50">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Scale className="w-5 h-5 text-primary" />
+          Valoración (DCF)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex justify-between items-baseline">
+          <span className="text-muted-foreground">Precio Actual</span>
+          <span className="text-2xl font-bold">{formatPrice(currentPrice)}</span>
+        </div>
+        <div className="flex justify-between items-baseline">
+          <span className="text-muted-foreground">Valor Intrínseco (DCF)</span>
+          <span className="text-2xl font-bold">
+            {dcfValue !== null ? (
+              formatPrice(dcfValue)
+            ) : (
+              <span className="text-muted-foreground">N/A</span>
+            )}
+          </span>
+        </div>
+        {dcfDifference !== null && (
+          <div
+            className={`flex items-center justify-center p-3 rounded-lg ${
+              dcfDifference > 5
+                ? 'bg-red-500/10 text-red-500'
+                : 'bg-green-500/10 text-green-500'
+            }`}
+          >
+            {dcfDifference > 5 ? (
+              <TrendingUp className="w-5 h-5 mr-2" />
+            ) : (
+              <TrendingDown className="w-5 h-5 mr-2" />
+            )}
+            <span className="font-semibold">
+              {dcfDifference > 5
+                ? `Sobrevalorada un ${dcfDifference.toFixed(2)}%`
+                : `Infravalorada un ${Math.abs(dcfDifference).toFixed(2)}%`}
+            </span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

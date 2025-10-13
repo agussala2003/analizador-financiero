@@ -22,6 +22,8 @@ import { AdminRoute } from './features/auth/components/admin-route.tsx';
 // Lazy loading de páginas
 const LoginPage = React.lazy(() => import('./features/auth/pages/login-page.tsx'));
 const RegisterPage = React.lazy(() => import('./features/auth/pages/register-page.tsx'));
+const ForgotPasswordPage = React.lazy(() => import('./features/auth/pages/forgot-password-page.tsx'));
+const ResetPasswordPage = React.lazy(() => import('./features/auth/pages/reset-password-page.tsx'));
 const InfoPage = React.lazy(() => import('./features/info/pages/info-page.tsx'));
 const NotFoundPage = React.lazy(() => import('./features/not-found/pages/not-found-page.tsx'));
 const DashboardPage = React.lazy(() => import('./features/dashboard/pages/dashboard-page.tsx'));
@@ -48,6 +50,8 @@ const router = createBrowserRouter([
                 children: [
                     { path: "login", element: <Suspense fallback={<LoadingScreen />}><LoginPage /></Suspense> },
                     { path: "register", element: <Suspense fallback={<LoadingScreen />}><RegisterPage /></Suspense> },
+                    { path: "forgot-password", element: <Suspense fallback={<LoadingScreen />}><ForgotPasswordPage /></Suspense> },
+                    { path: "reset-password", element: <Suspense fallback={<LoadingScreen />}><ResetPasswordPage /></Suspense> },
                 ]
             },
 

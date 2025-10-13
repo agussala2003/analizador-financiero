@@ -1,47 +1,25 @@
-// src/pages/PortfolioPage.tsx
+// src/features/portfolio/pages/portfolio-page.tsx
+
 import { useState, useMemo } from 'react';
 import { usePortfolio } from '../../../hooks/use-portfolio';
 import { motion } from 'framer-motion';
-import { Skeleton } from '../../../components/ui/skeleton';
 import { LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
-import { PortfolioStats } from '../components/portfolio-stats';
-import { PortfolioCharts } from '../components/portfolio-charts';
-import { PortfolioView } from '../components/portfolio-view';
-import { TransactionHistory } from '../components/transaction-history';
-import { AddTransactionModal } from '../components/add-transaction-modal';
-import { SellTransactionModal } from '../components/sell-transaction-modal';
 import { HoldingWithMetrics } from '../../../types/portfolio';
+import { AddModalInfo } from '../types/portfolio.types';
+import {
+  PortfolioStats,
+  PortfolioCharts,
+  PortfolioView,
+  TransactionHistory,
+  AddTransactionModal,
+  SellTransactionModal,
+  PortfolioSkeleton,
+} from '../components';
 
-const PortfolioSkeleton = () => (
-  <div className="space-y-6 container mx-auto p-4 sm:p-6 lg:p-8">
-    <div className="flex items-center gap-4">
-      <Skeleton className="w-12 h-12 rounded-lg" />
-      <div>
-        <Skeleton className="h-8 w-64 mb-2" />
-        <Skeleton className="h-4 w-80" />
-      </div>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-24 w-full" />
-      ))}
-    </div>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Skeleton className="h-80 w-full" />
-      <Skeleton className="h-80 w-full" />
-    </div>
-    <Skeleton className="h-96 w-full" />
-  </div>
-);
 export default function PortfolioPage() {
   const { holdings, transactions, totalPerformance, loading, deleteAsset, portfolioData } = usePortfolio();
 
-  interface AddModalInfo {
-    isOpen: boolean;
-    ticker: string | null;
-    price: number | null;
-  }
   const [addModalInfo, setAddModalInfo] = useState<AddModalInfo>({
     isOpen: false,
     ticker: null,

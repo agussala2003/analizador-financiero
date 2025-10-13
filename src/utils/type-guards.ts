@@ -1,7 +1,7 @@
 // agussala2003/analizador-financiero/analizador-financiero-new-ui/src/utils/type-guards.ts
 
 import { NewsItem } from '../types/news';
-import { Dividend } from '../features/dividends/components/columns';
+import { Dividend } from '../features/dividends/components';
 
 /**
  * Verifica si un objeto desconocido es un error con una propiedad 'message'.

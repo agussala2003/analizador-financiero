@@ -1,23 +1,15 @@
-import { NavLink } from "react-router-dom"
+// src/features/not-found/pages/not-found-page.tsx
+
+import { NavLink } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
-import { motion, Variants } from "framer-motion"
+import { motion } from "framer-motion";
+import { containerVariants, itemVariants } from "../lib/animation-config";
 
+/**
+ * Página 404 - Not Found
+ * Muestra un mensaje amigable cuando el usuario navega a una ruta inexistente
+ */
 export default function NotFoundPage() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2, // Anima los hijos en secuencia
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] } },
-  };
-
   return (
     <section className="flex min-h-svh w-full items-center justify-center bg-background p-4">
       <motion.div

@@ -7,11 +7,12 @@ import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { useReactTable, getCoreRowModel, getPaginationRowModel, getFilteredRowModel, getSortedRowModel, ColumnDef, SortingState } from "@tanstack/react-table";
 import { AdminLog } from "../../../types/admin";
-import { DataTable } from "../../dividends/components/data-table";
+import { DataTable } from '../../dividends/components';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { ArrowUpDown, Eye, Search } from "lucide-react";
 import { Badge } from "../../../components/ui/badge";
+import { useDebounce } from "../../../hooks/use-debounce";
 
 // --- Modal para ver Metadatos ---
 
@@ -46,6 +47,8 @@ export function AdminLogsPage() {
     const [filter, setFilter] = useState('');
     const [levelFilter, setLevelFilter] = useState('');
     const [sorting, setSorting] = useState<SortingState>([{ id: 'created_at', desc: true }]);
+
+    const debouncedFilter = useDebounce(filter, 300);
     
     const [viewingLog, setViewingLog] = useState<AdminLog | null>(null);
 
@@ -110,7 +113,7 @@ export function AdminLogsPage() {
     const table = useReactTable({
         data: logs,
         columns,
-        state: { sorting, globalFilter: filter },
+        state: { sorting, globalFilter: debouncedFilter },
         onSortingChange: setSorting,
         onGlobalFilterChange: setFilter,
         getCoreRowModel: getCoreRowModel(),
