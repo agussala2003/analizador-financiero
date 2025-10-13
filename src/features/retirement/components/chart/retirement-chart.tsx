@@ -8,7 +8,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Legend,
-} from "recharts";
+} from "../../../../components/charts/lazy-recharts";
 import {
   ChartContainer,
   ChartTooltip,

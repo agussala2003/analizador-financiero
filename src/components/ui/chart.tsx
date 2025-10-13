@@ -1,7 +1,10 @@
 import * as React from "react"
-import * as RechartsPrimitive from "recharts"
+import { ResponsiveContainer, Tooltip, Legend } from "../charts/lazy-recharts"
 
 import { cn } from "../../lib/utils"
+
+// Type-only namespace for better tree-shaking
+const RechartsPrimitive = { ResponsiveContainer, Tooltip, Legend } as const
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const

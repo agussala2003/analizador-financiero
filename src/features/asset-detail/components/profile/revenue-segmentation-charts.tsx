@@ -14,7 +14,7 @@ import {
   Cell,
   Legend,
   Tooltip,
-} from 'recharts';
+} from '../../../../components/charts/lazy-recharts';
 import {
   CHART_COLORS,
   renderPieChartLabel,

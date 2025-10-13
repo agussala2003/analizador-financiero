@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts"
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "../../../../components/charts/lazy-recharts"
 import { AssetData } from "../../../../types/dashboard"
 import { indicatorConfig } from "../../../../utils/financial"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card"

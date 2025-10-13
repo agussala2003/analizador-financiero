@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "../../../../components/charts/lazy-recharts"
 import { AssetData } from "../../../../types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card"
 import { ChartContainer, ChartTooltip, ChartLegend, ChartLegendContent } from "../../../../components/ui/chart"

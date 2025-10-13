@@ -11,7 +11,7 @@ import {
   YAxis,
   CartesianGrid,
   LabelList,
-} from "recharts";
+} from "../../../../components/charts/lazy-recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import {
   ChartContainer,

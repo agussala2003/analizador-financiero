@@ -4,8 +4,13 @@ import { lazy, Suspense, ComponentType } from 'react';
 import { Skeleton } from '../ui/skeleton';
 
 /**
- * Lazy loading wrappers for heavy Recharts components.
- * This helps reduce initial bundle size by loading charts only when needed.
+ * Centralized lazy loading for Recharts components.
+ * This optimizes bundle size by:
+ * 1. Lazy loading chart containers (heavy components)
+ * 2. Tree-shaking unused recharts modules
+ * 3. Code splitting recharts into separate chunks
+ * 
+ * Usage: Import from this file instead of 'recharts' directly
  */
 
 // Chart loading fallback
@@ -15,7 +20,7 @@ const ChartSkeleton = () => (
   </div>
 );
 
-// Lazy load chart components
+// === Lazy load HEAVY chart container components ===
 const LazyPieChart = lazy(() => 
   import('recharts').then(module => ({ default: module.PieChart }))
 );
@@ -32,7 +37,11 @@ const LazyLineChart = lazy(() =>
   import('recharts').then(module => ({ default: module.LineChart }))
 );
 
-// Wrapped components with Suspense
+const LazyRadarChart = lazy(() => 
+  import('recharts').then(module => ({ default: module.RadarChart }))
+);
+
+// === Wrapped components with Suspense ===
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PieChart: ComponentType<any> = (props) => (
   <Suspense fallback={<ChartSkeleton />}>
@@ -61,17 +70,35 @@ export const LineChart: ComponentType<any> = (props) => (
   </Suspense>
 );
 
-// Re-export commonly used components that don't add much weight
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const RadarChart: ComponentType<any> = (props) => (
+  <Suspense fallback={<ChartSkeleton />}>
+    <LazyRadarChart {...props} />
+  </Suspense>
+);
+
+// === Re-export lightweight components (these don't add much weight) ===
+// These are actual chart elements, not containers
 export {
+  // Chart elements
   Pie,
   Bar,
   Area,
   Line,
   Cell,
+  Radar,
+  
+  // Axes and grids
   XAxis,
   YAxis,
   CartesianGrid,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  
+  // Layout and utilities
   Legend,
   ResponsiveContainer,
   LabelList,
+  Tooltip,
 } from 'recharts';
