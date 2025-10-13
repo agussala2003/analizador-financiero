@@ -101,7 +101,7 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
             formatCurrency(asset.lastMonthAvgPriceTarget)
         ]);
 
-        exportToPdf({
+        void exportToPdf({
             title,
             subtitle: "Análisis de rendimiento y riesgo de los activos seleccionados.",
             sections: [{

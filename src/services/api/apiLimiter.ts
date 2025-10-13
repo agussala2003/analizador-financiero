@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '../../types/auth';
 import { Config, RoleLimits } from '../../types/config';
+import { logger } from '../../lib/logger';
 
 // Tipo específico para los datos que obtenemos de la base de datos
 interface DbProfileData {
@@ -39,7 +40,7 @@ export const checkApiLimit = async (
 
   if (profileError || !dbProfile) {
     toast.error('No se pudo verificar el límite de uso de la API.');
-    console.error('API Limit Check Error:', profileError);
+    void logger.error('API_LIMIT_CHECK_ERROR', 'No se pudo verificar el límite de uso de la API', { error: JSON.stringify(profileError) });
     return false;
   }
 
@@ -77,7 +78,7 @@ export const checkApiLimit = async (
 
   if (updateError) {
     toast.error('No se pudo actualizar el uso de la API.');
-    console.error('API Limit Update Error:', updateError);
+    void logger.error('API_LIMIT_UPDATE_ERROR', 'No se pudo actualizar el uso de la API', { error: JSON.stringify(updateError) });
     return false;
   }
 

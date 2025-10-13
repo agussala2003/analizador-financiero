@@ -4,6 +4,7 @@ import { createContext, useEffect, useState, ReactNode } from "react";
 import { Config } from "../types/config";
 import { LoadingScreen } from "../components/ui/loading-screen";
 import { ErrorScreen } from "../components/ui/error-screen";
+import { logger } from "../lib/logger";
 
 // Creamos un estado inicial que lanza un error claro si se usa fuera del provider.
 const initialConfig = new Proxy({}, {
@@ -37,7 +38,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
                 setStatus('success');
             })
             .catch(error => {
-                console.error("Error crítico: Falló la carga de config.json", error);
+                void logger.error('CONFIG_LOAD_ERROR', 'Error crítico: Falló la carga de config.json', { error: String(error) });
                 setStatus('error');
             });
     };

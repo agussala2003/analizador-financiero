@@ -1,72 +1,26 @@
 ﻿// src/features/suggestions/pages/suggestion-page.tsx
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../hooks/use-auth';
 import { useConfig } from '../../../hooks/use-config';
-import { toast } from 'sonner';
 import { MessageSquareHeart } from 'lucide-react';
-import { errorToString } from '../../../utils/type-guards';
-import { Suggestion } from '../types/suggestion.types';
-import {
-  extractSuggestionsConfig,
-  fetchUserSuggestions,
-  submitSuggestion,
-} from '../lib/suggestion.utils';
-import {
-  SuggestionForm,
-  SuggestionsList,
-} from '../components';
+import { extractSuggestionsConfig } from '../lib/suggestion.utils';
+import { SuggestionForm, SuggestionsList } from '../components';
+import { useSuggestionsQuery, useSubmitSuggestion } from '../hooks/use-suggestions-query';
 
 export default function SuggestionsPage() {
   const { user } = useAuth();
   const configRaw = useConfig();
   const config = extractSuggestionsConfig(configRaw?.suggestions);
 
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [formLoading, setFormLoading] = useState(false);
+  // Use TanStack Query hooks
+  const { data: suggestions = [], isLoading: loading } = useSuggestionsQuery(user?.id);
+  const submitMutation = useSubmitSuggestion();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await fetchUserSuggestions(user.id);
-        setSuggestions(data);
-      } catch (error: unknown) {
-        toast.error('No se pudieron cargar tus sugerencias.');
-        console.error('Suggestions fetch error:', errorToString(error));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchData();
-  }, [user]);
-
-  const handleSubmit = async (content: string) => {
-    if (!user) return;
-
-    setFormLoading(true);
-    const toastId = toast.loading('Enviando tu idea...');
-
-    try {
-      const newSuggestion = await submitSuggestion(content, user.id);
-      setSuggestions([newSuggestion, ...suggestions]);
-      toast.success('¡Gracias por tu aporte! ', { id: toastId });
-    } catch (error: unknown) {
-      toast.error('Hubo un problema al enviar tu sugerencia.', {
-        id: toastId,
-        description: 'Por favor, inténtalo de nuevo.',
-      });
-      console.error('Suggestion submission error:', errorToString(error));
-    } finally {
-      setFormLoading(false);
-    }
+  const handleSubmit = (content: string): Promise<void> => {
+    if (!user) return Promise.resolve();
+    submitMutation.mutate({ content, userId: user.id });
+    return Promise.resolve();
   };
 
   return (
@@ -96,7 +50,7 @@ export default function SuggestionsPage() {
         <SuggestionForm
           config={config}
           onSubmit={handleSubmit}
-          loading={formLoading}
+          loading={submitMutation.isPending}
         />
       </div>
 

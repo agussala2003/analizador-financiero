@@ -44,7 +44,7 @@ const fetchPortfolioData = async (userId: string | undefined) => {
             if (assetResult.error) throw assetResult.error;
             portfolioData = (assetResult.data as Record<string, PortfolioAssetData>) ?? {};
         } catch (error) {
-             console.error("Error al traer datos de activos:", error);
+             void logger.error('PORTFOLIO_FETCH_ERROR', 'Error al traer datos de activos', { error: errorToString(error) });
              portfolioData = {};
         }
     }

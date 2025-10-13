@@ -127,7 +127,7 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                 };
             });
 
-        exportToPdf({
+        void exportToPdf({
             title,
             subtitle,
             sections,

@@ -31,7 +31,12 @@ export function errorToString(error: unknown): string {
         return error;
     }
     try {
-        return JSON.stringify(error);
+        const stringified = JSON.stringify(error);
+        // JSON.stringify returns undefined for undefined values
+        if (stringified === undefined) {
+            return 'Ocurrió un error desconocido e inserializable.';
+        }
+        return stringified;
     } catch {
         return 'Ocurrió un error desconocido e inserializable.';
     }

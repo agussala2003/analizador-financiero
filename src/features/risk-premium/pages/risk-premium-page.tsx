@@ -1,55 +1,39 @@
 ﻿// src/features/risk-premium/pages/risk-premium-page.tsx
 
-import { useEffect, useMemo, useState } from 'react';
-import { useConfig } from '../../../hooks/use-config';
-import { toast } from 'sonner';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Globe } from 'lucide-react';
-import { errorToString } from '../../../utils/type-guards';
-import { RiskPremiumData } from '../types/risk-premium.types';
-import {
-  fetchRiskPremiumData,
-  extractContinents,
-} from '../lib/risk-premium.utils';
-import {
-  RiskPremiumFilters,
-  RiskPremiumTable,
-  RiskPremiumSkeleton,
-} from '../components';
+import { extractContinents } from '../lib/risk-premium.utils';
+import { RiskPremiumFilters, RiskPremiumTable, RiskPremiumSkeleton } from '../components';
+import { useRiskPremiumQuery } from '../hooks/use-risk-premium-query';
+import { ErrorScreen } from '../../../components/ui/error-screen';
 
 export default function RiskPremiumPage() {
-  const [data, setData] = useState<RiskPremiumData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [countryFilter, setCountryFilter] = useState('');
   const [continentFilter, setContinentFilter] = useState('');
-  const config = useConfig();
+
+  // Use TanStack Query hook
+  const { data = [], isLoading, isError, error, refetch } = useRiskPremiumQuery();
 
   const continents = useMemo(() => extractContinents(data), [data]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const riskData = await fetchRiskPremiumData(config);
-        setData(riskData);
-      } catch (error: unknown) {
-        toast.error('Error al obtener los datos de riesgo país.');
-        console.error('Risk premium fetch error:', errorToString(error));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (config) void fetchData();
-  }, [config]);
 
   const handleClearFilters = () => {
     setCountryFilter('');
     setContinentFilter('');
   };
 
-  if (loading) {
+  if (isLoading) {
     return <RiskPremiumSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <ErrorScreen
+        title="Error al Cargar Datos"
+        message={error instanceof Error ? error.message : 'No se pudieron obtener los datos de riesgo país.'}
+        onRetry={() => void refetch()}
+      />
+    );
   }
 
   return (

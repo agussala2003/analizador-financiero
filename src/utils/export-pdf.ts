@@ -1,9 +1,7 @@
 // src/utils/export-pdf.ts
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { AssetData } from '../types/dashboard';
-import { Indicator, IndicatorConfig } from './financial';
+import type { AssetData } from '../types/dashboard';
+import type { Indicator, IndicatorConfig } from './financial';
 
 // --- TIPOS Y INTERFACES ---
 type Theme = 'light' | 'dark' | 'system';
@@ -26,13 +24,25 @@ interface ExportOptions {
 }
 
 // Extended jsPDF interface to include autoTable properties
-interface ExtendedJsPDF extends jsPDF {
+interface ExtendedJsPDF {
     lastAutoTable?: {
         finalY: number;
     };
-    internal: jsPDF['internal'] & {
+    internal: {
+        pageSize: {
+            width: number;
+            height: number;
+        };
         getNumberOfPages(): number;
     };
+    setFillColor(color: string): void;
+    setFillColor(r: number, g: number, b: number): void;
+    rect(x: number, y: number, w: number, h: number, style: string): void;
+    setFontSize(size: number): void;
+    setTextColor(r: number, g: number, b: number): void;
+    text(text: string, x: number, y: number, options?: { align?: string; baseline?: string }): void;
+    setPage(page: number): void;
+    save(fileName: string): void;
 }
 
 // --- UTILIDADES DE VALIDACIÓN ---
@@ -130,9 +140,15 @@ const getPercentageColor = (value: number, theme: Theme): [number, number, numbe
     }
 };
 
-// --- FUNCIÓN PRINCIPAL DE EXPORTACIÓN ---
-export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicatorConfig }: ExportOptions) => {
-    const doc = new jsPDF() as ExtendedJsPDF;
+// --- FUNCIÓN PRINCIPAL DE EXPORTACIÓN (con lazy loading) ---
+export const exportToPdf = async ({ title, subtitle, sections, assets, theme, indicatorConfig }: ExportOptions) => {
+    // Lazy load heavy dependencies only when export is triggered
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable')
+    ]);
+    
+    const doc = new jsPDF() as unknown as ExtendedJsPDF;
     const styles = getThemeStyles(theme);
     let finalY = 0;
 
@@ -179,7 +195,7 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
             })
         );
 
-        autoTable(doc, {
+        autoTable(doc as never, {
             startY: finalY + 15,
             head: section.head,
             body: processedBody,
@@ -195,32 +211,42 @@ export const exportToPdf = ({ title, subtitle, sections, assets, theme, indicato
                 textColor: styles.textColor,
                 fontStyle: 'bold',
             },
-            willDrawCell: (data) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            willDrawCell: (data: any) => {
                 // Estilos para la Tabla de Fundamentales con indicadores específicos
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (section.metricKeys && data.section === 'body' && data.column.index > 0) {
-                    const metricKey = section.metricKeys[data.row.index];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const metricKey = section.metricKeys[data.row.index as number];
                     const config = indicatorConfig[metricKey];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     const valueStr = safeCellToString(data.cell.raw).replace('%', '').replace('$', '');
                     const value = parseFloat(valueStr);
 
                     if (config && !isNaN(value)) {
                         const color = getTrafficLightColor(config, value, theme);
                         if (color) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             data.cell.styles.textColor = color;
                         }
                     }
                 }
             },
-            didDrawCell: (data) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            didDrawCell: (data: any) => {
                 // Estilos para la Matriz de Correlación
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (section.isCorrelation && data.section === 'body' && data.column.index > 0) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     const valueStr = safeCellToString(data.cell.raw);
                     const value = parseFloat(valueStr);
                     if (!isNaN(value)) {
                         const cellStyles = getCorrelationCellStyle(value);
                         doc.setFillColor(cellStyles.fillColor);
                         doc.setTextColor(...cellStyles.textColor);
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
                         doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
                         doc.text(safeCellToString(data.cell.raw), data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2, {
                             align: 'center', baseline: 'middle'
                         });
