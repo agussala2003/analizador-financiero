@@ -35,7 +35,7 @@ export function AuthCard({ title, description, children }: AuthCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-center">
+        <CardTitle className="heading-3 font-semibold text-center">
           {title}
         </CardTitle>
         <CardDescription className="text-center">

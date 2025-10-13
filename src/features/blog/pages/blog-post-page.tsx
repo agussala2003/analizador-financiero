@@ -306,7 +306,7 @@ function BlogPostPage() {
             </Avatar>
             <div>
               <p className="font-medium">{authorName}</p>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1 body-sm text-muted-foreground">
                 <Calendar className="w-3 h-3" />
                 {formatDistanceToNow(new Date(blog.created_at), { addSuffix: true, locale: es })}
               </div>

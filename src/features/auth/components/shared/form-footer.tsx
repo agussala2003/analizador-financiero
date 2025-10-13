@@ -29,7 +29,7 @@ interface FormFooterProps {
  */
 export function FormFooter({ text, linkText, linkTo }: FormFooterProps) {
   return (
-    <div className="mt-4 text-center text-sm">
+    <div className="mt-4 text-center body-sm">
       {text}{' '}
       <NavLink to={linkTo} className="underline underline-offset-4">
         {linkText}

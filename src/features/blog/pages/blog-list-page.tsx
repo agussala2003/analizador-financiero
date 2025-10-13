@@ -207,7 +207,7 @@ function BlogListPage() {
       ) : filteredBlogs.length === 0 ? (
         <div className="text-center py-16">
           <Search className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-xl font-semibold mb-2">No se encontraron artículos</h3>
+          <h3 className="heading-4 font-semibold mb-2">No se encontraron artículos</h3>
           <p className="text-muted-foreground">
             {searchQuery || categoryFilter !== 'all'
               ? 'Intenta ajustar tus filtros de búsqueda'
@@ -223,7 +223,7 @@ function BlogListPage() {
           </div>
 
           {/* Contador de resultados */}
-          <div className="mt-8 text-center text-sm text-muted-foreground">
+          <div className="mt-8 text-center body-sm text-muted-foreground">
             Mostrando {filteredBlogs.length} de {blogs.length} artículos
           </div>
         </>

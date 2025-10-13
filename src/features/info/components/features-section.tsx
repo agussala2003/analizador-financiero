@@ -49,7 +49,7 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
       <div className="max-w-6xl mx-auto text-center">
         {/* Título con soporte para HTML */}
         <h2 
-          className="text-3xl md:text-4xl font-bold mb-4" 
+          className="heading-1 font-bold mb-4" 
           dangerouslySetInnerHTML={{ __html: title }} 
         />
         

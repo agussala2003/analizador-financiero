@@ -49,7 +49,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
   return (
     <AnimatedSection className="py-12 px-4">
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4">{title}</h2>
+        <h2 className="heading-2 font-bold mb-4">{title}</h2>
         <p className="text-muted-foreground mb-8 max-w-lg mx-auto">{subtitle}</p>
 
         <Carousel className="w-full" opts={{ align: "start", loop: true }}>
@@ -73,7 +73,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                           ))}
                         </div>
 
-                        <p className="text-sm md:text-base text-foreground mb-4 italic">
+                        <p className="body text-foreground mb-4 italic">
                           "{opinion.comment}"
                         </p>
                       </div>
@@ -88,7 +88,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                         </Avatar>
                         <div>
                           <p className="font-semibold text-foreground">{opinion.name}</p>
-                          <p className="text-xs text-muted-foreground">{opinion.role}</p>
+                          <p className="caption text-muted-foreground">{opinion.role}</p>
                         </div>
                       </div>
                     </CardContent>

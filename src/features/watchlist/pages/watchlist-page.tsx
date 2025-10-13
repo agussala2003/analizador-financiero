@@ -60,7 +60,7 @@ export default function WatchlistPage() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Star className="h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="heading-4 font-semibold mb-2">
                 Tu watchlist está vacía
               </h3>
               <p className="text-muted-foreground mb-6 max-w-md">
@@ -106,7 +106,7 @@ export default function WatchlistPage() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="text-xl">{item.symbol}</CardTitle>
+                  <CardTitle className="heading-4">{item.symbol}</CardTitle>
                   <CardDescription className="mt-1">
                     Agregado el {new Date(item.added_at).toLocaleDateString('es-ES', {
                       day: 'numeric',
@@ -121,7 +121,7 @@ export default function WatchlistPage() {
             
             {item.notes && (
               <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="body-sm text-muted-foreground line-clamp-2">
                   {item.notes}
                 </p>
               </CardContent>
@@ -139,7 +139,7 @@ export default function WatchlistPage() {
             </div>
             <div className="flex-1">
               <h3 className="font-semibold mb-1">Consejo</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="body-sm text-muted-foreground">
                 Usa tu watchlist para seguir assets que te interesan pero que aún no has comprado.
                 Puedes agregar notas personales a cada asset desde su página de detalles.
               </p>

@@ -74,7 +74,7 @@ export function SuggestionForm({ config, onSubmit, loading }: SuggestionFormProp
               aria-invalid={isOver || isUnder}
               aria-describedby="suggestion-hint"
             />
-            <div id="suggestion-hint" className={`text-xs text-right ${colorClass}`}>
+            <div id="suggestion-hint" className={`caption text-right ${colorClass}`}>
               {message}
             </div>
           </div>

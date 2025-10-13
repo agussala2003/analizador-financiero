@@ -44,12 +44,12 @@ export const FinalCtaSection: React.FC<FinalCtaSectionProps> = ({
     <AnimatedSection className="py-12 px-4 bg-muted/30">
       <div className="max-w-3xl mx-auto text-center bg-gradient-to-r from-primary/80 to-cyan-400/80 p-1 rounded-xl">
         <div className="bg-card p-8 rounded-lg">
-          <h2 className="text-3xl font-bold mb-3">{title}</h2>
+          <h2 className="heading-2 font-bold mb-3">{title}</h2>
           <p className="text-muted-foreground mb-6">{subtitle}</p>
           <Link to={ctaLink}>
             <Button 
               size="lg" 
-              className="text-base py-2.5 px-6 bg-foreground text-background hover:bg-foreground/80 transition-colors"
+              className="body py-2.5 px-6 bg-foreground text-background hover:bg-foreground/80 transition-colors"
             >
               {ctaText}
             </Button>

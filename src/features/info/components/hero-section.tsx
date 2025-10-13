@@ -46,7 +46,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       
       {/* Título principal con animación */}
       <motion.h1
-        className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 mb-4"
+        className="heading-1 font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 mb-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}

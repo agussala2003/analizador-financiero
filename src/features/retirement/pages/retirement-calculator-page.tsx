@@ -83,7 +83,7 @@ export default function RetirementCalculatorPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="mt-8 text-center text-sm text-muted-foreground max-w-2xl mx-auto"
+        className="mt-8 text-center body-sm text-muted-foreground max-w-2xl mx-auto"
       >
         <p className="flex items-center justify-center gap-2">
           <Zap className="w-4 h-4 text-primary" />

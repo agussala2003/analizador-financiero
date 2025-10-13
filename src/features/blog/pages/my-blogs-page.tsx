@@ -222,7 +222,7 @@ function MyBlogsPage() {
       {filteredBlogs.length === 0 ? (
         <Card className="p-12 text-center">
           <div className="space-y-4">
-            <h3 className="text-2xl font-semibold">No hay artículos</h3>
+            <h3 className="heading-3 font-semibold">No hay artículos</h3>
             <p className="text-muted-foreground">
               {searchQuery || statusFilter !== 'all'
                 ? 'No se encontraron artículos con los filtros aplicados.'
@@ -260,7 +260,7 @@ function MyBlogsPage() {
                     <Badge variant="outline">{blog.category}</Badge>
                   )}
                 </div>
-                <h3 className="text-xl font-semibold line-clamp-2 hover:text-primary">
+                <h3 className="heading-4 font-semibold line-clamp-2 hover:text-primary">
                   {blog.title}
                 </h3>
               </CardHeader>
@@ -270,7 +270,7 @@ function MyBlogsPage() {
                   {blog.excerpt}
                 </p>
 
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-4 body-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Heart className="w-4 h-4" />
                     <span>{blog.stats.likes}</span>
@@ -285,7 +285,7 @@ function MyBlogsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-sm text-muted-foreground mt-4">
+                <div className="flex items-center gap-1 body-sm text-muted-foreground mt-4">
                   <Calendar className="w-3 h-3" />
                   {formatDistanceToNow(new Date(blog.created_at), { addSuffix: true, locale: es })}
                 </div>

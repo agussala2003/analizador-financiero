@@ -155,7 +155,7 @@ function BookmarkedBlogsPage() {
             <div className="flex justify-center">
               <Bookmark className="w-16 h-16 text-muted-foreground" />
             </div>
-            <h3 className="text-2xl font-semibold">No tienes artículos guardados</h3>
+            <h3 className="heading-3 font-semibold">No tienes artículos guardados</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
               Cuando encuentres artículos interesantes, puedes guardarlos haciendo clic en el ícono de bookmark.
             </p>
@@ -200,7 +200,7 @@ function BookmarkedBlogsPage() {
                       <Bookmark className="w-4 h-4 fill-current" />
                     </Button>
                   </div>
-                  <h3 className="text-xl font-semibold line-clamp-2">
+                  <h3 className="heading-4 font-semibold line-clamp-2">
                     {blog.title}
                   </h3>
                 </CardHeader>
@@ -211,7 +211,7 @@ function BookmarkedBlogsPage() {
                     <Avatar className="h-8 w-8">
                       <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">{authorName}</span>
+                    <span className="body-sm font-medium">{authorName}</span>
                   </div>
 
                   <p className="text-muted-foreground line-clamp-3 mb-4">
@@ -222,12 +222,12 @@ function BookmarkedBlogsPage() {
                   {blog.tags && blog.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                       {blog.tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
+                        <Badge key={tag} variant="secondary" className="caption">
                           {tag}
                         </Badge>
                       ))}
                       {blog.tags.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="caption">
                           +{blog.tags.length - 3}
                         </Badge>
                       )}
@@ -235,7 +235,7 @@ function BookmarkedBlogsPage() {
                   )}
 
                   {/* Stats */}
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center gap-4 body-sm text-muted-foreground mb-4">
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
                       <span>{blog.stats.likes}</span>
@@ -247,7 +247,7 @@ function BookmarkedBlogsPage() {
                   </div>
 
                   {/* Fecha de guardado */}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1 caption text-muted-foreground">
                     <Bookmark className="w-3 h-3" />
                     Guardado {formatDistanceToNow(new Date(blog.bookmarked_at), { addSuffix: true, locale: es })}
                   </div>
