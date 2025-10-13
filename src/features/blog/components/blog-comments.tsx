@@ -47,19 +47,19 @@ function CommentItem({
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-sm">{authorName}</span>
-              <span className="text-xs text-muted-foreground">
+              <span className="font-semibold body-sm">{authorName}</span>
+              <span className="caption text-muted-foreground">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: es })}
               </span>
             </div>
             
-            <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
+            <p className="body-sm whitespace-pre-wrap break-words">{comment.content}</p>
             
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onReply(comment.id)}
-              className="mt-2 h-7 text-xs"
+              className="mt-2 h-7 caption"
             >
               <Reply className="w-3 h-3 mr-1" />
               Responder
@@ -123,7 +123,7 @@ export function BlogComments({ comments, onAddComment }: BlogCommentsProps) {
     <div className="mt-12 space-y-6">
       <div className="flex items-center gap-2">
         <MessageCircle className="w-6 h-6" />
-        <h2 className="text-2xl font-bold">
+        <h2 className="heading-3 font-bold">
           Comentarios {comments.length > 0 && `(${comments.length})`}
         </h2>
       </div>

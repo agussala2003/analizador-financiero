@@ -43,7 +43,7 @@ export function EmptyDashboard({
       className="text-center py-20 px-6 border-2 border-dashed rounded-lg"
     >
       <Briefcase className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-      <h2 className="text-xl font-semibold mb-2">{message}</h2>
+      <h2 className="heading-4 font-semibold mb-2">{message}</h2>
       <p className="text-muted-foreground">{description}</p>
     </motion.div>
   );
