@@ -19,6 +19,8 @@ import { PageSkeleton, AuthPageSkeleton } from './components/ui/page-skeleton.ts
 import { DashboardSkeleton } from './features/dashboard/components/skeleton/dashboard-skeleton.tsx';
 import { PortfolioSkeleton } from './features/portfolio/components/skeleton/portfolio-skeleton.tsx';
 import { AssetDetailSkeleton } from './features/asset-detail/components/skeleton/asset-detail-skeleton.tsx';
+import { SuspenseFallback } from './components/suspense';
+import { ErrorBoundary } from './components/error-boundary';
 
 // Importación de los guardianes de rutas
 import { ProtectedRoute } from './features/auth/components/protected-route.tsx';
@@ -66,12 +68,66 @@ const router = createBrowserRouter([
             {
                 element: <ProtectedRoute />,
                 children: [
-                    { path: "dashboard", element: <Suspense fallback={<DashboardSkeleton />}><DashboardPage /></Suspense> },
-                    { path: "asset/:symbol", element: <Suspense fallback={<AssetDetailSkeleton />}><AssetDetailPage /></Suspense> },
-                    { path: "portfolio", element: <Suspense fallback={<PortfolioSkeleton />}><PortfolioPage /></Suspense> },
-                    { path: "watchlist", element: <Suspense fallback={<PageSkeleton />}><WatchlistPage /></Suspense> },
-                    { path: "dividends", element: <Suspense fallback={<PageSkeleton />}><DividendsPage /></Suspense> },
-                    { path: "news", element: <Suspense fallback={<PageSkeleton />}><NewsPage /></Suspense> },
+                    { 
+                        path: "dashboard", 
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Dashboard">
+                                <Suspense fallback={<DashboardSkeleton />}>
+                                    <DashboardPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    { 
+                        path: "asset/:symbol", 
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Asset Detail">
+                                <Suspense fallback={<AssetDetailSkeleton />}>
+                                    <AssetDetailPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    { 
+                        path: "portfolio", 
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Portfolio">
+                                <Suspense fallback={<PortfolioSkeleton />}>
+                                    <PortfolioPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    { 
+                        path: "watchlist", 
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Watchlist">
+                                <Suspense fallback={<SuspenseFallback type="page" message="Cargando watchlist..." />}>
+                                    <WatchlistPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    { 
+                        path: "dividends", 
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Dividends">
+                                <Suspense fallback={<SuspenseFallback type="page" message="Cargando dividendos..." />}>
+                                    <DividendsPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    { 
+                        path: "news", 
+                        element: (
+                            <ErrorBoundary level="feature" featureName="News">
+                                <Suspense fallback={<SuspenseFallback type="page" message="Cargando noticias..." />}>
+                                    <NewsPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
                     { path: "profile", element: <Suspense fallback={<PageSkeleton />}><ProfilePage /></Suspense> },
                     { path: "risk-premium", element: <Suspense fallback={<PageSkeleton />}><RiskPremiumPage /></Suspense> },
                     { path: "suggestions", element: <Suspense fallback={<PageSkeleton />}><SuggestionsPage /></Suspense> },

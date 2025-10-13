@@ -1,14 +1,15 @@
 // src/features/dividends/pages/dividends-page.tsx
 
 import React from "react";
-import { columns, DataTable, DividendsFilters, DividendsSkeleton, Dividend } from "../components";
+import { columns, DataTable, DataTableVirtualized, DividendsFilters, DividendsSkeleton, Dividend } from "../components";
 import { supabase } from "../../../lib/supabase";
 import { logger } from "../../../lib/logger";
 import { toast } from "sonner";
 import { useConfig } from "../../../hooks/use-config";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader } from "../../../components/ui/card";
-import { Divide } from "lucide-react";
+import { Divide, List, LayoutGrid } from "lucide-react";
+import { Button } from "../../../components/ui/button";
 import {
   useReactTable,
   getCoreRowModel,
@@ -36,6 +37,9 @@ const DividendsPage: React.FC = () => {
   const [symbolFilter, setSymbolFilter] = React.useState<string>("");
   const [paymentDateRange, setPaymentDateRange] = React.useState<DateRange | undefined>();
   const [frequencyFilter, setFrequencyFilter] = React.useState<string>("");
+  
+  // --- MODO DE VISTA: paginado vs virtualizado ---
+  const [useVirtualScroll, setUseVirtualScroll] = React.useState<boolean>(false);
 
   const frequencyOptions = React.useMemo(() => extractUniqueFrequencies(data), [data]);
 
@@ -66,7 +70,7 @@ const DividendsPage: React.FC = () => {
         } else if (cacheRow) {
           const arr = Array.isArray(cacheRow.data) ? cacheRow.data : [];
           setData(arr.filter(isDividend));
-          toast.warning("Datos desactualizados.");
+          // toast.warning("Datos desactualizados.");
         } else {
           throw new Error(typeof apiError === 'string' ? apiError : "No se pudieron obtener los dividendos.");
         }
@@ -85,14 +89,18 @@ const DividendsPage: React.FC = () => {
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, columnFilters, pagination },
+    state: { 
+      sorting, 
+      columnFilters, 
+      ...(useVirtualScroll ? {} : { pagination }) // solo usar pagination en modo paginado
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...(useVirtualScroll ? {} : { getPaginationRowModel: getPaginationRowModel() }), // solo paginar en modo paginado
   });
 
   React.useEffect(() => {
@@ -113,15 +121,39 @@ const DividendsPage: React.FC = () => {
   return (
     <div className="container px-4 py-10 mx-auto sm:px-6 lg:px-8">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="flex items-center gap-4 pb-4 mb-6 border-b">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Divide className="w-8 h-8 text-primary" />
+        <div className="flex items-center justify-between gap-4 pb-4 mb-6 border-b">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Divide className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendario de Dividendos</h1>
+              <p className="text-muted-foreground">
+                Consulta y filtra las fechas importantes de los próximos dividendos.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendario de Dividendos</h1>
-            <p className="text-muted-foreground">
-              Consulta y filtra las fechas importantes de los próximos dividendos.
-            </p>
+          
+          {/* Toggle de vista: paginado vs virtual scroll */}
+          <div className="flex gap-2">
+            <Button
+              variant={!useVirtualScroll ? "default" : "outline"}
+              size="sm"
+              onClick={() => setUseVirtualScroll(false)}
+              className="gap-2"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline">Paginado</span>
+            </Button>
+            <Button
+              variant={useVirtualScroll ? "default" : "outline"}
+              size="sm"
+              onClick={() => setUseVirtualScroll(true)}
+              className="gap-2"
+            >
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline">Virtual</span>
+            </Button>
           </div>
         </div>
       </motion.div>
@@ -146,12 +178,19 @@ const DividendsPage: React.FC = () => {
               />
             </CardHeader>
             <CardContent className="p-0">
-              <DataTable
-                table={table}
-                totalPages={table.getPageCount()}
-                currentPage={pagination.pageIndex + 1}
-                onPageChange={(page) => table.setPageIndex(page - 1)}
-              />
+              {useVirtualScroll ? (
+                <DataTableVirtualized
+                  table={table}
+                  estimateSize={73}
+                />
+              ) : (
+                <DataTable
+                  table={table}
+                  totalPages={table.getPageCount()}
+                  currentPage={pagination.pageIndex + 1}
+                  onPageChange={(page) => table.setPageIndex(page - 1)}
+                />
+              )}
             </CardContent>
           </Card>
         </motion.div>

@@ -14,6 +14,7 @@ import GenericBreadcrumb from "./components/ui/breadcrumb-demo";
 import ActivesBar from "./components/ui/actives-bar";
 import { CommandMenu } from "./components/search/command-menu";
 import { ErrorBoundary } from "./components/error-boundary";
+import { SuspenseFallback } from "./components/suspense";
 import React from "react";
 
 export default function App() {
@@ -40,7 +41,7 @@ export default function App() {
 
           {/* Área de contenido con scroll interno */}
           <main className="flex-1">
-            <React.Suspense fallback={<div>Cargando...</div>}>
+            <React.Suspense fallback={<SuspenseFallback type="page" message="Cargando página..." />}>
               <Outlet />
             </React.Suspense>
           </main>
