@@ -12,8 +12,13 @@ import { AuthProvider } from './providers/auth-provider.tsx';
 import { ConfigProvider } from './providers/config-provider.tsx';
 import { DashboardProvider } from './providers/dashboard-provider.tsx';
 import { PortfolioProvider } from './providers/portfolio-provider.tsx';
-import { LoadingScreen } from './components/ui/loading-screen.tsx';
 import { initPerformanceMonitoring } from './lib/performance.ts';
+
+// Skeleton loaders
+import { PageSkeleton, AuthPageSkeleton } from './components/ui/page-skeleton.tsx';
+import { DashboardSkeleton } from './features/dashboard/components/skeleton/dashboard-skeleton.tsx';
+import { PortfolioSkeleton } from './features/portfolio/components/skeleton/portfolio-skeleton.tsx';
+import { AssetDetailSkeleton } from './features/asset-detail/components/skeleton/asset-detail-skeleton.tsx';
 
 // Importación de los guardianes de rutas
 import { ProtectedRoute } from './features/auth/components/protected-route.tsx';
@@ -43,16 +48,16 @@ const router = createBrowserRouter([
         element: <App />,
         children: [
             // --- Ruta Pública General ---
-            { index: true, element: <Suspense fallback={<LoadingScreen />}><InfoPage /></Suspense> },
+            { index: true, element: <Suspense fallback={<PageSkeleton />}><InfoPage /></Suspense> },
 
             // --- Rutas solo para Invitados (no logueados) ---
             {
                 element: <GuestRoute />,
                 children: [
-                    { path: "login", element: <Suspense fallback={<LoadingScreen />}><LoginPage /></Suspense> },
-                    { path: "register", element: <Suspense fallback={<LoadingScreen />}><RegisterPage /></Suspense> },
-                    { path: "forgot-password", element: <Suspense fallback={<LoadingScreen />}><ForgotPasswordPage /></Suspense> },
-                    { path: "reset-password", element: <Suspense fallback={<LoadingScreen />}><ResetPasswordPage /></Suspense> },
+                    { path: "login", element: <Suspense fallback={<AuthPageSkeleton />}><LoginPage /></Suspense> },
+                    { path: "register", element: <Suspense fallback={<AuthPageSkeleton />}><RegisterPage /></Suspense> },
+                    { path: "forgot-password", element: <Suspense fallback={<AuthPageSkeleton />}><ForgotPasswordPage /></Suspense> },
+                    { path: "reset-password", element: <Suspense fallback={<AuthPageSkeleton />}><ResetPasswordPage /></Suspense> },
                 ]
             },
 
@@ -60,28 +65,28 @@ const router = createBrowserRouter([
             {
                 element: <ProtectedRoute />,
                 children: [
-                    { path: "dashboard", element: <Suspense fallback={<LoadingScreen />}><DashboardPage /></Suspense> },
-                    { path: "asset/:symbol", element: <Suspense fallback={<LoadingScreen />}><AssetDetailPage /></Suspense> },
-                    { path: "portfolio", element: <Suspense fallback={<LoadingScreen />}><PortfolioPage /></Suspense> },
-                    { path: "dividends", element: <Suspense fallback={<LoadingScreen />}><DividendsPage /></Suspense> },
-                    { path: "news", element: <Suspense fallback={<LoadingScreen />}><NewsPage /></Suspense> },
-                    { path: "profile", element: <Suspense fallback={<LoadingScreen />}><ProfilePage /></Suspense> },
-                    { path: "risk-premium", element: <Suspense fallback={<LoadingScreen />}><RiskPremiumPage /></Suspense> },
-                    { path: "suggestions", element: <Suspense fallback={<LoadingScreen />}><SuggestionsPage /></Suspense> },
-                    { path: "retirement-calculator", element: <Suspense fallback={<LoadingScreen />}><RetirementCalculatorPage /></Suspense> },
+                    { path: "dashboard", element: <Suspense fallback={<DashboardSkeleton />}><DashboardPage /></Suspense> },
+                    { path: "asset/:symbol", element: <Suspense fallback={<AssetDetailSkeleton />}><AssetDetailPage /></Suspense> },
+                    { path: "portfolio", element: <Suspense fallback={<PortfolioSkeleton />}><PortfolioPage /></Suspense> },
+                    { path: "dividends", element: <Suspense fallback={<PageSkeleton />}><DividendsPage /></Suspense> },
+                    { path: "news", element: <Suspense fallback={<PageSkeleton />}><NewsPage /></Suspense> },
+                    { path: "profile", element: <Suspense fallback={<PageSkeleton />}><ProfilePage /></Suspense> },
+                    { path: "risk-premium", element: <Suspense fallback={<PageSkeleton />}><RiskPremiumPage /></Suspense> },
+                    { path: "suggestions", element: <Suspense fallback={<PageSkeleton />}><SuggestionsPage /></Suspense> },
+                    { path: "retirement-calculator", element: <Suspense fallback={<PageSkeleton />}><RetirementCalculatorPage /></Suspense> },
                     
                     // --- Rutas Protegidas solo para Administradores (anidadas) ---
                     {
                         element: <AdminRoute />,
                         children: [
-                            { path: "admin", element: <Suspense fallback={<LoadingScreen />}><AdminPage /></Suspense> },
+                            { path: "admin", element: <Suspense fallback={<PageSkeleton />}><AdminPage /></Suspense> },
                         ]
                     }
                 ]
             },
 
             // --- Ruta de Not Found (al final) ---
-            { path: '*', element: <Suspense fallback={<LoadingScreen />}><NotFoundPage /></Suspense> },
+            { path: '*', element: <Suspense fallback={<PageSkeleton />}><NotFoundPage /></Suspense> },
         ],
     },
 ]);
