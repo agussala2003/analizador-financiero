@@ -64,16 +64,31 @@ const retryDelay = (attemptIndex: number): number => {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutos
-      gcTime: 1000 * 60 * 10, // Garbage collection: 10 minutos
-      refetchOnWindowFocus: false, // No refetch automático al volver a la ventana
-      refetchOnReconnect: true, // Sí refetch cuando se recupera la conexión
-      retry: shouldRetry, // Lógica inteligente de retry
-      retryDelay, // Exponential backoff con jitter
+      // Cache & Staleness
+      staleTime: 1000 * 60 * 5, // 5 minutos - Datos considerados frescos
+      gcTime: 1000 * 60 * 10, // 10 minutos - Tiempo antes de garbage collection
+      
+      // Deduplication Settings
+      // TanStack Query automáticamente deduplica requests con la misma key
+      // Estos settings optimizan el comportamiento:
+      refetchOnWindowFocus: false, // No refetch automático (evita requests innecesarios)
+      refetchOnReconnect: true, // Sí refetch al recuperar conexión (datos pueden estar desactualizados)
+      refetchOnMount: true, // Refetch solo si los datos están stale
+      
+      // Network Optimization
+      networkMode: 'online', // Solo hacer requests cuando hay conexión
+      
+      // Retry Logic
+      retry: shouldRetry, // Lógica inteligente de retry (evita requests inútiles)
+      retryDelay, // Exponential backoff con jitter (reduce thundering herd)
+      
+      // Performance
+      structuralSharing: true, // Evita re-renders innecesarios si los datos no cambiaron
     },
     mutations: {
       retry: 1, // Mutations solo 1 reintento (son operaciones críticas)
       retryDelay: 1000, // 1 segundo fijo para mutations
+      networkMode: 'online', // Solo ejecutar mutations cuando hay conexión
     },
   },
 });
