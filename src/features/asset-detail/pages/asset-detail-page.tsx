@@ -50,13 +50,13 @@ export default function AssetDetailPage() {
   // Main content
   return (
     <motion.div
-      className="container px-4 py-6 mx-auto sm:px-6 lg:px-8 space-y-8"
+      className="container-wide stack-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3 }}
     >
       {/* Back button */}
-      <Button variant="outline" asChild className="mb-4">
+      <Button variant="outline" asChild>
         <Link to="/dashboard">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver al Dashboard
@@ -70,7 +70,7 @@ export default function AssetDetailPage() {
       <AssetKeyMetrics asset={asset} />
 
       {/* Valuation & Rating Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid-cards-2">
         <DCFValuationCard currentPrice={asset.currentPrice} dcf={asset.dcf} />
         <RatingScorecard rating={asset.rating} />
       </div>

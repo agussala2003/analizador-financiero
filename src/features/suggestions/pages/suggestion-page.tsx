@@ -25,38 +25,36 @@ export default function SuggestionsPage() {
 
   return (
     <motion.div
-      className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
+      className="container-wide stack-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
     >
       {/* Header */}
-      <div className="flex items-center gap-4 pb-4 mb-6 border-b">
+      <div className="flex items-center gap-4 section-divider">
         <div className="p-2 bg-primary/10 rounded-lg">
           <MessageSquareHeart className="w-8 h-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="heading-2">
             Buzón de Sugerencias
           </h1>
-          <p className="text-muted-foreground">
+          <p className="body text-muted-foreground">
             ¿Tienes una idea para mejorar la app? ¡Nos encantaría escucharla!
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="mb-10">
-        <SuggestionForm
-          config={config}
-          onSubmit={handleSubmit}
-          loading={submitMutation.isPending}
-        />
-      </div>
+      <SuggestionForm
+        config={config}
+        onSubmit={handleSubmit}
+        loading={submitMutation.isPending}
+      />
 
       {/* List */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold mb-4">Tus sugerencias</h2>
+      <div className="stack-4">
+        <h2 className="heading-3">Tus sugerencias</h2>
         <SuggestionsList suggestions={suggestions} loading={loading} />
       </div>
     </motion.div>

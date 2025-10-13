@@ -152,10 +152,10 @@ function MyBlogsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-6">
+      <div className="container-wide stack-6">
+        <div className="animate-pulse stack-6">
           <div className="h-12 bg-muted rounded w-1/3" />
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid-cards-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="h-64 bg-muted rounded-lg" />
             ))}
@@ -166,12 +166,12 @@ function MyBlogsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container-wide stack-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Mis Artículos</h1>
-          <p className="text-muted-foreground">
+          <h1 className="heading-1 mb-2">Mis Artículos</h1>
+          <p className="body text-muted-foreground">
             Gestiona y monitorea tus publicaciones
           </p>
         </div>

@@ -38,26 +38,26 @@ export default function RiskPremiumPage() {
 
   return (
     <motion.div
-      className="container px-4 py-10 mx-auto sm:px-6 lg:px-8"
+      className="container-wide stack-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      transition={{ duration: 0.3 }}
     >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="flex items-center gap-4 pb-4 mb-6 border-b">
+        <div className="flex items-center gap-4 section-divider">
           <div className="p-2 bg-primary/10 rounded-lg">
             <Globe className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="heading-2">
               Riesgo País
             </h1>
-            <p className="text-muted-foreground">
+            <p className="body text-muted-foreground">
               Consulta la prima de riesgo país y la prima total de acciones por
               país.
             </p>
@@ -66,16 +66,14 @@ export default function RiskPremiumPage() {
       </motion.div>
 
       {/* Filters */}
-      <div className="mb-6">
-        <RiskPremiumFilters
-          countryFilter={countryFilter}
-          continentFilter={continentFilter}
-          continents={continents}
-          onCountryFilterChange={setCountryFilter}
-          onContinentFilterChange={setContinentFilter}
-          onClearFilters={handleClearFilters}
-        />
-      </div>
+      <RiskPremiumFilters
+        countryFilter={countryFilter}
+        continentFilter={continentFilter}
+        continents={continents}
+        onCountryFilterChange={setCountryFilter}
+        onContinentFilterChange={setContinentFilter}
+        onClearFilters={handleClearFilters}
+      />
 
       {/* Table */}
       <RiskPremiumTable

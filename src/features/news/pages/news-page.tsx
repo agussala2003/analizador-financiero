@@ -99,23 +99,23 @@ export default function NewsPage() {
 
     return (
         <div className="min-h-screen">
-            <div className="container mx-auto px-4 py-10">
-                                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                    <div className="flex items-center gap-4 pb-4 mb-6 border-b">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                        <Newspaper className="w-8 h-8 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Ultimas Noticias Financieras</h1>
-                        <p className="text-muted-foreground">
-                        Mantente al día con las últimas noticias del mercado y los eventos que pueden afectar tus inversiones.
-                        </p>
-                    </div>
+            <div className="container-wide stack-8">
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                    <div className="flex items-center gap-4 section-divider">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <Newspaper className="w-8 h-8 text-primary" />
+                        </div>
+                        <div>
+                            <h1 className="heading-2">Últimas Noticias Financieras</h1>
+                            <p className="body text-muted-foreground">
+                                Mantente al día con las últimas noticias del mercado y los eventos que pueden afectar tus inversiones.
+                            </p>
+                        </div>
                     </div>
                 </motion.div>
 
                 {/* --- BARRA DE FILTROS --- */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
                     <NewsFilters
                         symbolFilter={symbolFilter}
                         onSymbolFilterChange={setSymbolFilter}
@@ -125,7 +125,6 @@ export default function NewsPage() {
                     />
                 </motion.div>
 
-
                 {loading ? (
                     <NewsSkeleton />
                 ) : (
@@ -133,12 +132,12 @@ export default function NewsPage() {
                         <div className="min-h-fit"> 
                             <AnimatePresence mode="wait">
                                 <motion.div
-                                    key={currentPage} // La clave sigue siendo importante
-                                    className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+                                    key={currentPage}
+                                    className="grid-cards-3 gap-8"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.2 }} // Una transición más rápida se siente mejor
+                                    transition={{ duration: 0.2 }}
                                 >
                                     {currentItems.map((item, index) => (
                                         <NewsCard key={`${item.newsURL}-${index}`} news={item} index={index} />
@@ -148,11 +147,11 @@ export default function NewsPage() {
                         </div>
                         
                         {currentItems.length === 0 && !loading && (
-                            <div className="py-10 text-center text-muted-foreground">No se encontraron noticias con los filtros aplicados.</div>
+                            <div className="py-10 text-center body text-muted-foreground">No se encontraron noticias con los filtros aplicados.</div>
                         )}
 
                         {totalPages > 1 && (
-                            <div className="mt-10">
+                            <div>
                                 <PaginationDemo
                                     currentPage={currentPage}
                                     totalPages={totalPages}

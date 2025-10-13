@@ -244,12 +244,12 @@ function BlogPostPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="animate-pulse space-y-6">
+      <div className="container-narrow stack-6">
+        <div className="animate-pulse stack-6">
           <div className="h-96 bg-muted rounded-lg" />
           <div className="h-12 bg-muted rounded w-3/4" />
           <div className="h-6 bg-muted rounded w-1/2" />
-          <div className="space-y-3">
+          <div className="stack-4">
             <div className="h-4 bg-muted rounded" />
             <div className="h-4 bg-muted rounded" />
             <div className="h-4 bg-muted rounded w-5/6" />
@@ -266,9 +266,9 @@ function BlogPostPage() {
   const isAuthor = user?.id === blog.user_id;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container-narrow stack-6">
       {/* Botón volver */}
-      <Link to="/blog" className="inline-block mb-6">
+      <Link to="/blog" className="inline-block">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver al Blog

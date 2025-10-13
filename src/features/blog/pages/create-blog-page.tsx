@@ -86,10 +86,10 @@ function CreateBlogPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Crear Nuevo Artículo</h1>
-        <p className="text-muted-foreground">
+    <div className="container-narrow stack-8">
+      <div>
+        <h1 className="heading-1 mb-2">Crear Nuevo Artículo</h1>
+        <p className="body text-muted-foreground">
           Comparte tus conocimientos y análisis con la comunidad
         </p>
       </div>

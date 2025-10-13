@@ -119,16 +119,16 @@ const DividendsPage: React.FC = () => {
   const activeFiltersCount = table.getState().columnFilters.length;
 
   return (
-    <div className="container px-4 py-10 mx-auto sm:px-6 lg:px-8">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="flex items-center justify-between gap-4 pb-4 mb-6 border-b">
+    <div className="container-wide stack-6">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <div className="flex items-center justify-between gap-4 section-divider">
           <div className="flex items-center gap-4">
             <div className="p-2 bg-primary/10 rounded-lg">
               <Divide className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendario de Dividendos</h1>
-              <p className="text-muted-foreground">
+              <h1 className="heading-2">Calendario de Dividendos</h1>
+              <p className="body text-muted-foreground">
                 Consulta y filtra las fechas importantes de los próximos dividendos.
               </p>
             </div>
@@ -161,7 +161,7 @@ const DividendsPage: React.FC = () => {
       {loading ? (
         <DividendsSkeleton />
       ) : (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7 }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           <Card>
             {/* --- BARRA DE FILTROS CON RANGO DE FECHAS --- */}
             <CardHeader className="p-4 border-b">

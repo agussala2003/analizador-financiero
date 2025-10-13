@@ -124,10 +124,10 @@ function BookmarkedBlogsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-6">
+      <div className="container-wide stack-6">
+        <div className="animate-pulse stack-6">
           <div className="h-12 bg-muted rounded w-64" />
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid-cards-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="h-96 bg-muted rounded-lg" />
             ))}
@@ -138,11 +138,11 @@ function BookmarkedBlogsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container-wide stack-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Artículos Guardados</h1>
-        <p className="text-muted-foreground">
+      <div>
+        <h1 className="heading-1 mb-2">Artículos Guardados</h1>
+        <p className="body text-muted-foreground">
           {blogs.length === 0
             ? 'No has guardado ningún artículo todavía'
             : `Tienes ${blogs.length} ${blogs.length === 1 ? 'artículo guardado' : 'artículos guardados'}`}

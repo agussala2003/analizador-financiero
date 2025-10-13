@@ -99,8 +99,8 @@ function EditBlogPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="animate-pulse space-y-6">
+      <div className="container-narrow stack-6">
+        <div className="animate-pulse stack-6">
           <div className="h-12 bg-muted rounded w-1/3" />
           <div className="h-10 bg-muted rounded" />
           <div className="h-10 bg-muted rounded" />
@@ -113,10 +113,10 @@ function EditBlogPage() {
   if (!initialData) return null;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Editar Artículo</h1>
-        <p className="text-muted-foreground">
+    <div className="container-narrow stack-8">
+      <div>
+        <h1 className="heading-1 mb-2">Editar Artículo</h1>
+        <p className="body text-muted-foreground">
           Actualiza tu artículo y mejora su contenido
         </p>
       </div>
