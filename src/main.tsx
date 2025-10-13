@@ -13,6 +13,7 @@ import { ConfigProvider } from './providers/config-provider.tsx';
 import { DashboardProvider } from './providers/dashboard-provider.tsx';
 import { PortfolioProvider } from './providers/portfolio-provider.tsx';
 import { LoadingScreen } from './components/ui/loading-screen.tsx';
+import { initPerformanceMonitoring } from './lib/performance.ts';
 
 // Importación de los guardianes de rutas
 import { ProtectedRoute } from './features/auth/components/protected-route.tsx';
@@ -84,6 +85,9 @@ const router = createBrowserRouter([
         ],
     },
 ]);
+
+// Inicializar monitoreo de performance
+initPerformanceMonitoring();
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
