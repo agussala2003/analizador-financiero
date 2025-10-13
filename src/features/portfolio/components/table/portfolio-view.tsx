@@ -121,7 +121,7 @@ export const PortfolioView = React.memo(function PortfolioView({ holdings, onDel
     return (
       <Card className="text-center py-10">
         <p className="text-muted-foreground">Aún no tienes posiciones abiertas.</p>
-        <p className="text-sm text-muted-foreground mt-2">Agrega tu primera transacción desde el Dashboard.</p>
+        <p className="body-sm text-muted-foreground mt-2">Agrega tu primera transacción desde el Dashboard.</p>
       </Card>
     );
   }

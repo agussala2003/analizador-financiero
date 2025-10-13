@@ -107,7 +107,7 @@ export function ResetPasswordForm({
               autoComplete="new-password"
             />
 
-            <div className="text-xs text-muted-foreground">
+            <div className="caption text-muted-foreground">
               <p>La contraseña debe tener al menos 6 caracteres.</p>
             </div>
 

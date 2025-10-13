@@ -25,13 +25,13 @@ export default function NotFoundPage() {
           404
         </motion.h1>
         <motion.p
-          className="mb-4 text-3xl font-bold tracking-tight text-foreground md:text-4xl"
+          className="mb-4 heading-1 font-bold tracking-tight text-foreground"
           variants={itemVariants}
         >
           Página no encontrada.
         </motion.p>
         <motion.p
-          className="mb-8 text-lg text-muted-foreground"
+          className="mb-8 heading-4 text-muted-foreground"
           variants={itemVariants}
         >
           Oops! Parece que la página que buscas no existe en nuestro portafolio.

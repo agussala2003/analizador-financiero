@@ -40,9 +40,9 @@ const SidebarHeaderContent = React.memo(({ config }: { config: Config }) => (
             <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
               <Wallet className="size-5" />
             </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <div className="grid flex-1 text-left body-sm leading-tight">
               <span className="truncate font-medium">{config.app.name}</span>
-              <span className="text-muted-foreground truncate text-xs">{config.app.version}</span>
+              <span className="text-muted-foreground truncate caption">{config.app.version}</span>
             </div>
           </SidebarMenuButton>
         </NavLink>

@@ -57,13 +57,13 @@ export function CalculateDividendModal({ dividend }: { dividend: Dividend }) {
                 {/* --- SECCIÓN DE DATOS INFORMATIVOS --- */}
                 <div className="p-4 space-y-4 border rounded-lg bg-muted/50">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="body-sm text-muted-foreground">
                             <Banknote className="inline size-4 mr-1 text-chart-2" /> Dividendo por Acción
                         </span>
                         <span className="font-semibold">${dividend?.dividend?.toFixed(4) || '0.00'}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="body-sm text-muted-foreground">
                             <Calendar className="inline size-4 mr-1 text-chart-3" /> Fecha de Pago
                         </span>
                         <span className="font-semibold">
@@ -74,7 +74,7 @@ export function CalculateDividendModal({ dividend }: { dividend: Dividend }) {
 
                 {/* --- SECCIÓN DEL RESULTADO FINAL CON ÉNFASIS --- */}
                 <div className="p-4 text-center border-2 border-green-500 rounded-lg bg-green-50">
-                    <Label className="text-sm font-semibold text-green-800">TOTAL ESTIMADO A RECIBIR</Label>
+                    <Label className="body-sm font-semibold text-green-800">TOTAL ESTIMADO A RECIBIR</Label>
                     <div className="mt-1 text-3xl font-bold tracking-tight text-green-700">
                         ${totalEstimado.toFixed(2)}
                     </div>

@@ -12,8 +12,8 @@ const StatCard = ({ label, value, colorClass = 'text-foreground', helpText }: { 
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div className="flex flex-col h-full">
-                        <p className="text-sm text-muted-foreground mb-1">{label}</p>
-                        <p className={`text-2xl font-bold ${colorClass}`}>{value}</p>
+                        <p className="body-sm text-muted-foreground mb-1">{label}</p>
+                        <p className={`heading-2 font-bold ${colorClass}`}>{value}</p>
                     </div>
                 </TooltipTrigger>
                 {helpText && <TooltipContent><p>{helpText}</p></TooltipContent>}

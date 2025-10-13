@@ -36,7 +36,7 @@ export function InvestmentPreferencesForm({
       <CardHeader>
         <div className="flex items-center gap-2">
           <Target className="w-5 h-5 text-muted-foreground" />
-          <CardTitle className="text-xl">Preferencias de Inversión</CardTitle>
+          <CardTitle className="heading-4">Preferencias de Inversión</CardTitle>
         </div>
         <CardDescription>
           Ayúdanos a personalizar el contenido, alertas y recomendaciones que
@@ -47,7 +47,7 @@ export function InvestmentPreferencesForm({
         {/* Selects de perfil y experiencia */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Perfil de Inversor</Label>
+            <Label className="body-sm font-medium">Perfil de Inversor</Label>
             <Select
               value={investorProfile}
               onValueChange={onInvestorProfileChange}
@@ -63,7 +63,7 @@ export function InvestmentPreferencesForm({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Nivel de Experiencia</Label>
+            <Label className="body-sm font-medium">Nivel de Experiencia</Label>
             <Select value={experience} onValueChange={onExperienceChange}>
               <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
                 <SelectValue placeholder="Selecciona tu experiencia..." />
@@ -79,7 +79,7 @@ export function InvestmentPreferencesForm({
 
         {/* Áreas de interés */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium flex items-center gap-2">
+          <Label className="body-sm font-medium flex items-center gap-2">
             <Heart className="w-4 h-4" />
             Áreas de Interés
           </Label>
@@ -94,7 +94,7 @@ export function InvestmentPreferencesForm({
                 />
                 <label
                   htmlFor={item.id}
-                  className="text-sm font-medium leading-relaxed cursor-pointer text-foreground/90 hover:text-foreground"
+                  className="body-sm font-medium leading-relaxed cursor-pointer text-foreground/90 hover:text-foreground"
                 >
                   {item.label}
                 </label>

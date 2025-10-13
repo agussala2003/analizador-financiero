@@ -72,12 +72,12 @@ export function CommandMenu() {
       {/* Trigger Button */}
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+        className="inline-flex items-center gap-2 px-3 py-2 body-sm text-muted-foreground border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
       >
         <Search className="h-4 w-4" />
         <span className="hidden sm:inline">Buscar...</span>
         <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-          <span className="text-xs">⌘</span>K
+          <span className="caption">⌘</span>K
         </kbd>
       </button>
 
@@ -119,7 +119,7 @@ export function CommandMenu() {
                   >
                     <Wallet className="mr-2 h-4 w-4" />
                     <span>{holding.symbol}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
+                    <span className="ml-auto caption text-muted-foreground">
                       {holding.quantity} acciones
                     </span>
                   </CommandItem>

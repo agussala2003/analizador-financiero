@@ -24,8 +24,8 @@ interface NotFoundErrorProps {
 export function NotFoundError({ symbol }: NotFoundErrorProps) {
   return (
     <div className="text-center py-20 px-4">
-      <h2 className="text-2xl font-bold">Activo no encontrado</h2>
-      <p className="text-muted-foreground mt-2">
+      <h2 className="heading-2">Activo no encontrado</h2>
+      <p className="body text-muted-foreground mt-2">
         No pudimos encontrar datos para el símbolo{' '}
         <span className="font-mono bg-muted px-1 rounded">"{symbol}"</span>.
       </p>

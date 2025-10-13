@@ -49,14 +49,14 @@ export function RatingScorecard({ rating }: RatingScorecardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex justify-between items-center text-lg">
+        <div className="flex justify-between items-center heading-4">
           <span className="font-semibold">Rating General</span>
           <span className="font-bold text-primary">
             {rating.rating} ({rating.overallScore}/5)
           </span>
         </div>
         <div className="pt-2 border-t border-border">
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-2 body-sm">
             <li className="flex justify-between">
               <span>Retorno sobre Equity (ROE)</span>
               <RatingStars score={rating.returnOnEquityScore} />

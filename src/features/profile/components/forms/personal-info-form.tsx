@@ -26,7 +26,7 @@ export function PersonalInfoForm({
       <CardHeader>
         <div className="flex items-center gap-2">
           <User className="w-5 h-5 text-muted-foreground" />
-          <CardTitle className="text-xl">Información Personal</CardTitle>
+          <CardTitle className="heading-4">Información Personal</CardTitle>
         </div>
         <CardDescription>
           Estos datos se mostrarán en la plataforma y en tus interacciones.
@@ -35,7 +35,7 @@ export function PersonalInfoForm({
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="firstName" className="text-sm font-medium">
+            <Label htmlFor="firstName" className="body-sm font-medium">
               Nombre
             </Label>
             <Input
@@ -47,7 +47,7 @@ export function PersonalInfoForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName" className="text-sm font-medium">
+            <Label htmlFor="lastName" className="body-sm font-medium">
               Apellido
             </Label>
             <Input

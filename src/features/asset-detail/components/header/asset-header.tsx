@@ -41,20 +41,20 @@ export function AssetHeader({ asset }: AssetHeaderProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-4 mb-2">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold truncate">
+            <h1 className="heading-1 truncate">
               {asset.companyName} ({asset.symbol})
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground">
+            <p className="heading-4 text-muted-foreground">
               {asset.exchangeFullName}
             </p>
           </div>
           <WatchlistToggleButton symbol={asset.symbol} variant="outline" />
         </div>
         <div className="flex items-baseline gap-4 flex-wrap">
-          <span className="text-2xl sm:text-3xl font-bold">
+          <span className="heading-1 font-bold">
             {formatPrice(asset.currentPrice)}
           </span>
-          <span className={`flex items-center gap-1 text-lg font-semibold ${changeColor}`}>
+          <span className={`flex items-center gap-1 heading-4 font-semibold ${changeColor}`}>
             {isPositiveChange ? (
               <TrendingUp className="w-5 h-5" />
             ) : (

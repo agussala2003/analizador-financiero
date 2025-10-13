@@ -46,7 +46,7 @@ const LegendItem = ({ color, label }: { color: string; label: string }) => (
       className="w-3 h-3 rounded-full"
       style={{ backgroundColor: color }}
     />
-    <span className="text-sm font-medium text-foreground">{label}</span>
+    <span className="body-sm font-medium text-foreground">{label}</span>
   </div>
 );
 
@@ -138,7 +138,7 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
                     dataKey="symbol"
                     position="top"
                     offset={8}
-                    className="fill-foreground text-xs font-medium"
+                    className="fill-foreground caption font-medium"
                   />
                   {plData.map((entry) => (
                     <Cell

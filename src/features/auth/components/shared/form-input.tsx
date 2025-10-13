@@ -75,10 +75,10 @@ export function FormInput({
         className={error ? 'border-destructive focus-visible:ring-destructive' : success ? 'border-green-500 focus-visible:ring-green-500' : undefined}
       />
       {error && (
-        <p className="text-sm text-destructive animate-slide-down">{error}</p>
+        <p className="body-sm text-destructive animate-slide-down">{error}</p>
       )}
       {success && (
-        <p className="text-sm text-green-600 dark:text-green-500 animate-slide-down">{success}</p>
+        <p className="body-sm text-green-600 dark:text-green-500 animate-slide-down">{success}</p>
       )}
     </div>
   );

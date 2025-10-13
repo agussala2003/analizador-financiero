@@ -40,8 +40,8 @@ export function CompanyInfoItem({ icon, label, value }: CompanyInfoItemProps) {
     <div className="flex items-start gap-3">
       <div className="text-primary mt-0.5 flex-shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-muted-foreground">{label}</p>
-        <p className="font-medium break-words">{value}</p>
+        <p className="body-sm font-semibold text-muted-foreground">{label}</p>
+        <p className="body font-medium break-words">{value}</p>
       </div>
     </div>
   );

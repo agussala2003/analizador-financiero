@@ -11,7 +11,7 @@ const TickerItem = memo(({ asset }: { asset: Omit<ActiveTicker, 'last_updated_at
     const Icon = isPositive ? ArrowUp : ArrowDown;
 
     return (
-        <div className="flex items-center flex-shrink-0 px-6 text-sm whitespace-nowrap">
+        <div className="flex items-center flex-shrink-0 px-6 body-sm whitespace-nowrap">
             <span className="font-bold text-foreground">{asset.symbol}</span>
             <div className={`flex items-center ml-2 font-medium ${colorClass}`}>
                 <Icon className="w-4 h-4 mr-1" />

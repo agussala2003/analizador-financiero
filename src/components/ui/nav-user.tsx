@@ -49,9 +49,9 @@ export function NavUser({
                 <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left body-sm leading-tight">
                 <span className="truncate font-medium">{profile?.first_name + " " + profile?.last_name || "Anónimo"}</span>
-                <span className="text-muted-foreground truncate text-xs">
+                <span className="text-muted-foreground truncate caption">
                   {user.email}
                 </span>
               </div>
@@ -65,14 +65,14 @@ export function NavUser({
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left body-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left body-sm leading-tight">
                   <span className="truncate font-medium">{profile?.first_name + " " + profile?.last_name || "Anónimo"}</span>
-                  <span className="text-muted-foreground truncate text-xs">
+                  <span className="text-muted-foreground truncate caption">
                     {user.email}
                   </span>
                 </div>

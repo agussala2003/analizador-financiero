@@ -37,17 +37,17 @@ interface FinancialMetricCardProps {
 export function FinancialMetricCard({ section }: FinancialMetricCardProps) {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">{section.title}</h3>
+      <h3 className="heading-4 mb-4">{section.title}</h3>
       <div className="space-y-3">
         {section.metrics.map((metric) => (
           <div
             key={metric.label}
             className="flex justify-between items-center"
           >
-            <span className="text-sm text-muted-foreground">
+            <span className="body-sm text-muted-foreground">
               {metric.label}
             </span>
-            <span className="font-semibold">{metric.value}</span>
+            <span className="body font-semibold">{metric.value}</span>
           </div>
         ))}
       </div>

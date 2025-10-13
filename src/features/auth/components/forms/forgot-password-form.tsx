@@ -71,11 +71,11 @@ export function ForgotPasswordForm({
           description="Hemos enviado un enlace de recuperación a tu correo electrónico"
         >
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="body-sm text-muted-foreground text-center">
               Revisa tu bandeja de entrada y sigue las instrucciones para
               restablecer tu contraseña.
             </p>
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="body-sm text-muted-foreground text-center">
               Si no recibes el correo en unos minutos, revisa tu carpeta de
               spam.
             </p>

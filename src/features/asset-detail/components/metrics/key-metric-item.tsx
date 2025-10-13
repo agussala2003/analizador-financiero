@@ -25,8 +25,8 @@ interface KeyMetricItemProps {
 export function KeyMetricItem({ label, value }: KeyMetricItemProps) {
   return (
     <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-      <p className="text-xs text-muted-foreground font-medium">{label}</p>
-      <p className="text-base font-bold text-foreground min-h-6 flex items-center justify-center sm:justify-start">
+      <p className="caption text-muted-foreground font-medium">{label}</p>
+      <p className="body font-bold text-foreground min-h-6 flex items-center justify-center sm:justify-start">
         {value}
       </p>
     </div>

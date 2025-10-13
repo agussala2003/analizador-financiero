@@ -78,7 +78,7 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
                 <Button type="button" onClick={() => handleTypeChange('cedears')} variant={isCedears ? 'default' : 'outline'} className="flex-1">CEDEARs</Button>
                 <Button type="button" onClick={() => handleTypeChange('shares')} variant={!isCedears ? 'default' : 'outline'} className="flex-1">Acciones</Button>
               </div>
-              {isCedears && <p className="text-xs text-muted-foreground mt-2">Ratio: {ratio} CEDEARs = 1 Acción.</p>}
+              {isCedears && <p className="caption text-muted-foreground mt-2">Ratio: {ratio} CEDEARs = 1 Acción.</p>}
             </div>
           )}
           <div className="grid grid-cols-2 gap-4">

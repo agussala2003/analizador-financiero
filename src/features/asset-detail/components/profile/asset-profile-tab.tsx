@@ -44,7 +44,7 @@ export function AssetProfileTab({ asset }: AssetProfileTabProps) {
           <CardTitle>Acerca de {asset.companyName}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-base leading-relaxed text-muted-foreground">
+          <p className="body leading-relaxed text-muted-foreground">
             {asset.description}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border">

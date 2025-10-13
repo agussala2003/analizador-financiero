@@ -89,7 +89,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
                 <Label htmlFor="password">Contraseña</Label>
                 <NavLink
                   to="/forgot-password"
-                  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  className="ml-auto inline-block body-sm underline-offset-4 hover:underline"
                 >
                   ¿Olvidaste tu contraseña?
                 </NavLink>
