@@ -39,7 +39,7 @@ const InfoPage: React.FC = () => {
   const isLoggedIn = !!user;
 
   return (
-    <div className="flex flex-col gap-12 py-6">
+    <div className="flex flex-col gap-12 pt-6">
       {/* Sección Hero con título principal y CTA */}
       <HeroSection
         title={infoPage.hero.title}
