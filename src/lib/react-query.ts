@@ -71,7 +71,7 @@ export const queryClient = new QueryClient({
       // Deduplication Settings
       // TanStack Query automáticamente deduplica requests con la misma key
       // Estos settings optimizan el comportamiento:
-      refetchOnWindowFocus: false, // No refetch automático (evita requests innecesarios)
+      refetchOnWindowFocus: true, // ✅ Refetch al volver a la pestaña SI datos están stale (evita datos clavados)
       refetchOnReconnect: true, // Sí refetch al recuperar conexión (datos pueden estar desactualizados)
       refetchOnMount: true, // Refetch solo si los datos están stale
       
@@ -92,3 +92,13 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// ✅ Listener para cancelar queries pendientes al ocultar la pestaña
+if (typeof window !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      // Cancelar todas las queries pendientes al cambiar de pestaña
+      void queryClient.cancelQueries();
+    }
+  });
+}
