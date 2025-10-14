@@ -77,55 +77,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // ✅ Si ya hay una inicialización en progreso, no iniciar otra
     if (initPromiseRef.current) {
-      console.log('[AUTH] Initialization already in progress, skipping...');
       return;
     }
-
-    console.log('[AUTH] Starting new initialization...');
 
     // ✅ Crear AbortController para cancelar requests al desmontar
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     const initializeAndListen = async () => {
-      console.log('[AUTH] Starting initialization...');
       setLoading(true);
       setError(null);
       try {
         // 1. Carga la sesión inicial de forma silenciosa.
-        console.log('[AUTH] Fetching initial session...');
         const { data: { session: initialSession } } = await supabase.auth.getSession();
-        console.log('[AUTH] Initial session fetched:', { hasSession: !!initialSession, aborted: abortController.signal.aborted });
         
         // ✅ Verificar si fue abortado antes de continuar
         if (abortController.signal.aborted) {
-          console.log('[AUTH] Aborted after getSession');
           return;
         }
         
         setSession(initialSession);
-        console.log('[AUTH] Fetching profile...');
         await fetchProfile(initialSession?.user ?? null, abortController.signal);
-        console.log('[AUTH] Profile fetched, setting isLoaded=true');
         
         if (abortController.signal.aborted) {
-          console.log('[AUTH] Aborted after fetchProfile');
           return;
         }
         setIsLoaded(true);
-        console.log('[AUTH] Initialization complete!');
       } catch (err: unknown) {
         if (abortController.signal.aborted) {
-          console.log('[AUTH] Aborted during error handling');
           return;
         }
         const msg = err instanceof Error ? err.message : 'Fallo inicializando autenticación';
-        console.error('[AUTH] Initialization error:', msg);
         void logger.error('AUTH_INIT_FAILED', msg);
         setError('No pudimos inicializar la sesión.');
       } finally {
         if (!abortController.signal.aborted) {
-          console.log('[AUTH] Setting loading=false');
           setLoading(false);
         }
       }
@@ -169,7 +155,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // ✅ Limpieza mejorada: cancelar requests pendientes y desuscribirse
     return () => {
-      console.log('[AUTH] Cleanup: aborting controller and unsubscribing');
       abortController.abort(); // Cancela todas las requests pendientes
       initPromiseRef.current = null; // ✅ Reset para permitir nueva inicialización
       void subscriptionPromise.then(subscription => subscription?.unsubscribe());
@@ -214,7 +199,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const retryInit = async () => {
     // ✅ Mejora: permitir reintento desde ErrorScreen
-    console.log('[AUTH] Retry initialization requested');
     initPromiseRef.current = null; // Reset para permitir nueva inicialización
     setError(null);
     setIsLoaded(false);
@@ -264,22 +248,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!loading || isLoaded) return;
 
-    console.log('[AUTH] Starting safety timeout (10s)...');
     const timeoutId = setTimeout(() => {
       if (loading && !isLoaded) {
-        console.error('[AUTH] Safety timeout triggered! Still loading after 10s');
         setError('La inicialización está tomando demasiado tiempo. Por favor, recarga la página.');
         setLoading(false);
       }
     }, 10000); // 10 segundos
 
     return () => {
-      console.log('[AUTH] Clearing safety timeout');
       clearTimeout(timeoutId);
     };
   }, [loading, isLoaded]);
-
-  console.log('[AUTH] Render state:', { loading, isLoaded, error: !!error, hasSession: !!session });
 
   // ✅ Mejora: Evitar pantallas en blanco y manejar errores de forma genérica
   if (loading && !isLoaded) {
