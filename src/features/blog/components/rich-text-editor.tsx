@@ -16,6 +16,10 @@ import {
   FileEdit
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 interface RichTextEditorProps {
   value: string;
@@ -56,46 +60,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Escribe el cont
     { icon: ImageIcon, action: () => insertMarkdown('![alt](', ')'), label: 'Imagen' },
   ];
 
-  // Renderizar markdown simple para preview
-  const renderPreview = (text: string) => {
-    let html = text;
-    
-    // Títulos
-    html = html.replace(/^### (.*$)/gim, '<h3 class="heading-3 mt-6 mb-3">$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2 class="heading-2 stack-4">$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1 class="heading-1 stack-4">$1</h1>');
-    
-    // Negrita e itálica
-    html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // Enlaces
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>');
-    
-    // Imágenes
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />');
-    
-    // Código inline
-    html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-2 py-1 rounded body-sm">$1</code>');
-    
-    // Citas
-    html = html.replace(/^&gt; (.*$)/gim, '<blockquote class="border-l-4 border-blue-500 pl-4 italic my-4">$1</blockquote>');
-    html = html.replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-blue-500 pl-4 italic my-4">$1</blockquote>');
-    
-    // Listas
-    html = html.replace(/^\* (.*$)/gim, '<li class="ml-4">$1</li>');
-    html = html.replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>');
-    html = html.replace(/^\d+\. (.*$)/gim, '<li class="ml-4">$1</li>');
-    
-    // Párrafos
-    html = html.split('\n\n').map(p => {
-      if (p.startsWith('<') || p.trim() === '') return p;
-      return `<p class="mb-4">${p}</p>`;
-    }).join('\n');
-    
-    return html;
-  };
+
 
   return (
     <div className="space-y-4">
@@ -151,10 +116,51 @@ export function RichTextEditor({ value, onChange, placeholder = "Escribe el cont
         <TabsContent value="preview" className="mt-0">
           <div className={cn(
             "w-full min-h-[400px] p-6 rounded-lg border bg-background",
-            "prose prose-invert max-w-none"
+            "prose prose-lg dark:prose-invert max-w-none"
           )}>
             {value ? (
-              <div dangerouslySetInnerHTML={{ __html: renderPreview(value) }} />
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                components={{
+                  img: ({ ...props }) => (
+                    <img
+                      {...props}
+                      className="rounded-lg shadow-md my-4 mx-auto max-w-full h-auto"
+                      loading="lazy"
+                      alt={props.alt ?? ''}
+                    />
+                  ),
+                  a: ({ ...props }) => (
+                    <a
+                      {...props}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    />
+                  ),
+                  code: ({ className, children, ...props }) => {
+                    const isInline = !className;
+                    return isInline ? (
+                      <code className="bg-muted px-1.5 py-0.5 rounded text-sm" {...props}>
+                        {children}
+                      </code>
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                  blockquote: ({ ...props }) => (
+                    <blockquote
+                      {...props}
+                      className="border-l-4 border-primary bg-primary/5 pl-4 py-2 my-4 italic"
+                    />
+                  ),
+                }}
+              >
+                {value}
+              </ReactMarkdown>
             ) : (
               <p className="text-muted-foreground italic">El contenido aparecerá aquí...</p>
             )}

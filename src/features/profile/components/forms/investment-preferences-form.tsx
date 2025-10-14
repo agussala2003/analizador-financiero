@@ -49,7 +49,7 @@ export function InvestmentPreferencesForm({
           <div className="space-y-2">
             <Label className="body-sm font-medium">Perfil de Inversor</Label>
             <Select
-              value={investorProfile}
+              value={investorProfile || undefined}
               onValueChange={onInvestorProfileChange}
             >
               <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
@@ -64,7 +64,7 @@ export function InvestmentPreferencesForm({
           </div>
           <div className="space-y-2">
             <Label className="body-sm font-medium">Nivel de Experiencia</Label>
-            <Select value={experience} onValueChange={onExperienceChange}>
+            <Select value={experience || undefined} onValueChange={onExperienceChange}>
               <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
                 <SelectValue placeholder="Selecciona tu experiencia..." />
               </SelectTrigger>

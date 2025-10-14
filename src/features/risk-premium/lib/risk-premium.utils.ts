@@ -93,6 +93,8 @@ export async function fetchCachedData(): Promise<CachedRiskPremiumData | null> {
       .eq('symbol', RISK_PREMIUM_CACHE_KEY)
       .single();
 
+      console.log('Fetched cached data:', { data, error });
+
     // PGRST116 = no rows returned (not an error)
     if (error && error.code !== 'PGRST116') {
       throw new Error(errorToString(error));
@@ -153,10 +155,9 @@ export async function saveCacheData(data: RiskPremiumData[]): Promise<void> {
 
 /**
  * Main function to fetch risk premium data with caching
+ * Returns cached data as fallback if API fails
  */
-export async function fetchRiskPremiumData(
-  config: unknown
-): Promise<RiskPremiumData[]> {
+export async function fetchRiskPremiumData(): Promise<RiskPremiumData[]> {
   // Check cache first
   const cached = await fetchCachedData();
 
@@ -164,17 +165,33 @@ export async function fetchRiskPremiumData(
     return cached.data || [];
   }
 
-  // Cache miss or expired - fetch fresh data
-  const endpoint = extractFmpProxyEndpoint(config);
-  if (!endpoint) {
-    throw new Error('No se encontró el endpoint de riesgo país en la configuración.');
+  // Cache miss or expired - try to fetch fresh data
+  try {
+    // Get config from public/config.json
+    const configResponse = await fetch('/config.json');
+    const config: unknown = await configResponse.json();
+    
+    const endpoint = extractFmpProxyEndpoint(config);
+    if (!endpoint) {
+      throw new Error('No se encontró el endpoint de riesgo país en la configuración.');
+    }
+
+    const freshData = await fetchFreshData(endpoint);
+    const sortedData = sortDataByCountry(freshData);
+
+    // Save to cache (fire and forget)
+    void saveCacheData(sortedData);
+
+    return sortedData;
+  } catch (error) {
+    // If API fails, return cached data even if expired
+    void logger.warn('RISK_PREMIUM_API_FAILED_USING_CACHE', errorToString(error));
+    
+    if (cached?.data) {
+      return cached.data;
+    }
+
+    // No cache available - throw error
+    throw error;
   }
-
-  const freshData = await fetchFreshData(endpoint);
-  const sortedData = sortDataByCountry(freshData);
-
-  // Save to cache (fire and forget)
-  void saveCacheData(sortedData);
-
-  return sortedData;
 }

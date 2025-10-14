@@ -1,16 +1,21 @@
 // src/features/blog/pages/blog-post-page.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { Avatar, AvatarFallback } from '../../../components/ui/avatar';
+import { Card, CardHeader, CardContent } from '../../../components/ui/card';
 import { BlogInteractions } from '../components/blog-interactions';
 import { BlogComments } from '../components/blog-comments';
-import { Calendar, ArrowLeft, Edit } from 'lucide-react';
+import { Calendar, ArrowLeft, Edit, Eye, Heart, MessageCircle, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-auth';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 interface BlogPost {
   id: string;
@@ -51,6 +56,18 @@ function BlogPostPage() {
   const [userHasLiked, setUserHasLiked] = useState(false);
   const [userHasBookmarked, setUserHasBookmarked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [relatedBlogs, setRelatedBlogs] = useState<{
+    id: string;
+    title: string;
+    slug: string;
+    featured_image_url?: string;
+    category?: string;
+    created_at: string;
+    stats: { likes: number; comments: number; views: number };
+  }[]>([]);
+  
+  // Ref para evitar doble incremento de vistas (React Strict Mode)
+  const viewIncrementedRef = useRef(false);
 
   useEffect(() => {
     if (slug) {
@@ -106,6 +123,16 @@ function BlogPostPage() {
       
       setBlog(typedBlog);
 
+      // Incrementar contador de vistas (solo una vez por sesión)
+      const viewKey = `blog_view_${typedBlog.id}`;
+      const hasViewed = sessionStorage.getItem(viewKey);
+      
+      if (!hasViewed && !viewIncrementedRef.current) {
+        await supabase.rpc('increment_blog_views', { blog_id: typedBlog.id });
+        sessionStorage.setItem(viewKey, 'true');
+        viewIncrementedRef.current = true;
+      }
+
       // Cargar likes
       const { count: likesCount } = await supabase
         .from('blog_likes')
@@ -146,10 +173,67 @@ function BlogPostPage() {
         .order('created_at', { ascending: true });
 
       setComments((commentsData as unknown as Comment[]) ?? []);
+
+      // Cargar blogs relacionados (misma categoría)
+      void loadRelatedBlogs(typedBlog.id, typedBlog.category);
     } catch (error) {
       console.error('Error loading blog post:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadRelatedBlogs = async (currentBlogId: string, category?: string) => {
+    try {
+      let query = supabase
+        .from('blogs')
+        .select('*')
+        .eq('status', 'approved')
+        .neq('id', currentBlogId)
+        .limit(4);
+
+      // Priorizar blogs de la misma categoría
+      if (category) {
+        query = query.eq('category', category);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching related blogs:', error);
+        return;
+      }
+
+      if (data) {
+        // Cargar stats para cada blog relacionado
+        const blogsWithStats = await Promise.all(
+          data.map(async (blog: Record<string, unknown>) => {
+            const blogId = blog.id as string;
+            const [likesData, commentsData] = await Promise.all([
+              supabase.from('blog_likes').select('id', { count: 'exact' }).eq('blog_id', blogId),
+              supabase.from('blog_comments').select('id', { count: 'exact' }).eq('blog_id', blogId)
+            ]);
+
+            return {
+              id: blogId,
+              title: blog.title as string,
+              slug: blog.slug as string,
+              featured_image_url: blog.featured_image_url as string | undefined,
+              category: blog.category as string | undefined,
+              created_at: blog.created_at as string,
+              stats: {
+                likes: likesData.count ?? 0,
+                comments: commentsData.count ?? 0,
+                views: (blog.views as number | undefined) ?? 0
+              }
+            };
+          })
+        );
+
+        setRelatedBlogs(blogsWithStats);
+      }
+    } catch (error) {
+      console.error('Error loading related blogs:', error);
     }
   };
 
@@ -266,14 +350,21 @@ function BlogPostPage() {
   const isAuthor = user?.id === blog.user_id;
 
   return (
-    <div className="container-narrow stack-6">
+    <div className="container-wide">
       {/* Botón volver */}
-      <Link to="/blog" className="inline-block">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver al Blog
-        </Button>
-      </Link>
+      <div className="mb-6">
+        <Link to="/blog" className="inline-block">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver al Blog
+          </Button>
+        </Link>
+      </div>
+
+      {/* Layout principal con sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"  >
+        {/* Contenido principal */}
+        <div className="lg:col-span-2 stack-6">
 
       {/* Imagen destacada */}
       {blog.featured_image_url && (
@@ -325,10 +416,50 @@ function BlogPostPage() {
       </div>
 
       {/* Contenido */}
-      <div 
-        className="prose prose-lg dark:prose-invert max-w-none mb-12"
-        dangerouslySetInnerHTML={{ __html: blog.content.replace(/\n/g, '<br />') }}
-      />
+      <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw, rehypeSanitize]}
+          components={{
+            img: ({ ...props }) => (
+              <img
+                {...props}
+                className="rounded-lg shadow-md my-4 mx-auto max-w-full h-auto"
+                loading="lazy"
+                alt={props.alt ?? ''}
+              />
+            ),
+            a: ({ ...props }) => (
+              <a
+                {...props}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              />
+            ),
+            code: ({ className, children, ...props }) => {
+              const isInline = !className;
+              return isInline ? (
+                <code className="bg-muted px-1.5 py-0.5 rounded text-sm" {...props}>
+                  {children}
+                </code>
+              ) : (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+            blockquote: ({ ...props }) => (
+              <blockquote
+                {...props}
+                className="border-l-4 border-primary bg-primary/5 pl-4 py-2 my-4 italic"
+              />
+            ),
+          }}
+        >
+          {blog.content}
+        </ReactMarkdown>
+      </div>
 
       {/* Interacciones */}
       <div className="border-y py-6 mb-8">
@@ -349,6 +480,96 @@ function BlogPostPage() {
         onAddComment={handleAddComment}
         currentUserId={user?.id}
       />
+        </div>
+
+        {/* Sidebar */}
+        <aside className="space-y-6">
+          {/* Otras notas relevantes */}
+          {relatedBlogs.length > 0 && (
+            <Card>
+              <CardHeader>
+                <h3 className="heading-4 font-semibold flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  Otras Notas Relevantes
+                </h3>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {relatedBlogs.map((relatedBlog) => (
+                  <Link
+                    key={relatedBlog.id}
+                    to={`/blog/${relatedBlog.slug}`}
+                    className="block group"
+                  >
+                    <div className="flex gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      {relatedBlog.featured_image_url ? (
+                        <img
+                          src={relatedBlog.featured_image_url}
+                          alt={relatedBlog.title}
+                          className="w-20 h-20 rounded object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                          <Eye className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="body-sm font-semibold line-clamp-2 group-hover:text-primary transition-colors mb-1">
+                          {relatedBlog.title}
+                        </h4>
+                        {relatedBlog.category && (
+                          <Badge variant="secondary" className="caption mb-2">
+                            {relatedBlog.category}
+                          </Badge>
+                        )}
+                        <div className="flex items-center gap-3 caption text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Heart className="w-3 h-3" />
+                            {relatedBlog.stats.likes}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="w-3 h-3" />
+                            {relatedBlog.stats.comments}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {relatedBlog.stats.views}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Info del autor */}
+          <Card>
+            <CardHeader>
+              <h3 className="heading-4 font-semibold">Sobre el Autor</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3 mb-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold">{authorName}</p>
+                  <p className="caption text-muted-foreground">Autor</p>
+                </div>
+              </div>
+              {isAuthor && (
+                <Link to={`/blog/editar/${blog.slug}`} className="w-full block">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar Artículo
+                  </Button>
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
     </div>
   );
 }

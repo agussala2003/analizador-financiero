@@ -4,7 +4,7 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { BlogCard } from '../components/blog-card';
-import { Search, Filter, Plus } from 'lucide-react';
+import { Search, Filter, Plus, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-auth';
@@ -39,6 +39,8 @@ function BlogListPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 9;
   
   const categories = ['Finanzas', 'Inversiones', 'Análisis', 'Mercados', 'Tutorial'];
 
@@ -129,21 +131,38 @@ function BlogListPage() {
     }
 
     setFilteredBlogs(filtered);
+    setCurrentPage(1); // Reset a primera página cuando cambian los filtros
   }, [blogs, searchQuery, categoryFilter, sortBy]);
   
   useEffect(() => {
     filterAndSortBlogs();
   }, [filterAndSortBlogs]);
 
+  // Paginación
+  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+  const startIndex = (currentPage - 1) * blogsPerPage;
+  const endIndex = startIndex + blogsPerPage;
+  const currentBlogs = filteredBlogs.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="container-wide stack-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="heading-1 mb-2">Blog Financiero</h1>
-          <p className="body text-muted-foreground">
-            Artículos, análisis y noticias del mundo financiero
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 section-divider">
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <BookOpen className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="heading-1 mb-2">Blog Financiero</h1>
+            <p className="body text-muted-foreground">
+              Artículos, análisis y noticias del mundo financiero
+            </p>
+          </div>
         </div>
         
         {/* Botón crear blog (solo si tiene permisos) */}
@@ -217,14 +236,66 @@ function BlogListPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBlogs.map(blog => (
+            {currentBlogs.map(blog => (
               <BlogCard key={blog.id} {...blog} />
             ))}
           </div>
 
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Anterior
+              </Button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                  // Mostrar solo páginas cercanas a la actual
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => goToPage(page)}
+                        className="min-w-[40px]"
+                      >
+                        {page}
+                      </Button>
+                    );
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    return <span key={page} className="px-2">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+
           {/* Contador de resultados */}
-          <div className="mt-8 text-center body-sm text-muted-foreground">
-            Mostrando {filteredBlogs.length} de {blogs.length} artículos
+          <div className="mt-4 text-center body-sm text-muted-foreground">
+            Mostrando {startIndex + 1}-{Math.min(endIndex, filteredBlogs.length)} de {filteredBlogs.length} artículos
+            {filteredBlogs.length !== blogs.length && ` (${blogs.length} total)`}
           </div>
         </>
       )}

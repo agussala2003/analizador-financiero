@@ -20,17 +20,22 @@ export default function ProfilePage() {
   const { user, profile, refreshProfile, isLoaded } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [investorProfile, setInvestorProfile] = useState("");
-  const [experience, setExperience] = useState("");
-  const [interests, setInterests] = useState<Record<string, boolean>>({});
+  // Initialize states with profile data or empty values
+  const [firstName, setFirstName] = useState((profile as UserProfile)?.first_name ?? "");
+  const [lastName, setLastName] = useState((profile as UserProfile)?.last_name ?? "");
+  
+  const initialOnboarding = extractOnboardingProfile((profile as UserProfile)?.onboarding_profile);
+  const [investorProfile, setInvestorProfile] = useState(initialOnboarding.investorProfile ?? "");
+  const [experience, setExperience] = useState(initialOnboarding.experience ?? "");
+  const [interests, setInterests] = useState<Record<string, boolean>>(initialOnboarding.interests ?? {});
 
+  // Update form when profile changes (e.g., after save or refresh)
   useEffect(() => {
     if (profile) {
       setFirstName((profile as UserProfile).first_name ?? "");
       setLastName((profile as UserProfile).last_name ?? "");
       const onboarding = extractOnboardingProfile((profile as UserProfile).onboarding_profile);
+      
       setInvestorProfile(onboarding.investorProfile ?? "");
       setExperience(onboarding.experience ?? "");
       setInterests(onboarding.interests ?? {});

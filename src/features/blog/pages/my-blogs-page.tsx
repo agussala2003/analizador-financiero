@@ -168,12 +168,17 @@ function MyBlogsPage() {
   return (
     <div className="container-wide stack-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="heading-1 mb-2">Mis Artículos</h1>
-          <p className="body text-muted-foreground">
-            Gestiona y monitorea tus publicaciones
-          </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 section-divider">
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Edit className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="heading-1 mb-2">Mis Artículos</h1>
+            <p className="body text-muted-foreground">
+              Gestiona y monitorea tus publicaciones
+            </p>
+          </div>
         </div>
         <Link to="/blog/crear">
           <Button size="lg" className="btn-press">
@@ -220,19 +225,24 @@ function MyBlogsPage() {
 
       {/* Grid de artículos */}
       {filteredBlogs.length === 0 ? (
-        <Card className="p-12 text-center">
-          <div className="space-y-4">
+        <Card className="p-12 text-center border-dashed">
+          <div className="space-y-4 max-w-md mx-auto">
+            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
             <h3 className="heading-3 font-semibold">No hay artículos</h3>
             <p className="text-muted-foreground">
               {searchQuery || statusFilter !== 'all'
                 ? 'No se encontraron artículos con los filtros aplicados.'
-                : 'Comienza creando tu primer artículo.'}
+                : 'Comienza creando tu primer artículo y comparte tus conocimientos con la comunidad.'}
             </p>
             {!searchQuery && statusFilter === 'all' && (
               <Link to="/blog/crear">
-                <Button>
+                <Button size="lg" className="btn-press">
                   <Plus className="w-4 h-4 mr-2" />
-                  Crear Artículo
+                  Crear Mi Primer Artículo
                 </Button>
               </Link>
             )}
@@ -241,15 +251,21 @@ function MyBlogsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredBlogs.map((blog) => (
-            <Card key={blog.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={blog.id} className="flex flex-col overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all group">
               {/* Imagen destacada */}
-              {blog.featured_image_url && (
-                <div className="relative w-full h-48 overflow-hidden">
+              {blog.featured_image_url ? (
+                <div className="relative w-full h-48 overflow-hidden bg-muted">
                   <img
                     src={blog.featured_image_url}
                     alt={blog.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                </div>
+              ) : (
+                <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                  <svg className="w-16 h-16 text-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
               )}
 
@@ -260,7 +276,7 @@ function MyBlogsPage() {
                     <Badge variant="outline">{blog.category}</Badge>
                   )}
                 </div>
-                <h3 className="heading-4 font-semibold line-clamp-2 hover:text-primary">
+                <h3 className="heading-4 font-semibold line-clamp-2 group-hover:text-primary transition-colors">
                   {blog.title}
                 </h3>
               </CardHeader>

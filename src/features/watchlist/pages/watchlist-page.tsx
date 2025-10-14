@@ -16,9 +16,14 @@ export default function WatchlistPage() {
   if (isLoading) {
     return (
       <div className="container-wide stack-6">
-        <div>
-          <h1 className="heading-2">Mi Watchlist</h1>
-          <p className="body text-muted-foreground">Tus assets favoritos</p>
+        <div className="flex items-center gap-4 section-divider">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Star className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="heading-2">Mi Watchlist</h1>
+            <p className="body text-muted-foreground">Tus assets favoritos</p>
+          </div>
         </div>
         <div className="grid-cards-3">
           {[1, 2, 3].map((i) => (
@@ -51,9 +56,14 @@ export default function WatchlistPage() {
   if (watchlist.length === 0) {
     return (
       <div className="container-wide stack-6">
-        <div>
-          <h1 className="heading-2">Mi Watchlist</h1>
-          <p className="body text-muted-foreground">Tus assets favoritos</p>
+        <div className="flex items-center gap-4 section-divider">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Star className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="heading-2">Mi Watchlist</h1>
+            <p className="body text-muted-foreground">Tus assets favoritos</p>
+          </div>
         </div>
         
         <Card>
@@ -80,12 +90,17 @@ export default function WatchlistPage() {
   return (
     <div className="container-wide stack-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="heading-2">Mi Watchlist</h1>
-          <p className="body text-muted-foreground">
-            {watchlist.length} {watchlist.length === 1 ? 'asset' : 'assets'} en seguimiento
-          </p>
+      <div className="flex items-center justify-between section-divider">
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Star className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="heading-2">Mi Watchlist</h1>
+            <p className="body text-muted-foreground">
+              {watchlist.length} {watchlist.length === 1 ? 'asset' : 'assets'} en seguimiento
+            </p>
+          </div>
         </div>
         <Button variant="outline" onClick={() => void navigate('/dashboard')} className="btn-press">
           Explorar Más
@@ -141,7 +156,7 @@ export default function WatchlistPage() {
               <h3 className="font-semibold mb-1">Consejo</h3>
               <p className="body-sm text-muted-foreground">
                 Usa tu watchlist para seguir assets que te interesan pero que aún no has comprado.
-                Puedes agregar notas personales a cada asset desde su página de detalles.
+                Haz clic en la estrella ⭐ desde la página de detalles de cualquier asset para agregarlo aquí.
               </p>
             </div>
           </div>

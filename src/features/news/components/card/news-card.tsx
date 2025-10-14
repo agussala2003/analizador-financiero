@@ -3,16 +3,28 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
+import { ExternalLink } from "lucide-react";
 import { NewsCardProps } from "../../types/news.types";
 import { formatNewsDate, getCompanyName } from "../../lib/news.utils";
 
 /**
  * Tarjeta de noticia individual con animación de entrada
- * Muestra título, símbolo, calificación, precio objetivo, analista y fechas
+ * Toda la card es clickeable para mejor UX
  */
 export const NewsCard = ({ news, index }: NewsCardProps) => {
   const company = getCompanyName(news);
   const formattedDate = formatNewsDate(news.publishedDate);
+
+  const handleClick = () => {
+    window.open(news.newsURL, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
 
   return (
     <motion.div
@@ -21,47 +33,55 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
       transition={{ duration: 0.3, delay: index * 0.05 }}
       className="h-full"
     >
-      <Card className="card-interactive flex flex-col h-full">
+      <Card 
+        className="flex flex-col h-full cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 active:scale-[0.98] group"
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="link"
+      >
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
-            <CardTitle className="heading-4 leading-tight">
-              <a
-                href={news.newsURL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-primary transition-colors"
-              >
-                {news.newsTitle}
-              </a>
+            <CardTitle className="heading-4 leading-tight group-hover:text-primary transition-colors flex-1">
+              {news.newsTitle}
             </CardTitle>
-            <Badge variant="secondary" className="whitespace-nowrap">
-              {news.symbol}
-            </Badge>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Badge variant="secondary" className="whitespace-nowrap">
+                {news.symbol}
+              </Badge>
+              <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-3 body-sm">
           {news.newGrade && (
-            <p>
-              <span className="font-semibold text-muted-foreground">Calificación:</span>{" "}
-              {news.newGrade}
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-muted-foreground min-w-[120px]">Calificación:</span>
+              <span className="font-medium">{news.newGrade}</span>
+            </div>
           )}
           {news.priceTarget && (
-            <p>
-              <span className="font-semibold text-muted-foreground">Precio Objetivo:</span> $
-              {news.priceTarget.toLocaleString()}
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-muted-foreground min-w-[120px]">Precio Objetivo:</span>
+              <span className="font-medium text-green-600 dark:text-green-500">
+                ${news.priceTarget.toLocaleString()}
+              </span>
+            </div>
           )}
           {news.analystName && (
-            <p>
-              <span className="font-semibold text-muted-foreground">Analista:</span>{" "}
-              {news.analystName}
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-muted-foreground min-w-[120px]">Analista:</span>
+              <span className="font-medium">{news.analystName}</span>
+            </div>
           )}
         </CardContent>
         <CardFooter className="flex justify-between caption text-muted-foreground pt-4 border-t">
-          <span>{company}</span>
-          <span>{formattedDate}</span>
+          <span className="flex items-center gap-1">
+            📰 {company}
+          </span>
+          <span className="flex items-center gap-1">
+            📅 {formattedDate}
+          </span>
         </CardFooter>
       </Card>
     </motion.div>

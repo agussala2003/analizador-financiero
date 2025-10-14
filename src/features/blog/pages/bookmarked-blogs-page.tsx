@@ -49,15 +49,7 @@ function BookmarkedBlogsPage() {
         .select(`
           created_at,
           blog:blogs!blog_bookmarks_blog_id_fkey (
-            id,
-            title,
-            slug,
-            excerpt,
-            featured_image_url,
-            created_at,
-            category,
-            tags,
-            user_id,
+            *,
             author:profiles!fk_author(first_name, last_name)
           )
         `)
@@ -140,13 +132,18 @@ function BookmarkedBlogsPage() {
   return (
     <div className="container-wide stack-8">
       {/* Header */}
-      <div>
-        <h1 className="heading-1 mb-2">Artículos Guardados</h1>
-        <p className="body text-muted-foreground">
-          {blogs.length === 0
-            ? 'No has guardado ningún artículo todavía'
-            : `Tienes ${blogs.length} ${blogs.length === 1 ? 'artículo guardado' : 'artículos guardados'}`}
-        </p>
+      <div className="flex items-center gap-4 section-divider">
+        <div className="p-2 bg-primary/10 rounded-lg">
+          <Bookmark className="w-8 h-8 text-primary" />
+        </div>
+        <div>
+          <h1 className="heading-1 mb-2">Artículos Guardados</h1>
+          <p className="body text-muted-foreground">
+            {blogs.length === 0
+              ? 'No has guardado ningún artículo todavía'
+              : `Tienes ${blogs.length} ${blogs.length === 1 ? 'artículo guardado' : 'artículos guardados'}`}
+          </p>
+        </div>
       </div>
 
       {blogs.length === 0 ? (

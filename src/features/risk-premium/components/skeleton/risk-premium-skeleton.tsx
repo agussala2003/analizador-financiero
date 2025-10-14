@@ -13,7 +13,7 @@ import { Skeleton } from '../../../../components/ui/skeleton';
 
 export function RiskPremiumSkeleton() {
   return (
-    <div className="space-y-8 container px-4 py-10 mx-auto sm:px-6 lg:px-8">
+    <div className="container-wide stack-6">
       {/* Header Skeleton */}
       <div className="flex items-center gap-4">
         <Skeleton className="w-10 h-10 rounded-full" />

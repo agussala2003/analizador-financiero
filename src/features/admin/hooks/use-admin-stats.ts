@@ -143,12 +143,22 @@ export function useAdminStats(dateRange: DateRange) {
       });
     }
 
-    // Nuevos usuarios en el rango
-    const { count: newUsers } = await supabase
-      .from('profiles')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', dateRange.start.toISOString())
-      .lte('created_at', dateRange.end.toISOString());
+    // Nuevos usuarios en el rango (solo si existe la columna created_at)
+    let newUsers = 0;
+    try {
+      const { count, error: newUsersError } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+      
+      if (!newUsersError) {
+        newUsers = count ?? 0;
+      }
+    } catch {
+      // Silently fail if created_at doesn't exist
+      console.warn('Note: profiles.created_at column not available for new users tracking');
+    }
 
     // Usuarios con permiso de blog
     const { count: withBlogPermission } = await supabase
@@ -339,41 +349,66 @@ export function useAdminStats(dateRange: DateRange) {
   };
 
   const fetchSuggestionStats = async (): Promise<SuggestionStats> => {
-    // Total sugerencias
-    const { count: total } = await supabase
-      .from('suggestions')
-      .select('id', { count: 'exact', head: true });
+    try {
+      // Total sugerencias
+      const { count: total, error: countError } = await supabase
+        .from('suggestions')
+        .select('id', { count: 'exact', head: true });
 
-    // Sugerencias por estado
-    const { data: statusData } = await supabase
-      .from('suggestions')
-      .select('status');
+      if (countError) {
+        console.warn('Suggestions table not available:', countError);
+        return { total: 0, byStatus: [], recent: [] };
+      }
 
-    const byStatus: { status: string; count: number }[] = [];
-    if (statusData) {
-      const statusCounts: Record<string, number> = {};
-      statusData.forEach((item: { status: string }) => {
-        statusCounts[item.status] = (statusCounts[item.status] || 0) + 1;
-      });
-      Object.entries(statusCounts).forEach(([status, count]) => {
-        byStatus.push({ status, count });
-      });
+      // Sugerencias por estado
+      const { data: statusData, error: statusError } = await supabase
+        .from('suggestions')
+        .select('status');
+      
+      if (statusError) {
+        console.warn('Error fetching suggestion status:', statusError);
+        return { total: total ?? 0, byStatus: [], recent: [] };
+      }
+
+      const byStatus: { status: string; count: number }[] = [];
+      if (statusData) {
+        const statusCounts: Record<string, number> = {};
+        statusData.forEach((item: { status: string }) => {
+          statusCounts[item.status] = (statusCounts[item.status] || 0) + 1;
+        });
+        Object.entries(statusCounts).forEach(([status, count]) => {
+          byStatus.push({ status, count });
+        });
+      }
+
+      // Sugerencias recientes (usando 'content' en lugar de 'title')
+      const { data: recentData, error: recentError } = await supabase
+        .from('suggestions')
+        .select('id, content, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (recentError) {
+        console.warn('Error fetching recent suggestions:', recentError);
+      }
+
+      // Mapear content a title para compatibilidad con la interfaz
+      const recent = (recentData ?? []).map((item: Record<string, unknown>) => ({
+        id: item.id as string,
+        title: (item.content as string)?.substring(0, 100) + (((item.content as string)?.length ?? 0) > 100 ? '...' : ''),
+        status: item.status as string,
+        created_at: item.created_at as string
+      }));
+
+      return {
+        total: total ?? 0,
+        byStatus,
+        recent
+      };
+    } catch (error) {
+      console.error('Error in fetchSuggestionStats:', error);
+      return { total: 0, byStatus: [], recent: [] };
     }
-
-    // Sugerencias recientes
-    const { data: recentData } = await supabase
-      .from('suggestions')
-      .select('id, title, status, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    const recent = recentData ?? [];
-
-    return {
-      total: total ?? 0,
-      byStatus,
-      recent
-    };
   };
 
   const fetchLogStats = async (): Promise<LogStats> => {

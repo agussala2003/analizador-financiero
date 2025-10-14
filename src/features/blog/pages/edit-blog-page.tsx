@@ -113,12 +113,50 @@ function EditBlogPage() {
   if (!initialData) return null;
 
   return (
-    <div className="container-narrow stack-8">
-      <div>
-        <h1 className="heading-1 mb-2">Editar Artículo</h1>
-        <p className="body text-muted-foreground">
-          Actualiza tu artículo y mejora su contenido
-        </p>
+    <div className="container-wide stack-8">
+      {/* Header mejorado */}
+      <div className="section-divider">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h1 className="heading-1 mb-2">Editar Artículo</h1>
+            <p className="body text-muted-foreground">
+              Actualiza tu artículo y mejora su contenido
+            </p>
+          </div>
+          {initialData.status && (
+            <div>
+              {initialData.status === 'draft' && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-500/10 text-gray-600 dark:text-gray-400 body-sm">
+                  <span className="w-2 h-2 rounded-full bg-gray-500"></span>
+                  Borrador
+                </span>
+              )}
+              {initialData.status === 'pending_review' && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 body-sm">
+                  <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                  En Revisión
+                </span>
+              )}
+              {initialData.status === 'approved' && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 body-sm">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  Publicado
+                </span>
+              )}
+              {initialData.status === 'rejected' && (
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 body-sm">
+                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                  Rechazado
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <BlogEditorForm

@@ -37,14 +37,14 @@ export default function RetirementCalculatorPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-start gap-4">
-        <div className="p-3 bg-primary/10 rounded-xl">
-          <PiggyBank className="w-6 h-6 text-primary" />
+      <div className="flex items-center gap-4 section-divider">
+        <div className="p-2 bg-primary/10 rounded-lg">
+          <PiggyBank className="w-8 h-8 text-primary" />
         </div>
         <div>
           <h1 className="heading-2">Calculadora de Retiro</h1>
-          <p className="body text-muted-foreground mt-1">
-            Descubre el poder del interés compuesto: cómo invertir puede multiplicar tu patrimonio a largo plazo.
+          <p className="body text-muted-foreground">
+            Descubre el poder del interés compuesto y cómo invertir puede multiplicar tu patrimonio a largo plazo.
           </p>
         </div>
       </div>
@@ -78,18 +78,47 @@ export default function RetirementCalculatorPage() {
         </Card>
       </div>
 
-      {/* --- Mensaje educativo --- */}
+      {/* --- Mensaje educativo mejorado --- */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="mt-8 text-center body-sm text-muted-foreground max-w-2xl mx-auto"
       >
-        <p className="flex items-center justify-center gap-2">
-          <Zap className="w-4 h-4 text-primary" />
-          <strong>El interés compuesto es la octava maravilla del mundo.</strong>{" "}
-          Pequeños aportes regulares + tiempo = gran patrimonio.
-        </p>
+        <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Zap className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  💡 El Poder del Interés Compuesto
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Albert Einstein lo llamó <strong>"la octava maravilla del mundo"</strong>. 
+                  El secreto está en reinvertir las ganancias: tu dinero genera intereses, 
+                  y esos intereses a su vez generan más intereses. Con el tiempo, 
+                  el efecto es exponencial. <strong>La clave es empezar temprano</strong> y 
+                  ser constante con tus aportes mensuales.
+                </p>
+                <div className="flex flex-wrap gap-4 pt-2 text-xs">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                    <span>Tiempo: tu mejor aliado</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                    <span>Consistencia: aportes regulares</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                    <span>Paciencia: deja crecer tu inversión</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
     </motion.div>
   );

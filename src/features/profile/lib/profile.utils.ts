@@ -19,18 +19,34 @@ export const interestOptions: InterestOption[] = [
  * Extrae y valida el perfil de onboarding desde datos raw
  */
 export function extractOnboardingProfile(raw: unknown): OnboardingProfile {
-  if (raw && typeof raw === "object") {
+  // Si raw es null o undefined, retornar valores por defecto
+  if (!raw) {
+    return { investorProfile: "", experience: "", interests: {} };
+  }
+  
+  // Si es un objeto vacío {}, también retornar por defecto
+  if (typeof raw === "object" && Object.keys(raw as Record<string, unknown>).length === 0) {
+    return { investorProfile: "", experience: "", interests: {} };
+  }
+  
+  if (typeof raw === "object") {
     const obj = raw as Partial<OnboardingProfile>;
     return {
       investorProfile:
-        typeof obj.investorProfile === "string" ? obj.investorProfile : "",
-      experience: typeof obj.experience === "string" ? obj.experience : "",
+        typeof obj.investorProfile === "string" && obj.investorProfile !== "" 
+          ? obj.investorProfile 
+          : "",
+      experience: 
+        typeof obj.experience === "string" && obj.experience !== "" 
+          ? obj.experience 
+          : "",
       interests:
         typeof obj.interests === "object" && obj.interests !== null
           ? obj.interests
           : {},
     };
   }
+  
   return { investorProfile: "", experience: "", interests: {} };
 }
 
