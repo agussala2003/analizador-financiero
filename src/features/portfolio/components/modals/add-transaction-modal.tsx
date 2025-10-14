@@ -6,6 +6,12 @@ import { Button } from "../../../../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../../../../components/ui/dialog";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
+import { Calendar } from "../../../../components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "../../../../lib/utils";
 import { toast } from "sonner";
 import { useTransactionForm } from '../../../../hooks/use-transaction-form';
 import { AddTransactionModalProps } from '../../types/portfolio.types';
@@ -30,7 +36,9 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticker) return;
-    if (isFutureDate(date)) {
+    
+    const dateString = format(date, 'yyyy-MM-dd');
+    if (isFutureDate(dateString)) {
       toast.error("La fecha de la transacción no puede ser futura.");
       return;
     }
@@ -47,7 +55,7 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
         symbol: ticker,
         quantity: finalQuantityInShares,
         purchase_price: finalPricePerShare,
-        purchase_date: date,
+        purchase_date: dateString,
         transaction_type: 'buy',
       });
       toast.success(`Compra de ${ticker} agregada a tu portafolio.`);
@@ -92,8 +100,32 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="date">Fecha de Compra</Label>
-            <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            <Label>Fecha de Compra</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP", { locale: es }) : <span>Selecciona una fecha</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[270px] p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(newDate) => newDate && setDate(newDate)}
+                  disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                  initialFocus
+                  locale={es}
+                  className='w-[270px]'
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>

@@ -43,6 +43,7 @@ export type HoldingWithMetrics = Holding & {
   marketValue: number;
   pl: number;
   plPercent: number;
+  holdingDays: number; // Días desde la primera compra
 };
 
 /**

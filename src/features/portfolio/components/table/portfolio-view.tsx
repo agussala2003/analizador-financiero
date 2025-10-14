@@ -60,6 +60,14 @@ export const PortfolioView = React.memo(function PortfolioView({ holdings, onDel
       },
     },
     {
+      accessorKey: 'holdingDays',
+      header: 'Días',
+      cell: ({ getValue }) => {
+        const days = Number(getValue());
+        return <span className="text-muted-foreground">{days}d</span>;
+      },
+    },
+    {
       id: 'actions',
       header: () => <div className="text-center">Acciones</div>,
       cell: ({ row }) => {

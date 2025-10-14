@@ -61,6 +61,7 @@ export function calculatePortfolioMetrics(
     positionsCount: 0,
     portfolioBeta: "N/A",
     sharpeRatio: "N/A",
+    avgHoldingDays: 0,
   };
 
   if (!holdings || holdings.length === 0) return initialStats;
@@ -111,6 +112,7 @@ export function calculatePortfolioMetrics(
     positionsCount: holdings.length,
     portfolioBeta: currentValue > 0 ? weightedBetaSum / currentValue : "N/A",
     sharpeRatio: currentValue > 0 ? weightedSharpeSum / currentValue : "N/A",
+    avgHoldingDays: 0, // This will be calculated separately in portfolio-page.tsx
   };
 }
 
@@ -151,10 +153,12 @@ export function calculatePlData(holdings: Holding[]): PlDatum[] {
 
   return holdings.map((h) => {
     const marketValue = h.quantity * (h.assetData.currentPrice ?? 0);
+    const plValue = marketValue - h.totalCost;
     const plPercent = h.totalCost > 0 ? ((marketValue - h.totalCost) / h.totalCost) * 100 : 0;
     return {
       symbol: h.symbol,
       pl: plPercent,
+      plValue: plValue,
     };
   });
 }

@@ -7,7 +7,7 @@ import { Skeleton } from "../../../../components/ui/skeleton";
  */
 export function PortfolioSkeleton() {
   return (
-    <div className="space-y-6 container mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="container-wide stack-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Skeleton className="w-12 h-12 rounded-lg" />

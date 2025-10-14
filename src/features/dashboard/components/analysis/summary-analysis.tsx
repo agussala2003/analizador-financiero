@@ -1,13 +1,25 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { AssetData } from "../../../../types/dashboard";
 import { IndicatorConfig } from "../../../../utils/financial";
-import { Award, BrainCircuit, DollarSign, PieChart, Shield, TrendingUp, CheckCircle } from "lucide-react";
+import { BrainCircuit, DollarSign, Shield, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card";
+import WinnerCard from "./summary/winner-card";
+import CategoryLeaders from "./summary/category-leaders";
+import RankingList from "./summary/ranking-list";
 
 // --- Props del Componente ---
 interface SummaryAnalysisProps {
     assets: AssetData[];
     indicatorConfig: IndicatorConfig;
+}
+
+// Tipo para perfiles
+interface AssetProfile {
+    symbol: string;
+    companyName: string;
+    score: number;
+    riskLevel: 'low' | 'medium' | 'high';
+    recommendation: string;
 }
 
 // --- Componente Principal ---
@@ -16,10 +28,22 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
     const analysis = useMemo(() => {
         if (assets.length < 1) return null;
 
-        const categories: Record<string, { label: string, metrics: string[] }> = {
-            valuation: { label: "Valoración", metrics: ['PER', 'priceToBook', 'fcfYield'] },
-            profitability: { label: "Rentabilidad", metrics: ['roe', 'roic', 'operatingMargin'] },
-            financial_health: { label: "Salud Financiera", metrics: ['debtToEquity', 'currentRatio'] },
+        const categories: Record<string, { label: string; metrics: string[]; icon: React.ReactNode }> = {
+            valuation: { 
+                label: "Valoración", 
+                metrics: ['PER', 'priceToBook', 'pfc_ratio'],
+                icon: <DollarSign className="w-5 h-5" />
+            },
+            profitability: { 
+                label: "Rentabilidad", 
+                metrics: ['roe', 'roic', 'operatingMargin'],
+                icon: <TrendingUp className="w-5 h-5" />
+            },
+            financial_health: { 
+                label: "Salud Financiera", 
+                metrics: ['debtToEquity', 'currentRatio'],
+                icon: <Shield className="w-5 h-5" />
+            },
         };
 
         const scores: Record<string, { total: number; categories: Record<string, number> }> = {};
@@ -53,7 +77,7 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
             .map(asset => ({ asset, score: scores[asset.symbol].total }))
             .sort((a, b) => b.score - a.score);
 
-        const categoryWinners: Record<string, string> = {};
+        const categoryWinners: Record<string, { symbol: string; score: number; metrics: string[] }> = {};
         Object.keys(categories).forEach(catKey => {
             let winnerSymbol = "N/A";
             let maxScore = -1;
@@ -63,10 +87,47 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
                     winnerSymbol = asset.symbol;
                 }
             });
-            categoryWinners[catKey] = winnerSymbol;
+            categoryWinners[catKey] = { 
+                symbol: winnerSymbol, 
+                score: maxScore,
+                metrics: categories[catKey].metrics
+            };
         });
 
-        return { rankedAssets, categoryWinners, categories };
+        // Crear perfiles
+        const assetProfiles: AssetProfile[] = assets.map(asset => {
+            const debt = typeof asset.data.debtToEquity === 'number' ? asset.data.debtToEquity : 999;
+            const currentRatio = typeof asset.data.currentRatio === 'number' ? asset.data.currentRatio : 0;
+            
+            let riskLevel: 'low' | 'medium' | 'high' = 'medium';
+            if (debt < 0.5 && currentRatio > 2) riskLevel = 'low';
+            else if (debt > 1.5 || currentRatio < 1) riskLevel = 'high';
+
+            const totalScore = scores[asset.symbol].total;
+            const maxScore = rankedAssets[0].score;
+            const scorePercentage = (totalScore / maxScore) * 100;
+
+            let recommendation = "";
+            if (scorePercentage >= 90) {
+                recommendation = "Opción más completa y equilibrada del grupo.";
+            } else if (scorePercentage >= 70) {
+                recommendation = "Opción sólida con buen desempeño general.";
+            } else if (scorePercentage >= 50) {
+                recommendation = "Desempeño medio, evalúa tus prioridades de inversión.";
+            } else {
+                recommendation = "Presenta puntos débiles comparado con otras opciones.";
+            }
+
+            return {
+                symbol: asset.symbol,
+                companyName: asset.companyName,
+                score: totalScore,
+                riskLevel,
+                recommendation
+            };
+        });
+
+        return { rankedAssets, categoryWinners, categories, assetProfiles };
 
     }, [assets, indicatorConfig]);
 
@@ -76,8 +137,8 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
                 <CardHeader className="flex flex-row items-center gap-3">
                     <BrainCircuit className="w-6 h-6 text-primary" />
                     <div>
-                        <CardTitle>Resumen IA</CardTitle>
-                        <CardDescription>Análisis y veredicto de inversión.</CardDescription>
+                        <CardTitle>Análisis Comparativo</CardTitle>
+                        <CardDescription>Comparación de activos</CardDescription>
                     </div>
                 </CardHeader>
                 <CardContent className="text-center text-muted-foreground py-10">
@@ -88,85 +149,29 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
     }
     
     const winner = analysis.rankedAssets[0];
+    const winnerProfile = analysis.assetProfiles.find(p => p.symbol === winner.asset.symbol);
 
-    const getCategoryIcon = (key: string) => {
-        const icons: Record<string, React.ReactNode> = {
-            valuation: <DollarSign className="w-5 h-5 text-blue-500" />,
-            profitability: <TrendingUp className="w-5 h-5 text-green-500" />,
-            financial_health: <Shield className="w-5 h-5 text-indigo-500" />,
-        };
-        return icons[key] ?? <PieChart className="w-5 h-5" />;
-    };
+    if (!winnerProfile) return null;
 
     return (
-        <section className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <Award className="w-8 h-8 text-primary" />
-                        <div>
-                            <CardTitle>Veredicto del Análisis</CardTitle>
-                            <CardDescription>Conclusión basada en el análisis cuantitativo de los activos.</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="bg-primary/5 dark:bg-primary/10 p-4 rounded-lg border border-primary/20">
-                        <h3 className="font-bold heading-4 text-primary mb-2">
-                            🏆 Activo Destacado: {winner.asset.symbol}
-                        </h3>
-                        <p className="body-sm text-muted-foreground">
-                            <strong>{winner.asset.companyName}</strong> se posiciona como la opción más robusta y equilibrada del grupo, obteniendo la puntuación más alta en el análisis combinado de métricas de valoración, rentabilidad y salud financiera.
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
+        <section className="space-y-4">
+            <WinnerCard
+                symbol={winner.asset.symbol}
+                companyName={winner.asset.companyName}
+                score={winner.score}
+                recommendation={winnerProfile.recommendation}
+                riskLevel={winnerProfile.riskLevel}
+                totalMetrics={Object.values(analysis.categories).reduce((acc, cat) => acc + cat.metrics.length, 0)}
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <PieChart className="w-5 h-5" />
-                            Ganador por Categoría
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        {Object.entries(analysis.categoryWinners).map(([catKey, symbol]) => (
-                            <div key={catKey} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                    {getCategoryIcon(catKey)}
-                                    <span className="font-semibold">{analysis.categories[catKey].label}</span>
-                                </div>
-                                <span className="font-bold text-primary">{symbol}</span>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                            Ranking General
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                        {analysis.rankedAssets.map((item, index) => (
-                            <div key={item.asset.symbol} className="flex items-center justify-between p-3 border-b last:border-none">
-                                <div className="flex items-center gap-3">
-                                    <span className={`flex items-center justify-center w-6 h-6 rounded-full caption font-bold ${index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                                        {index + 1}
-                                    </span>
-                                    <span className="font-semibold">{item.asset.symbol}</span>
-                                </div>
-                                <div className="body-sm">
-                                    <span className="font-bold">{item.score}</span>
-                                    <span className="text-muted-foreground"> pts</span>
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <CategoryLeaders
+                    categoryWinners={analysis.categoryWinners}
+                    categories={analysis.categories}
+                    assets={assets}
+                    indicatorConfig={indicatorConfig}
+                />
+                <RankingList rankedAssets={analysis.rankedAssets} />
             </div>
         </section>
     );

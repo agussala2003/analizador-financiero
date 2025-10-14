@@ -56,6 +56,7 @@ export interface AllocationDatum {
 export interface PlDatum {
   symbol: string;
   pl: number;
+  plValue: number;
 }
 
 /**
@@ -80,4 +81,5 @@ export interface PortfolioMetrics {
   positionsCount: number;
   portfolioBeta: number | "N/A";
   sharpeRatio: number | "N/A";
+  avgHoldingDays: number;
 }

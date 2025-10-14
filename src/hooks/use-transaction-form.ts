@@ -18,7 +18,7 @@ interface UseTransactionFormProps {
 export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransactionFormProps) => {
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<Date>(new Date());
   const [inputType, setInputType] = useState<InputType>('shares');
   
   const { ratios: cedearRatios } = useCedearRatios();
@@ -36,7 +36,7 @@ export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransact
         setPrice('');
       }
       setQuantity('');
-      setDate(new Date().toISOString().slice(0, 10));
+      setDate(new Date());
     }
   }, [isOpen, currentPrice, ratio, ticker]);
 
@@ -47,15 +47,24 @@ export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransact
     const numQuantity = parseFloat(quantity);
     const numPrice = parseFloat(price);
 
-    if (!isNaN(numQuantity) && !isNaN(numPrice)) {
+    // Convertir cantidad solo si existe
+    if (!isNaN(numQuantity) && numQuantity > 0) {
       if (newType === 'cedears') {
         setQuantity((numQuantity * ratio).toFixed(2));
-        setPrice((numPrice / ratio).toFixed(4));
       } else { // 'shares'
         setQuantity((numQuantity / ratio).toFixed(4));
+      }
+    }
+
+    // Convertir precio siempre (incluso sin cantidad)
+    if (!isNaN(numPrice) && numPrice > 0) {
+      if (newType === 'cedears') {
+        setPrice((numPrice / ratio).toFixed(4));
+      } else { // 'shares'
         setPrice((numPrice * ratio).toFixed(2));
       }
     }
+
     setInputType(newType);
   }, [inputType, quantity, price, ratio]);
   

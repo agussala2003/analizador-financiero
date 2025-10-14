@@ -49,20 +49,35 @@ function PortfolioPageContent() {
   const holdingsWithMetrics = useMemo(() => {
     if (loading || !holdings) return [];
     return holdings.map((h) => {
-  const currentPrice = portfolioData[h.symbol]?.currentPrice ?? 0;
+      const currentPrice = portfolioData[h.symbol]?.currentPrice ?? 0;
       const marketValue = h.quantity * currentPrice;
       const pl = marketValue - h.totalCost;
       const plPercent = h.totalCost > 0 ? (pl / h.totalCost) * 100 : 0;
-      return { ...h, currentPrice, marketValue, pl, plPercent };
+      
+      // Calcular días de tenencia desde la primera compra
+      const buyTransactions = transactions.filter(t => t.symbol === h.symbol && t.transaction_type === 'buy');
+      const firstPurchaseDate = buyTransactions.length > 0 
+        ? new Date(Math.min(...buyTransactions.map(t => new Date(t.purchase_date).getTime())))
+        : new Date();
+      const holdingDays = Math.floor((Date.now() - firstPurchaseDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      return { ...h, currentPrice, marketValue, pl, plPercent, holdingDays };
     });
-  }, [holdings, portfolioData, loading]);
+  }, [holdings, portfolioData, loading, transactions]);
+
+  // Calcular promedio de días de tenencia
+  const avgHoldingDays = useMemo(() => {
+    if (holdingsWithMetrics.length === 0) return 0;
+    const totalDays = holdingsWithMetrics.reduce((sum, h) => sum + h.holdingDays, 0);
+    return totalDays / holdingsWithMetrics.length;
+  }, [holdingsWithMetrics]);
 
   if (loading) return <PortfolioSkeleton />;
 
   return (
     <>
       <motion.div
-        className="container-wide stack-8"
+        className="container-wide stack-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -81,6 +96,7 @@ function PortfolioPageContent() {
           holdings={holdings}
           totalPerformance={totalPerformance}
           portfolioData={portfolioData}
+          avgHoldingDays={avgHoldingDays}
         />
         <PortfolioCharts holdings={holdings} />
         <PortfolioView

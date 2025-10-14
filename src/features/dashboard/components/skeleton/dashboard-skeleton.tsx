@@ -8,7 +8,7 @@ import { Skeleton } from "../../../../components/ui/skeleton";
  * Muestra un layout similar al dashboard real para mejor UX
  */
 export const DashboardSkeleton = () => (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="container-wide stack-6">
         {/* Header with title and actions */}
         <div className="flex items-center justify-between">
             <div className="space-y-2">

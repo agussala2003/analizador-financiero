@@ -16,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../../components
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
 } from "../../../../components/ui/chart";
 import { Holding } from "../../../../types/portfolio";
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
@@ -70,16 +69,31 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      formatter={(_, name) => {
-                        const entry = allocationData.find((d) => d.name === name);
-                        return [formatCurrency(entry?.value ?? 0), `${name} (${entry?.percentage.toFixed(1) ?? '0.0'}%)`];
-                      }}
-                      hideLabel
-                    />
-                  }
+                  content={({ active, payload }) => {
+                    if (!active || !payload || payload.length === 0) return null;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const name = payload[0].name as string;
+                    const entry = allocationData.find((d) => d.name === name);
+                    if (!entry) return null;
+                    
+                    return (
+                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <div className="grid gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                              {entry.name}
+                            </span>
+                            <span className="font-bold text-foreground">
+                              {formatCurrency(entry.value)}
+                            </span>
+                            <span className="text-[0.70rem] text-muted-foreground">
+                              {entry.percentage.toFixed(1)}% del portafolio
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
                 <Pie data={allocationData} dataKey="value" nameKey="name">
                   {allocationData.map((entry) => (
@@ -124,14 +138,35 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
                   tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }}
                 />
                 <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      hideLabel
-                      hideIndicator
-                      formatter={(value) => formatPercent(Number(value))}
-                    />
-                  }
+                  content={({ active, payload }) => {
+                    if (!active || !payload || payload.length === 0) return null;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const symbol = payload[0].payload?.symbol as string;
+                    const entry = plData.find((d) => d.symbol === symbol);
+                    if (!entry) return null;
+                    
+                    const plValue = entry.plValue;
+                    const plSign = plValue >= 0 ? '+' : '';
+                    const isPositive = plValue >= 0;
+                    
+                    return (
+                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <div className="grid gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                              {entry.symbol}
+                            </span>
+                            <span className={`font-bold ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                              {plSign}{formatCurrency(Math.abs(plValue))}
+                            </span>
+                            <span className="text-[0.70rem] text-muted-foreground">
+                              {formatPercent(entry.pl)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
                 <Bar dataKey="pl" radius={4}>
                   <LabelList

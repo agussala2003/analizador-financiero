@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "../../../../components/ui/card";
  */
 export function ProfileSkeleton() {
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+    <div className="container-wide stack-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Skeleton className="w-10 h-10 rounded-full" />

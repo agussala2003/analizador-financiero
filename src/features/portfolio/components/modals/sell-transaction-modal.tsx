@@ -11,6 +11,14 @@ import { useTransactionForm } from '../../../../hooks/use-transaction-form';
 import { SellTransactionModalProps } from '../../types/portfolio.types';
 import { calculateFinalQuantity, calculateFinalPrice } from '../../lib/portfolio.utils';
 
+import { Calendar } from "../../../../components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "../../../../lib/utils";
+import { useEffect } from 'react';
+
 /**
  * Modal para registrar una transacción de venta de un activo existente en el portafolio.
  */
@@ -23,20 +31,30 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
     quantity, setQuantity,
     price, setPrice,
     date, setDate,
-  handleTypeChange,
+    handleTypeChange,
     ratio, isCedears,
   } = useTransactionForm({ 
     isOpen, 
-  ticker: holding?.symbol ?? null,
-  currentPrice: holding?.currentPrice ?? null
+    ticker: holding?.symbol ?? null,
+    currentPrice: holding?.currentPrice ?? null
   });
 
   const maxShares = holding?.quantity ?? 0;
   const maxCedears = ratio ? maxShares * ratio : 0;
 
+  // Autocompletar cantidad máxima cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && holding) {
+      const maxQuantity = isCedears ? maxCedears : maxShares;
+      setQuantity(maxQuantity.toString());
+    }
+  }, [isOpen, holding, isCedears, maxShares, maxCedears, setQuantity]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!holding) return;
+
+    const dateString = format(date, 'yyyy-MM-dd');
 
     setLoading(true);
     try {
@@ -57,7 +75,7 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
         symbol: holding.symbol,
         quantity: finalQuantityInShares,
         purchase_price: finalPricePerShare,
-        purchase_date: date,
+        purchase_date: dateString,
         transaction_type: 'sell',
       });
       toast.success(`Venta de ${holding.symbol} registrada.`);
@@ -103,8 +121,32 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="date-sell">Fecha de Venta</Label>
-            <Input id="date-sell" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            <Label>Fecha de Venta</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP", { locale: es }) : <span>Selecciona una fecha</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[270px] p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(newDate) => newDate && setDate(newDate)}
+                  disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                  initialFocus
+                  locale={es}
+                  className='w-[270px]'
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>

@@ -22,12 +22,15 @@ const StatCard = ({ label, value, colorClass = 'text-foreground', helpText }: { 
     </Card>
 );
 
-export function PortfolioStats({ holdings, totalPerformance, portfolioData }: { holdings: Holding[], totalPerformance: PortfolioContextType['totalPerformance'], portfolioData: Record<string, PortfolioAssetData> }) {
-    
-    const metrics = useMemo(() => calculatePortfolioMetrics(holdings, portfolioData), [holdings, portfolioData]);
+export function PortfolioStats({ holdings, totalPerformance, portfolioData, avgHoldingDays }: { holdings: Holding[], totalPerformance: PortfolioContextType['totalPerformance'], portfolioData: Record<string, PortfolioAssetData>, avgHoldingDays?: number }) {
+
+    const metrics = useMemo(() => {
+        const baseMetrics = calculatePortfolioMetrics(holdings, portfolioData);
+        return { ...baseMetrics, avgHoldingDays: avgHoldingDays ?? 0 };
+    }, [holdings, portfolioData, avgHoldingDays]);
 
     const dailyPlPercent = calculateDailyPlPercent(metrics.currentValue, metrics.dailyPL);
-    
+
     // Clases de color dinámicas
     const currentPlColor = getColorClass(metrics.currentPL);
     const totalPlColor = getColorClass(totalPerformance.pl);
@@ -42,11 +45,11 @@ export function PortfolioStats({ holdings, totalPerformance, portfolioData }: { 
             <StatCard label="G/P Posiciones Actuales" value={formatCurrency(metrics.currentPL)} colorClass={currentPlColor} helpText="La ganancia o pérdida neta solo de tus posiciones actuales." />
             <StatCard label="Rendimiento Actual (%)" value={formatPercent(metrics.currentPLPercent)} colorClass={currentPlColor} helpText="El rendimiento porcentual basado en el costo de tus posiciones actuales." />
             <StatCard label="G/P del Día" value={`${formatCurrency(metrics.dailyPL)} (${formatPercent(dailyPlPercent)})`} colorClass={dailyPlColor} helpText="El cambio de valor de tu portafolio durante el día de hoy." />
-            
+
             {/* --- Fila 2 --- */}
             <StatCard label="G/P Total (con histórico)" value={formatCurrency(totalPerformance.pl)} colorClass={totalPlColor} helpText="La ganancia o pérdida neta de todo tu historial, incluyendo posiciones cerradas." />
             <StatCard label="Rendimiento Total (%)" value={formatPercent(totalPerformance.percent)} colorClass={totalPlColor} helpText="El rendimiento porcentual total basado en todo el capital que has invertido históricamente." />
-            <StatCard label="Posiciones Totales" value={metrics.positionsCount} helpText="El número de activos diferentes que tienes actualmente." />
+            <StatCard label="Promedio Días de Tenencia" value={`${Math.round(metrics.avgHoldingDays)}d`} helpText="Promedio de días que has mantenido cada posición desde su primera compra." />
             <StatCard label="Costo Total (Pos. Actuales)" value={formatCurrency(metrics.totalInvested)} helpText="El costo total de adquisición de tus posiciones actuales." />
 
             {/* --- Fila 3 --- */}

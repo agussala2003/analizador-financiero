@@ -42,7 +42,7 @@ const SortableTableHeader = ({
 }: {
     children: React.ReactNode;
     align?: 'left' | 'right' | 'center';
-    sortKey: keyof AssetData | 'symbol' | 'currentPrice' | 'dayChange' | 'monthChange' | 'yearChange' | 'stdDev' | 'sharpeRatio' | 'targetPrice';
+    sortKey: keyof AssetData | 'symbol';
     currentSort: { key: string; dir: 'asc' | 'desc' };
     onSort: (key: string) => void;
 }) => {
@@ -160,7 +160,7 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                         <SortableTableHeader sortKey="yearChange" currentSort={sort} onSort={handleSort} align="center">Var. Anual</SortableTableHeader>
                                         <SortableTableHeader sortKey="stdDev" currentSort={sort} onSort={handleSort} align="center">Volatilidad</SortableTableHeader>
                                         <SortableTableHeader sortKey="sharpeRatio" currentSort={sort} onSort={handleSort} align="center">Ratio Sharpe</SortableTableHeader>
-                                        <SortableTableHeader sortKey="targetPrice" currentSort={sort} onSort={handleSort} align="center">Precio Objetivo</SortableTableHeader>
+                                        <SortableTableHeader sortKey="lastMonthAvgPriceTarget" currentSort={sort} onSort={handleSort} align="center">Precio Objetivo</SortableTableHeader>
                                         <TableHead className="text-center w-[100px]">
                                             Comprar
                                         </TableHead>
