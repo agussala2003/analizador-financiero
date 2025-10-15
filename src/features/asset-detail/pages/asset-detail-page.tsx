@@ -4,20 +4,16 @@ import { Link, useParams } from 'react-router-dom';
 import { useAssetData } from '../../dashboard/hooks/use-asset-data';
 import { motion } from 'framer-motion';
 import { Button } from '../../../components/ui/button';
-import { Card } from '../../../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { HistoricalPerformanceChart } from '../../dashboard/components/charts/historical-performance-chart';
-import { ArrowLeft, BarChart3, DollarSign, Info, Newspaper } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import {
   AssetDetailSkeleton,
   AssetHeader,
   AssetKeyMetrics,
   LoadingError,
   NotFoundError,
-  AssetProfileTab,
-  AssetFinancialsTab,
   DCFValuationCard,
   RatingScorecard,
+  AssetDetailTabs,
 } from '../components';
 
 /**
@@ -76,54 +72,7 @@ export default function AssetDetailPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <Info className="w-4 h-4" /> Perfil
-          </TabsTrigger>
-          <TabsTrigger value="chart" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" /> Gráfico
-          </TabsTrigger>
-          <TabsTrigger value="financials" className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4" /> Finanzas
-          </TabsTrigger>
-          <TabsTrigger value="news" className="flex items-center gap-2">
-            <Newspaper className="w-4 h-4" /> Noticias
-          </TabsTrigger>
-        </TabsList>
-
-        <motion.div
-          key="tabs-content"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <TabsContent value="profile" className="mt-6">
-            <AssetProfileTab asset={asset} />
-          </TabsContent>
-
-          <TabsContent value="chart" className="mt-6">
-            <Card className="p-4">
-              <HistoricalPerformanceChart assets={[asset]} />
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="financials" className="mt-6">
-            <AssetFinancialsTab asset={asset} />
-          </TabsContent>
-
-          <TabsContent value="news" className="mt-6">
-            <Card className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <Newspaper className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-muted-foreground">
-                  Próximamente: Noticias del activo
-                </p>
-              </div>
-            </Card>
-          </TabsContent>
-        </motion.div>
-      </Tabs>
+      <AssetDetailTabs asset={asset} />
     </motion.div>
   );
 }

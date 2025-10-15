@@ -51,6 +51,8 @@ const CreateBlogPage = React.lazy(() => import('./features/blog/pages/create-blo
 const EditBlogPage = React.lazy(() => import('./features/blog/pages/edit-blog-page.tsx'));
 const MyBlogsPage = React.lazy(() => import('./features/blog/pages/my-blogs-page.tsx'));
 const BookmarkedBlogsPage = React.lazy(() => import('./features/blog/pages/bookmarked-blogs-page.tsx'));
+const ContactPage = React.lazy(() => import('./features/contact/pages/contact-page.tsx'));
+const PlansPage = React.lazy(() => import('./features/plans/pages/plans-page.tsx'));
 
 const router = createBrowserRouter([
     {
@@ -58,6 +60,8 @@ const router = createBrowserRouter([
         children: [
             // --- Ruta Pública General ---
             { index: true, element: <Suspense fallback={<PageSkeleton />}><InfoPage /></Suspense> },
+            { path: "contact", element: <Suspense fallback={<PageSkeleton />}><ContactPage /></Suspense> },
+            { path: "plans", element: <Suspense fallback={<PageSkeleton />}><PlansPage /></Suspense> },
 
             // --- Rutas solo para Invitados (no logueados) ---
             {

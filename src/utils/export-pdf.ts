@@ -278,3 +278,232 @@ export const exportToPdf = async ({ title, subtitle, sections, assets, theme, in
     const fileName = `${title.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
 };
+
+// --- EXPORTACIÓN ESPECÍFICA PARA PORTAFOLIO ---
+
+/**
+ * Interfaz para las estadísticas del portafolio.
+ */
+interface PortfolioStats {
+  totalInvestment: number;
+  currentValue: number;
+  totalGainLoss: number;
+  totalGainLossPercentage: number;
+  averageBuyPrice: number;
+}
+
+/**
+ * Interfaz para un holding (posición) del portafolio.
+ */
+interface PortfolioHolding {
+  symbol: string;
+  name?: string;
+  quantity: number;
+  averagePrice: number;
+  currentPrice?: number;
+  totalCost: number;
+  currentValue: number;
+  gainLoss: number;
+  gainLossPercentage: number;
+}
+
+/**
+ * Opciones para exportar el portafolio a PDF.
+ */
+interface ExportPortfolioOptions {
+  holdings: PortfolioHolding[];
+  stats: PortfolioStats;
+  theme: Theme;
+  portfolioName?: string;
+}
+
+/**
+ * Exporta el portafolio actual a un archivo PDF.
+ * Incluye estadísticas generales y detalle de cada posición.
+ * 
+ * @example
+ * ```tsx
+ * exportPortfolioToPdf({
+ *   holdings,
+ *   stats: portfolioStats,
+ *   theme: 'light'
+ * });
+ * ```
+ */
+export const exportPortfolioToPdf = async ({
+  holdings,
+  stats,
+  theme,
+  portfolioName = 'Mi Portafolio',
+}: ExportPortfolioOptions) => {
+  const [jsPDFModule, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+
+  const jsPDF = jsPDFModule.default;
+  const doc = new jsPDF() as unknown as ExtendedJsPDF;
+  const styles = getThemeStyles(theme);
+  let finalY = 0;
+
+  // Fondo de la primera página
+  const resolvedTheme = resolveTheme(theme);
+  if (resolvedTheme === 'dark') {
+    doc.setFillColor(styles.backgroundColor);
+    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+  }
+
+  // Título
+  doc.setFontSize(20);
+  doc.setTextColor(styles.headerColor[0], styles.headerColor[1], styles.headerColor[2]);
+  doc.text('Reporte de Portafolio', 14, 22);
+
+  doc.setFontSize(12);
+  doc.setTextColor(styles.mutedColor[0], styles.mutedColor[1], styles.mutedColor[2]);
+  doc.text(portfolioName, 14, 30);
+
+  finalY = 40;
+
+  // Sección de Estadísticas Generales
+  doc.setFontSize(14);
+  doc.setTextColor(styles.textColor[0], styles.textColor[1], styles.textColor[2]);
+  doc.text('Resumen del Portafolio', 14, finalY);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  };
+
+  const formatPercentage = (value: number) => {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+  };
+
+  const statsBody = [
+    ['Inversión Total', formatCurrency(stats.totalInvestment)],
+    ['Valor Actual', formatCurrency(stats.currentValue)],
+    [
+      'Ganancia/Pérdida',
+      `${formatCurrency(stats.totalGainLoss)} (${formatPercentage(stats.totalGainLossPercentage)})`,
+    ],
+    ['Precio Promedio de Compra', formatCurrency(stats.averageBuyPrice)],
+  ];
+
+  autoTable(doc as never, {
+    startY: finalY + 5,
+    head: [['Métrica', 'Valor']],
+    body: statsBody,
+    theme: 'grid',
+    styles: {
+      fillColor: styles.backgroundColor,
+      textColor: styles.textColor,
+      lineColor: styles.borderColor,
+      lineWidth: 0.1,
+    },
+    headStyles: {
+      fillColor: styles.tableHeaderFill,
+      textColor: styles.textColor,
+      fontStyle: 'bold',
+    },
+    willDrawPage: (data: HookData) => {
+      if (data.pageNumber > 1 && resolvedTheme === 'dark') {
+        doc.setFillColor(styles.backgroundColor);
+        doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+      }
+    },
+  });
+
+  finalY = doc.lastAutoTable?.finalY ?? finalY;
+
+  // Sección de Posiciones Abiertas
+  if (holdings.length > 0) {
+    doc.setFontSize(14);
+    doc.setTextColor(styles.textColor[0], styles.textColor[1], styles.textColor[2]);
+    doc.text('Posiciones Abiertas', 14, finalY + 15);
+
+    const holdingsBody = holdings.map((holding) => {
+      const gainLossText = formatPercentage(holding.gainLossPercentage);
+      const gainLossColor = getPercentageColor(holding.gainLossPercentage, theme);
+
+      return [
+        holding.symbol,
+        holding.name ?? '-',
+        holding.quantity.toString(),
+        formatCurrency(holding.averagePrice),
+        formatCurrency(holding.currentPrice ?? 0),
+        formatCurrency(holding.currentValue),
+        {
+          content: `${formatCurrency(holding.gainLoss)} (${gainLossText})`,
+          styles: { textColor: gainLossColor },
+        },
+      ];
+    });
+
+    autoTable(doc as never, {
+      startY: finalY + 20,
+      head: [
+        [
+          'Símbolo',
+          'Nombre',
+          'Cantidad',
+          'Precio Prom.',
+          'Precio Actual',
+          'Valor Actual',
+          'Ganancia/Pérdida',
+        ],
+      ],
+      body: holdingsBody,
+      theme: 'grid',
+      styles: {
+        fillColor: styles.backgroundColor,
+        textColor: styles.textColor,
+        lineColor: styles.borderColor,
+        lineWidth: 0.1,
+        fontSize: 9,
+      },
+      headStyles: {
+        fillColor: styles.tableHeaderFill,
+        textColor: styles.textColor,
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: { cellWidth: 20 },
+        1: { cellWidth: 35 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 35 },
+      },
+      willDrawPage: (data: HookData) => {
+        if (data.pageNumber > 1 && resolvedTheme === 'dark') {
+          doc.setFillColor(styles.backgroundColor);
+          doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+        }
+      },
+    });
+
+    finalY = doc.lastAutoTable?.finalY ?? finalY;
+  }
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(styles.mutedColor[0], styles.mutedColor[1], styles.mutedColor[2]);
+    const text = `Reporte generado por FinDash | ${new Date().toLocaleDateString('es-ES')}`;
+    doc.text(text, 14, doc.internal.pageSize.height - 10);
+    doc.text(
+      `Página ${i} de ${pageCount}`,
+      doc.internal.pageSize.width - 35,
+      doc.internal.pageSize.height - 10
+    );
+  }
+
+  const fileName = `Portafolio_${portfolioName.replace(/\s/g, '_')}_${
+    new Date().toISOString().split('T')[0]
+  }.pdf`;
+  doc.save(fileName);
+};

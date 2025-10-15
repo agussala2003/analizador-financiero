@@ -1,8 +1,8 @@
-# Financytics: Analizador Financiero Inteligente
+# FinDash: Análisis Financiero Inteligente
 
-Financytics es una aplicación web moderna construida con React, TypeScript y Vite, diseñada para ofrecer a los inversores herramientas de análisis financiero de nivel profesional a través de una interfaz de usuario intuitiva y potente.
+FinDash (anteriormente Financytics) es una aplicación web moderna construida con React, TypeScript y Vite, diseñada para ofrecer a los inversores herramientas de análisis financiero de nivel profesional a través de una interfaz de usuario intuitiva y potente.
 
-![Captura de pantalla del Dashboard de Financytics]
+![Captura de pantalla del Dashboard de FinDash]
 
 ## 🚀 Características Principales
 
@@ -12,10 +12,11 @@ Financytics es una aplicación web moderna construida con React, TypeScript y Vi
     * **Matriz de Correlación:** Visualiza cómo se mueven los activos entre sí.
     * **Gráfico Radar y de Rendimiento Histórico.**
     * **Resumen con IA:** Un veredicto cuantitativo que destaca el activo más robusto.
-* **Gestión de Portafolio:** Registra tus transacciones de compra/venta y obtén un análisis completo de tu rendimiento, incluyendo estadísticas del día, G/P total y distribución de activos.
-* **Detalle de Activos:** Páginas dedicadas para cada activo con información de la compañía, métricas financieras, calificaciones (DCF y Scorecard) y gráficos de segmentación de ingresos.
+* **Gestión de Portafolio:** Registra tus transacciones de compra/venta y obtén un análisis completo de tu rendimiento, incluyendo estadísticas del día, G/P total y distribución de activos. **Exporta tu portafolio a PDF** con un solo clic.
+* **Detalle de Activos:** Páginas dedicadas para cada activo con información de la compañía, métricas financieras, calificaciones (DCF y Scorecard), gráficos de segmentación de ingresos y **calificaciones de analistas** (upgrades/downgrades).
 * **Herramientas de Mercado:** Calendario de dividendos, noticias financieras y visualizador de Riesgo País.
-* **Seguridad y Roles:** Sistema de autenticación completo con rutas protegidas y roles de usuario (Básico, Plus, Administrador).
+* **Sistema de Planes:** Planes Básico (gratuito), Plus y Premium con límites personalizados de activos y portafolios.
+* **Seguridad y Roles:** Sistema de autenticación completo con recuperación de contraseña, rutas protegidas y roles de usuario (Básico, Plus, Premium, Administrador).
 
 ## 🛠️ Stack Tecnológico
 

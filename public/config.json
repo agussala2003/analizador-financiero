@@ -1,9 +1,14 @@
 {
   "useMockData": true,
   "app": {
-    "name": "Financytics",
+    "name": "FinDash",
     "version": "2.0",
-    "contactEmail": "agussala2003@gmail.com"
+    "contactEmail": "findash.data@gmail.com",
+    "socialMedia": {
+      "twitter": "https://twitter.com/findash",
+      "linkedin": "https://linkedin.com/company/findash",
+      "github": "https://github.com/findash"
+    }
   },
   "api": {
     "fmpProxyEndpoints": {
@@ -14,6 +19,7 @@
       "priceTarget": "stable/price-target-summary",
       "newsPriceTarget": "stable/price-target-latest-news",
       "newsGrades": "stable/grades-latest-news",
+      "stockGrades": "stable/grades",
       "dividendsCalendar": "stable/dividends-calendar",
       "marketRiskPremium": "stable/market-risk-premium",
       "dcf": "stable/custom-discounted-cash-flow",
@@ -137,13 +143,13 @@
     },
     "testimonial": {
       "title": "Lo que dicen nuestros usuarios",
-      "subtitle": "Historias reales de inversores que han transformado su análisis financiero con Financytics.",
+      "subtitle": "Historias reales de inversores que han transformado su análisis financiero con FinDash.",
       "opinions" : [
         {
           "name": "María López",
           "role": "Inversora Individual",
           "avatar": "https://randomuser.me/api/portraits/women/1.jpg",
-          "comment": "Financytics ha revolucionado la forma en que analizo mis inversiones. La matriz de correlación y el gráfico radar me permiten comparar acciones de manera rápida y efectiva. ¡No sé cómo viví sin ello!"
+          "comment": "FinDash ha revolucionado la forma en que analizo mis inversiones. La matriz de correlación y el gráfico radar me permiten comparar acciones de manera rápida y efectiva. ¡No sé cómo viví sin ello!"
         },
         {
           "name": "Carlos Martínez",
@@ -155,13 +161,13 @@
           "name": "Ana García",
           "role": "Estudiante de Finanzas",
           "avatar": "https://github.com/evilrabbit.png",
-          "comment": "Ha sido una herramienta invaluable en mi aprendizaje. La interfaz es intuitiva y las funciones de análisis son potentes. ¡Recomiendo Financytics a todos mis compañeros!"
+          "comment": "Ha sido una herramienta invaluable en mi aprendizaje. La interfaz es intuitiva y las funciones de análisis son potentes. ¡Recomiendo FinDash a todos mis compañeros!"
         },
         {
           "name": "Luis Fernández",
           "role": "Inversor a Largo Plazo",
           "avatar": "https://randomuser.me/api/portraits/men/1.jpg",
-          "comment": "Financytics me ha ayudado a optimizar mi cartera de inversiones. Las herramientas de análisis son de primera y me permiten tomar decisiones informadas."
+          "comment": "FinDash me ha ayudado a optimizar mi cartera de inversiones. Las herramientas de análisis son de primera y me permiten tomar decisiones informadas."
         }
       ]
     },
@@ -227,6 +233,8 @@
       {
         "label": "General",
         "items": [
+          { "to": "/plans", "label": "Planes", "icon": "Crown" },
+          { "to": "/contact", "label": "Contacto", "icon": "Mail" },
           { "to": "/suggestions", "label": "Sugerencias", "icon": "MessageSquareHeart", "requiresAuth": true },
           {
             "to": "/admin",

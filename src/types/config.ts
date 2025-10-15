@@ -25,6 +25,7 @@ export interface FmpProxyEndpoints {
   priceTarget: string;
   newsPriceTarget: string;
   newsGrades: string;
+  stockGrades: string;
   dividendsCalendar: string;
   marketRiskPremium: string;
   dcf: string;
@@ -51,6 +52,11 @@ export interface Config {
     name: string;
     version: string;
     contactEmail: string;
+    socialMedia?: {
+      twitter?: string;
+      linkedin?: string;
+      github?: string;
+    };
   };
   api: {
     fmpProxyEndpoints: FmpProxyEndpoints;

@@ -3,8 +3,11 @@
 import { useState, useMemo } from 'react';
 import { usePortfolio } from '../../../hooks/use-portfolio';
 import { motion } from 'framer-motion';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTheme } from 'next-themes';
+import { exportPortfolioToPdf } from '../../../utils/export-pdf';
+import { Button } from '../../../components/ui/button';
 import { HoldingWithMetrics } from '../../../types/portfolio';
 import { AddModalInfo } from '../types/portfolio.types';
 import {
@@ -20,6 +23,7 @@ import { ErrorBoundary } from '../../../components/error-boundary';
 
 function PortfolioPageContent() {
   const { holdings, transactions, totalPerformance, loading, deleteAsset, portfolioData } = usePortfolio();
+  const { theme } = useTheme();
 
   const [addModalInfo, setAddModalInfo] = useState<AddModalInfo>({
     isOpen: false,
@@ -27,6 +31,7 @@ function PortfolioPageContent() {
     price: null,
   });
   const [sellModalHolding, setSellModalHolding] = useState<HoldingWithMetrics | null>(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const handleOpenAddModal = (ticker: string, price: number) =>
     setAddModalInfo({ isOpen: true, ticker, price });
@@ -42,6 +47,52 @@ function PortfolioPageContent() {
         ? (error as { message: string }).message
         : JSON.stringify(error);
       toast.error('Error al eliminar el activo.', { description: msg });
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (holdingsWithMetrics.length === 0) {
+      toast.error('No hay posiciones para exportar.');
+      return;
+    }
+
+    setExportingPdf(true);
+    try {
+      // Calcular estadísticas para el PDF
+      const totalInvestment = holdings.reduce((sum, h) => sum + h.totalCost, 0);
+      const currentValue = holdingsWithMetrics.reduce((sum, h) => sum + h.marketValue, 0);
+      const totalGainLoss = totalPerformance.pl;
+      const totalGainLossPercentage = totalPerformance.percent;
+      const totalQuantity = holdings.reduce((sum, h) => sum + h.quantity, 0);
+      const averageBuyPrice = totalQuantity > 0 ? totalInvestment / totalQuantity : 0;
+
+      await exportPortfolioToPdf({
+        holdings: holdingsWithMetrics.map((h) => ({
+          symbol: h.symbol,
+          quantity: h.quantity,
+          averagePrice: h.avgPurchasePrice,
+          currentPrice: h.currentPrice,
+          totalCost: h.totalCost,
+          currentValue: h.marketValue,
+          gainLoss: h.pl,
+          gainLossPercentage: h.plPercent,
+        })),
+        stats: {
+          totalInvestment,
+          currentValue,
+          totalGainLoss,
+          totalGainLossPercentage,
+          averageBuyPrice,
+        },
+        theme: (theme as 'light' | 'dark' | 'system') ?? 'light',
+        portfolioName: 'Mi Portafolio',
+      });
+      toast.success('Portafolio exportado correctamente.');
+    } catch (error) {
+      toast.error('Error al exportar el portafolio.');
+      console.error(error);
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -82,14 +133,25 @@ function PortfolioPageContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="flex items-center gap-4 section-divider">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <LayoutDashboard className="w-8 h-8 text-primary" />
+        <div className="flex items-center justify-between gap-4 section-divider flex-wrap">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <LayoutDashboard className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="heading-2">Mi Portafolio</h1>
+              <p className="body text-muted-foreground">Un resumen de tus inversiones, rendimiento y distribución.</p>
+            </div>
           </div>
-          <div>
-            <h1 className="heading-2">Mi Portafolio</h1>
-            <p className="body text-muted-foreground">Un resumen de tus inversiones, rendimiento y distribución.</p>
-          </div>
+          <Button
+            onClick={() => { void handleExportPdf(); }}
+            disabled={exportingPdf || holdingsWithMetrics.length === 0}
+            variant="outline"
+            className="gap-2"
+          >
+            <FileDown className="h-4 w-4" />
+            {exportingPdf ? 'Exportando...' : 'Exportar a PDF'}
+          </Button>
         </div>
 
         <PortfolioStats
