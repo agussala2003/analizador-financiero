@@ -7,16 +7,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../
 import { formatCurrency, formatPercent, formatNumber, calculatePortfolioMetrics, calculateDailyPlPercent, getColorClass } from '../../lib/portfolio.utils';
 
 const StatCard = ({ label, value, colorClass = 'text-foreground', helpText }: { label: string, value: React.ReactNode, colorClass?: string, helpText?: string }) => (
-    <Card className="p-4">
+    <Card className="p-3 sm:p-4">
         <TooltipProvider delayDuration={100}>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div className="flex flex-col h-full">
-                        <p className="body-sm text-muted-foreground mb-1">{label}</p>
-                        <p className={`heading-2 font-bold ${colorClass}`}>{value}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">{label}</p>
+                        <p className={`text-lg sm:text-xl md:text-2xl font-bold ${colorClass}`}>{value}</p>
                     </div>
                 </TooltipTrigger>
-                {helpText && <TooltipContent><p>{helpText}</p></TooltipContent>}
+                {helpText && <TooltipContent><p className="text-xs sm:text-sm">{helpText}</p></TooltipContent>}
             </Tooltip>
         </TooltipProvider>
     </Card>
@@ -39,7 +39,7 @@ export function PortfolioStats({ holdings, totalPerformance, portfolioData, avgH
     const worstPerformerColor = getColorClass(metrics.worstPerformer.plPercent);
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* --- Fila 1 --- */}
             <StatCard label="Valor Actual" value={formatCurrency(metrics.currentValue)} helpText="El valor de mercado actual de todas tus posiciones abiertas." />
             <StatCard label="G/P Posiciones Actuales" value={formatCurrency(metrics.currentPL)} colorClass={currentPlColor} helpText="La ganancia o pérdida neta solo de tus posiciones actuales." />

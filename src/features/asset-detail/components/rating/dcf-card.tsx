@@ -34,10 +34,10 @@ export function DCFCard({ asset }: DCFCardProps) {
     <Card className="p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="body-sm text-muted-foreground font-semibold">
+          <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
             Valor DCF
           </p>
-          <p className="heading-2 font-bold">
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold">
             {dcfValue !== null ? `$${dcfValue.toFixed(2)}` : 'N/A'}
           </p>
         </div>

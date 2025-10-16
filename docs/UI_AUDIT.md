@@ -170,7 +170,7 @@ Body:
 - large: text-lg
 - default: text-base
 - small: text-sm
-- xs: text-xs (metadata)
+- sm: text-xs (metadata)
 ```
 
 ### 9. **Forms Sin Validación Visual Consistente**

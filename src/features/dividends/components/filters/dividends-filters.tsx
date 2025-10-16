@@ -33,7 +33,7 @@ export const DividendsFilters: React.FC<DividendsFiltersProps> = ({
         placeholder="Filtrar por Símbolo..."
         value={symbolFilter}
         onChange={(e) => onSymbolFilterChange(e.target.value)}
-        className="h-9 w-full sm:w-auto sm:max-w-[160px]"
+        className="h-9 w-full sm:w-auto sm:max-w-[160px] text-sm"
       />
 
       {/* Fecha de pago (Desde) */}
@@ -41,11 +41,12 @@ export const DividendsFilters: React.FC<DividendsFiltersProps> = ({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={`h-9 w-full sm:w-64 justify-start text-left font-normal ${
+            size="sm"
+            className={`h-9 w-full sm:w-52 md:w-64 justify-start text-left font-normal text-xs sm:text-sm ${
               !paymentDateRange?.from && "text-muted-foreground"
             }`}
           >
-            <CalendarIcon className="w-4 h-4 mr-2" />
+            <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             {paymentDateRange?.from ? (
               format(paymentDateRange.from, "dd/MM/yy")
             ) : (
@@ -76,11 +77,12 @@ export const DividendsFilters: React.FC<DividendsFiltersProps> = ({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={`h-9 w-full sm:w-64 justify-start text-left font-normal ${
+            size="sm"
+            className={`h-9 w-full sm:w-52 md:w-64 justify-start text-left font-normal text-xs sm:text-sm ${
               !paymentDateRange?.to && "text-muted-foreground"
             }`}
           >
-            <CalendarIcon className="w-4 h-4 mr-2" />
+            <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             {paymentDateRange?.to ? (
               format(paymentDateRange.to, "dd/MM/yy")
             ) : (
@@ -108,12 +110,12 @@ export const DividendsFilters: React.FC<DividendsFiltersProps> = ({
 
       {/* Filtro por frecuencia */}
       <Select value={frequencyFilter} onValueChange={onFrequencyFilterChange}>
-        <SelectTrigger className="h-9 w-full sm:w-auto sm:min-w-[150px]">
+        <SelectTrigger className="h-9 w-full sm:w-auto sm:min-w-[150px] text-sm">
           <SelectValue placeholder="Frecuencia" />
         </SelectTrigger>
         <SelectContent>
           {frequencyOptions.map((freq) => (
-            <SelectItem key={freq} value={freq}>
+            <SelectItem key={freq} value={freq} className="text-sm">
               {freq}
             </SelectItem>
           ))}
@@ -122,8 +124,8 @@ export const DividendsFilters: React.FC<DividendsFiltersProps> = ({
 
       {/* Botón limpiar filtros */}
       {activeFiltersCount > 0 && (
-        <Button variant="ghost" onClick={onClearAllFilters} className="h-9 w-full sm:w-auto">
-          <XIcon className="w-4 h-4 mr-2" /> Limpiar
+        <Button variant="ghost" size="sm" onClick={onClearAllFilters} className="h-9 w-full sm:w-auto text-xs sm:text-sm">
+          <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Limpiar
         </Button>
       )}
     </div>

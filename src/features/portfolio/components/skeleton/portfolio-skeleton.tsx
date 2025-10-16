@@ -7,34 +7,34 @@ import { Skeleton } from "../../../../components/ui/skeleton";
  */
 export function PortfolioSkeleton() {
   return (
-    <div className="container-wide stack-6">
+    <div className="container-wide space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Skeleton className="w-12 h-12 rounded-lg" />
+      <div className="flex items-center gap-3 sm:gap-4">
+        <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg" />
         <div>
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-80" />
+          <Skeleton className="h-6 sm:h-8 w-48 sm:w-64 mb-1.5 sm:mb-2" />
+          <Skeleton className="h-3 sm:h-4 w-60 sm:w-80" />
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {Array.from({ length: 12 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full" />
+          <Skeleton key={i} className="h-20 sm:h-24 w-full" />
         ))}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Skeleton className="h-80 w-full" />
-        <Skeleton className="h-80 w-full" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <Skeleton className="h-64 sm:h-80 w-full" />
+        <Skeleton className="h-64 sm:h-80 w-full" />
       </div>
 
       {/* Table */}
-      <Skeleton className="h-96 w-full" />
+      <Skeleton className="h-80 sm:h-96 w-full" />
 
       {/* Transaction History */}
-      <Skeleton className="h-64 w-full" />
+      <Skeleton className="h-48 sm:h-64 w-full" />
     </div>
   );
 }

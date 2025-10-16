@@ -5,8 +5,10 @@ Financytics is a React 19 + TypeScript financial analysis platform using Vite, S
 
 ## Architecture Principles
 
+**AUDIT NOTE (Oct 2025):** The audit revealed inconsistencies in this structure. Features like `blog`, `contact`, and `watchlist` lack the full `hooks/`, `lib/`, `types/` subdirectories. A key goal is to refactor these features to match the standard.
+
 ### Feature-Sliced Design
-Code is organized by business domain in `src/features/`, NOT by file type. Each feature is self-contained with its own `pages/`, `components/`, and `hooks/`.
+Code is organized by business domain in `src/features/`, NOT by file type. Each feature should be self-contained with its own `pages/`, `components/`, `hooks/`, `lib/`, and `types/`.
 
 Example structure:
 ```
@@ -19,9 +21,11 @@ src/features/dashboard/
 **When adding functionality:** Find the relevant feature folder first. Only use global `src/components/` for truly shared UI components (like shadcn/ui primitives).
 
 ### Data Flow Pattern
-1. **Server State:** TanStack Query manages ALL API data (assets, news, dividends). Uses `src/services/api/*` for fetching.
-2. **Client State:** React Context for auth (`AuthProvider`), config (`ConfigProvider`), and UI state like selected tickers (`DashboardProvider`).
-3. **Local State:** `useState`/`useReducer` for component-specific state (forms, modals).
+1.  **Server State:** TanStack Query manages ALL API data.
+2.  **Global Client State:** React Context for auth (`AuthProvider`), runtime configuration (`ConfigProvider`), and cross-feature UI state (`DashboardProvider`, `PortfolioProvider`).
+3.  **Local State:** `useState`/`useReducer` for component-specific state.
+
+**AUDIT NOTE (Oct 2025):** The audit confirmed `DashboardProvider` is used for sharing state like selected tickers. It also discovered `PortfolioProvider`, which seems to manage portfolio-specific state. Its role needs to be clearly defined and documented.
 
 **Query Pattern Example:**
 ```typescript
@@ -156,7 +160,12 @@ export { FeaturesSection } from './features-section';
 ```
 
 ### JSDoc Documentation Standard
-**All exported components, functions, and types MUST have JSDoc comments:**
+**All exported components, functions, and types MUST have complete JSDoc comments.** This is a critical quality standard.
+
+**AUDIT NOTE (Oct 2025):** The audit revealed significant gaps in documentation. Over 70% of components and hooks lack proper JSDoc. Priority targets for documentation are:
+-   `src/features/dashboard/components/analysis/fundamentals-table.tsx`
+-   `src/features/portfolio/components/charts/portfolio-charts.tsx`
+-   `src/hooks/use-watchlist.ts`
 
 ```typescript
 /**
@@ -195,7 +204,12 @@ interface HeroSectionProps {
 ```
 
 ### Performance Optimizations
-**Always** wrap expensive components with `React.memo`:
+**Always** wrap expensive components with `React.memo` and memoize expensive calculations with `React.useMemo`.
+
+**AUDIT NOTE (Oct 2025):** The audit identified key components that need performance optimizations. These are high-priority refactoring targets:
+-   `fundamentals-table.tsx`: The cells within the table should be memoized.
+-   `historical-performance-chart.tsx`: Data passed to Recharts should be memoized with `useMemo`.
+
 ```typescript
 export const RadarComparison = React.memo(function RadarComparison({ assets }) {
   const chartData = React.useMemo(() => {
@@ -208,9 +222,9 @@ export const RadarComparison = React.memo(function RadarComparison({ assets }) {
 Components with heavy calculations (charts, tables) in `src/features/dashboard/components/` all follow this pattern.
 
 ### TypeScript Patterns
-- **Strict mode enabled** - no implicit `any`
-- Use `unknown` instead of `any` for external data: `onboarding_profile: Record<string, unknown>`
-- API responses validated before processing (see `src/services/api/asset-api.ts`)
+- **Strict mode enabled** - no implicit `any`.
+- Use `unknown` instead of `any` for external data and API error handling. Validate with type guards.
+- API responses validated before processing (see `src/services/api/asset-api.ts`).
 - **Type organization:**
   - Global types in `src/types/` by domain (auth, dashboard, portfolio, config)
   - Feature-specific types in `src/features/[feature]/types/`
@@ -246,8 +260,10 @@ if (!isInfoPageConfig(config.infoPage)) {
 - shadcn components are in `src/components/ui/` - copy/paste from shadcn, then customize
 - Theme handled by `ThemeProvider` (supports dark mode via `next-themes`)
 
+**AUDIT NOTE (Oct 2025):** The audit found a direct `fetch` call in `src/features/contact/pages/contact-page.tsx`. This MUST be refactored to use a Supabase Edge Function proxy to align with architectural principles.
+
 ### API Calls via Supabase Edge Functions
-**Never** call external APIs directly from frontend. All go through Supabase Edge Functions:
+**Never** call external APIs directly from the frontend. All interactions must be proxied through Supabase Edge Functions.
 
 ```typescript
 // src/services/api/asset-api.ts pattern
@@ -386,11 +402,17 @@ import type { InfoPageConfig } from '../types/info-config.types';
 
 ### When to Extract a Component
 Extract when you see:
-- ✅ **Repeated JSX patterns** - Same structure used multiple times
-- ✅ **Logical sections** - Clear visual/functional boundaries (header, content, footer)
-- ✅ **Conditional rendering** - Complex conditions or multiple branches
-- ✅ **50+ lines of JSX** - Component doing too much
-- ✅ **Reusability potential** - Could be used elsewhere in the app
+- ✅ **Repeated JSX patterns**
+- ✅ **Logical sections** (e.g., hero, features, contact form)
+- ✅ **Complex conditional rendering**
+- ✅ **Component file exceeds 150 lines**
+- ✅ **Reusability potential**
+
+**AUDIT NOTE (Oct 2025):** The audit identified several monolithic components that are prime candidates for refactoring. Use these as examples of what to break down:
+-   `src/features/blog/pages/blog-post-page.tsx` (>400 lines)
+-   `src/features/plans/pages/plans-page.tsx` (>350 lines)
+-   `src/features/blog/components/blog-editor-form.tsx` (>300 lines)
+-   `src/features/portfolio/components/modals/add-transaction-modal.tsx` (>250 lines) - Its logic should be extracted into a `useTransactionForm` hook.
 
 **Example - Before/After:**
 ```typescript

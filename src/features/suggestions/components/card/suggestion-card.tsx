@@ -21,19 +21,19 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
       className="h-full"
     >
       <Card className="h-full flex flex-col transition-shadow hover:shadow-md">
-        <CardHeader className="pb-3">
-          <div className="flex justify-between items-start">
-            <p className="caption text-muted-foreground">
+        <CardHeader className="pb-2 sm:pb-3 p-4 sm:p-6">
+          <div className="flex justify-between items-start gap-2">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {formatSuggestionDate(suggestion.created_at)}
             </p>
-            <Badge variant={config.variant} className="whitespace-nowrap">
+            <Badge variant={config.variant} className="whitespace-nowrap text-xs">
               {config.icon && <span className="mr-1">{config.icon}</span>}
               {config.label}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 flex-grow">
-          <p className="body-sm leading-relaxed text-foreground/90">
+        <CardContent className="pt-0 flex-grow p-4 sm:p-6">
+          <p className="text-xs sm:text-sm leading-relaxed text-foreground/90">
             {suggestion.content}
           </p>
         </CardContent>

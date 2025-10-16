@@ -40,29 +40,29 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
         tabIndex={0}
         role="link"
       >
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <CardTitle className="heading-4 leading-tight group-hover:text-primary transition-colors flex-1">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex items-start justify-between gap-2 sm:gap-4">
+            <CardTitle className="text-base sm:text-lg leading-tight group-hover:text-primary transition-colors flex-1">
               {news.newsTitle}
             </CardTitle>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant="secondary" className="whitespace-nowrap">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <Badge variant="secondary" className="whitespace-nowrap text-xs">
                 {news.symbol}
               </Badge>
-              <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-grow space-y-3 body-sm">
+        <CardContent className="flex-grow space-y-2 sm:space-y-3 text-xs sm:text-sm p-4 sm:p-6">
           {news.newGrade && (
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-muted-foreground min-w-[120px]">Calificación:</span>
+              <span className="font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px]">Calificación:</span>
               <span className="font-medium">{news.newGrade}</span>
             </div>
           )}
           {news.priceTarget && (
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-muted-foreground min-w-[120px]">Precio Objetivo:</span>
+              <span className="font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px]">Precio Obj.:</span>
               <span className="font-medium text-green-600 dark:text-green-500">
                 ${news.priceTarget.toLocaleString()}
               </span>
@@ -70,12 +70,12 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
           )}
           {news.analystName && (
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-muted-foreground min-w-[120px]">Analista:</span>
-              <span className="font-medium">{news.analystName}</span>
+              <span className="font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px]">Analista:</span>
+              <span className="font-medium truncate">{news.analystName}</span>
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between caption text-muted-foreground pt-4 border-t">
+        <CardFooter className="flex justify-between text-xs sm:text-sm text-muted-foreground pt-3 sm:pt-4 border-t p-4 sm:p-6">
           <span className="flex items-center gap-1">
             📰 {company}
           </span>

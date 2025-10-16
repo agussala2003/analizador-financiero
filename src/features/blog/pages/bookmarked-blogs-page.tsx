@@ -132,13 +132,13 @@ function BookmarkedBlogsPage() {
   return (
     <div className="container-wide stack-8">
       {/* Header */}
-      <div className="flex items-center gap-4 section-divider">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <Bookmark className="w-8 h-8 text-primary" />
+      <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-6 mb-4 sm:mb-6 border-b">
+        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+          <Bookmark className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
         </div>
         <div>
-          <h1 className="heading-1 mb-2">Artículos Guardados</h1>
-          <p className="body text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1.5 sm:mb-2">Artículos Guardados</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {blogs.length === 0
               ? 'No has guardado ningún artículo todavía'
               : `Tienes ${blogs.length} ${blogs.length === 1 ? 'artículo guardado' : 'artículos guardados'}`}
@@ -147,13 +147,13 @@ function BookmarkedBlogsPage() {
       </div>
 
       {blogs.length === 0 ? (
-        <Card className="p-12 text-center">
-          <div className="space-y-4">
+        <Card className="p-8 sm:p-12 text-center">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex justify-center">
-              <Bookmark className="w-16 h-16 text-muted-foreground" />
+              <Bookmark className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground" />
             </div>
-            <h3 className="heading-3 font-semibold">No tienes artículos guardados</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold">No tienes artículos guardados</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
               Cuando encuentres artículos interesantes, puedes guardarlos haciendo clic en el ícono de bookmark.
             </p>
             <Link to="/blog">
@@ -197,7 +197,7 @@ function BookmarkedBlogsPage() {
                       <Bookmark className="w-4 h-4 fill-current" />
                     </Button>
                   </div>
-                  <h3 className="heading-4 font-semibold line-clamp-2">
+                  <h3 className="text-base sm:text-lg font-semibold line-clamp-2">
                     {blog.title}
                   </h3>
                 </CardHeader>

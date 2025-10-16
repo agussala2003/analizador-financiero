@@ -134,14 +134,14 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
     if (!analysis || assets.length < 2) {
         return (
             <Card>
-                <CardHeader className="flex flex-row items-center gap-3">
-                    <BrainCircuit className="w-6 h-6 text-primary" />
+                <CardHeader className="flex flex-row items-center gap-2 sm:gap-3 p-4 sm:p-6">
+                    <BrainCircuit className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                     <div>
-                        <CardTitle>Análisis Comparativo</CardTitle>
-                        <CardDescription>Comparación de activos</CardDescription>
+                        <CardTitle className="text-lg sm:text-xl">Análisis Comparativo</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">Comparación de activos</CardDescription>
                     </div>
                 </CardHeader>
-                <CardContent className="text-center text-muted-foreground py-10">
+                <CardContent className="text-center text-muted-foreground py-8 sm:py-10 px-4 text-sm sm:text-base">
                     <p>Necesitas al menos dos activos para generar una comparación.</p>
                 </CardContent>
             </Card>
@@ -154,7 +154,7 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
     if (!winnerProfile) return null;
 
     return (
-        <section className="space-y-4">
+        <section className="space-y-3 sm:space-y-4">
             <WinnerCard
                 symbol={winner.asset.symbol}
                 companyName={winner.asset.companyName}
@@ -164,7 +164,7 @@ export default function SummaryAnalysis({ assets, indicatorConfig }: SummaryAnal
                 totalMetrics={Object.values(analysis.categories).reduce((acc, cat) => acc + cat.metrics.length, 0)}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                 <CategoryLeaders
                     categoryWinners={analysis.categoryWinners}
                     categories={analysis.categories}

@@ -123,33 +123,33 @@ function EditBlogPage() {
             </svg>
           </div>
           <div className="flex-1">
-            <h1 className="heading-1 mb-2">Editar Artículo</h1>
-            <p className="body text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1.5 sm:mb-2">Editar Artículo</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Actualiza tu artículo y mejora su contenido
             </p>
           </div>
           {initialData.status && (
             <div>
               {initialData.status === 'draft' && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-500/10 text-gray-600 dark:text-gray-400 body-sm">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-500/10 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
                   <span className="w-2 h-2 rounded-full bg-gray-500"></span>
                   Borrador
                 </span>
               )}
               {initialData.status === 'pending_review' && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 body-sm">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs sm:text-sm">
                   <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
                   En Revisión
                 </span>
               )}
               {initialData.status === 'approved' && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 body-sm">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm">
                   <span className="w-2 h-2 rounded-full bg-green-500"></span>
                   Publicado
                 </span>
               )}
               {initialData.status === 'rejected' && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 body-sm">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-xs sm:text-sm">
                   <span className="w-2 h-2 rounded-full bg-red-500"></span>
                   Rechazado
                 </span>

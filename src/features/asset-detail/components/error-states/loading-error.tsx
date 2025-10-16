@@ -23,14 +23,14 @@ interface LoadingErrorProps {
  */
 export function LoadingError({ errorMessage }: LoadingErrorProps) {
   return (
-    <div className="text-center py-20 px-4">
-      <h2 className="heading-2 text-destructive">
+    <div className="text-center py-12 sm:py-20 px-4">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-destructive">
         Error al cargar el activo
       </h2>
-      <p className="body text-muted-foreground mt-2">{errorMessage}</p>
-      <Button asChild className="mt-6" variant="outline">
+      <p className="text-sm sm:text-base text-muted-foreground mt-2">{errorMessage}</p>
+      <Button asChild className="mt-4 sm:mt-6" variant="outline" size="sm">
         <Link to="/dashboard">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
           Volver al Dashboard
         </Link>
       </Button>

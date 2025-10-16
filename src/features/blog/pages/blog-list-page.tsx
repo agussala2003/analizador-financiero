@@ -150,16 +150,16 @@ function BlogListPage() {
   };
 
   return (
-    <div className="container-wide stack-8">
+    <div className="container-wide space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 section-divider">
-        <div className="flex items-center gap-4">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <BookOpen className="w-8 h-8 text-primary" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+            <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </div>
           <div>
-            <h1 className="heading-1 mb-2">Blog Financiero</h1>
-            <p className="body text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1">Blog Financiero</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Artículos, análisis y noticias del mundo financiero
             </p>
           </div>
@@ -167,9 +167,9 @@ function BlogListPage() {
         
         {/* Botón crear blog (solo si tiene permisos) */}
         {user && profile?.can_upload_blog && (
-          <Link to="/blog/crear">
-            <Button size="lg" className="btn-press">
-              <Plus className="w-5 h-5 mr-2" />
+          <Link to="/blog/crear" className="w-full sm:w-auto">
+            <Button size="sm" className="w-full sm:w-auto btn-press text-xs sm:text-sm">
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
               Crear Artículo
             </Button>
           </Link>
@@ -177,57 +177,57 @@ function BlogListPage() {
       </div>
 
       {/* Filtros y búsqueda */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8">
         {/* Búsqueda */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar artículos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-9 sm:pl-10 text-sm"
           />
         </div>
 
         {/* Categoría */}
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <Filter className="w-4 h-4 mr-2" />
+          <SelectTrigger className="w-full sm:w-[160px] md:w-[180px] text-sm">
+            <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
             <SelectValue placeholder="Categoría" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas</SelectItem>
+            <SelectItem value="all" className="text-sm">Todas</SelectItem>
             {categories.map(cat => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         {/* Ordenar */}
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-          <SelectTrigger className="w-full md:w-[180px]">
+          <SelectTrigger className="w-full sm:w-[160px] md:w-[180px] text-sm">
             <SelectValue placeholder="Ordenar por" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="newest">Más Recientes</SelectItem>
-            <SelectItem value="popular">Más Populares</SelectItem>
-            <SelectItem value="trending">Tendencia</SelectItem>
+            <SelectItem value="newest" className="text-sm">Más Recientes</SelectItem>
+            <SelectItem value="popular" className="text-sm">Más Populares</SelectItem>
+            <SelectItem value="trending" className="text-sm">Tendencia</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Lista de blogs */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-96 bg-muted animate-pulse rounded-lg" />
+            <div key={i} className="h-80 sm:h-96 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
       ) : filteredBlogs.length === 0 ? (
-        <div className="text-center py-16">
-          <Search className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="heading-4 font-semibold mb-2">No se encontraron artículos</h3>
-          <p className="text-muted-foreground">
+        <div className="text-center py-12 sm:py-16">
+          <Search className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+          <h3 className="text-lg sm:text-xl font-semibold mb-2">No se encontraron artículos</h3>
+          <p className="text-sm sm:text-base text-muted-foreground">
             {searchQuery || categoryFilter !== 'all'
               ? 'Intenta ajustar tus filtros de búsqueda'
               : 'Aún no hay artículos publicados'}
@@ -235,7 +235,7 @@ function BlogListPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {currentBlogs.map(blog => (
               <BlogCard key={blog.id} {...blog} />
             ))}
@@ -243,18 +243,19 @@ function BlogListPage() {
 
           {/* Paginación */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-6 sm:mt-8">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Anterior
               </Button>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 w-full sm:w-auto justify-center">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
                   // Mostrar solo páginas cercanas a la actual
                   if (
@@ -268,13 +269,13 @@ function BlogListPage() {
                         variant={currentPage === page ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => goToPage(page)}
-                        className="min-w-[40px]"
+                        className="min-w-[36px] sm:min-w-[40px] text-xs sm:text-sm"
                       >
                         {page}
                       </Button>
                     );
                   } else if (page === currentPage - 2 || page === currentPage + 2) {
-                    return <span key={page} className="px-2">...</span>;
+                    return <span key={page} className="px-1 sm:px-2 text-xs sm:text-sm">...</span>;
                   }
                   return null;
                 })}
@@ -285,15 +286,16 @@ function BlogListPage() {
                 size="sm"
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
                 Siguiente
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
             </div>
           )}
 
           {/* Contador de resultados */}
-          <div className="mt-4 text-center body-sm text-muted-foreground">
+          <div className="mt-3 sm:mt-4 text-center text-xs sm:text-sm text-muted-foreground">
             Mostrando {startIndex + 1}-{Math.min(endIndex, filteredBlogs.length)} de {filteredBlogs.length} artículos
             {filteredBlogs.length !== blogs.length && ` (${blogs.length} total)`}
           </div>

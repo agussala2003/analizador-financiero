@@ -28,10 +28,10 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Historial de Transacciones</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Historial de Transacciones</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
                 <DataTable
                     table={table}
                     totalPages={table.getPageCount()}

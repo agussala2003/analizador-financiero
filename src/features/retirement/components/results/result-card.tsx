@@ -12,11 +12,11 @@ export function ResultCard({
   subtitle,
 }: ResultCardProps) {
   return (
-    <div className="bg-muted/40 p-4 rounded-lg text-center border">
-      <p className="body-sm text-muted-foreground mb-1">{title}</p>
-      <p className={`heading-2 font-bold ${colorClass}`}>{value}</p>
+    <div className="bg-muted/40 p-3 sm:p-4 rounded-lg text-center border">
+      <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">{title}</p>
+      <p className={`text-lg sm:text-xl md:text-2xl font-bold ${colorClass}`}>{value}</p>
       {subtitle && (
-        <p className="caption text-muted-foreground mt-1">{subtitle}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">{subtitle}</p>
       )}
     </div>
   );

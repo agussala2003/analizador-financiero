@@ -47,48 +47,48 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
   testimonials 
 }) => {
   return (
-    <AnimatedSection className="py-12 px-4">
+    <AnimatedSection className="py-8 px-4 sm:py-10 md:py-12">
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="heading-2 font-bold mb-4">{title}</h2>
-        <p className="text-muted-foreground mb-8 max-w-lg mx-auto">{subtitle}</p>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-2">{title}</h2>
+        <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 max-w-full sm:max-w-lg mx-auto px-2 leading-relaxed">{subtitle}</p>
 
         <Carousel className="w-full" opts={{ align: "start", loop: true }}>
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-2 sm:-ml-4">
             {testimonials.map((opinion, index) => (
-              <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                <div className="p-2 h-full">
+              <CarouselItem key={index} className="pl-2 sm:pl-4 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3">
+                <div className="p-1 sm:p-2 h-full">
                   <Card className="flex flex-col h-full shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="flex flex-col flex-grow p-6 text-left">
+                    <CardContent className="flex flex-col flex-grow p-4 sm:p-5 md:p-6 text-left">
                       {/* Contenido del testimonio */}
                       <div className="flex-grow">
-                        <Quote className="w-6 h-6 text-primary/50 mb-3" />
+                        <Quote className="w-5 h-5 sm:w-6 sm:h-6 text-primary/50 mb-2 sm:mb-3" />
                         
                         {/* Calificación de 5 estrellas */}
-                        <div className="flex mb-3">
+                        <div className="flex mb-2 sm:mb-3 gap-0.5">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star 
                               key={i} 
-                              className="text-yellow-400 fill-yellow-400 w-4 h-4" 
+                              className="text-yellow-400 fill-yellow-400 w-3.5 h-3.5 sm:w-4 sm:h-4" 
                             />
                           ))}
                         </div>
 
-                        <p className="body text-foreground mb-4 italic">
+                        <p className="text-sm sm:text-base text-foreground mb-3 sm:mb-4 italic leading-relaxed">
                           "{opinion.comment}"
                         </p>
                       </div>
 
                       {/* Información del usuario */}
-                      <div className="flex items-center gap-3 pt-4 border-t mt-auto">
-                        <Avatar className="w-10 h-10">
+                      <div className="flex items-center gap-2 sm:gap-3 pt-3 sm:pt-4 border-t mt-auto">
+                        <Avatar className="w-9 h-9 sm:w-10 sm:h-10">
                           <AvatarImage src={opinion.avatar} alt={opinion.name} />
                           <AvatarFallback>
                             {opinion.name.split(' ').map((n) => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold text-foreground">{opinion.name}</p>
-                          <p className="caption text-muted-foreground">{opinion.role}</p>
+                          <p className="text-sm sm:text-base font-semibold text-foreground">{opinion.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">{opinion.role}</p>
                         </div>
                       </div>
                     </CardContent>

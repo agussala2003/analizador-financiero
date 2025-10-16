@@ -24,13 +24,37 @@ export function DashboardTabs({ assets, isLoading }: DashboardTabsProps) {
 
     return (
         <Tabs defaultValue="prices" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto mb-4">
-                <TabsTrigger value="prices"><BarChart2 className="w-4 h-4 mr-2" />Precios</TabsTrigger>
-                <TabsTrigger value="fundamentals"><LayoutGrid className="w-4 h-4 mr-2" />Indicadores</TabsTrigger>
-                <TabsTrigger value="correlation"><GitCompareArrows className="w-4 h-4 mr-2" />Correlación</TabsTrigger>
-                <TabsTrigger value="radar"><Zap className="w-4 h-4 mr-2" />Radar</TabsTrigger>
-                <TabsTrigger value="charts"><AreaChart className="w-4 h-4 mr-2" />Gráficos</TabsTrigger>
-                <TabsTrigger value="summary"><BrainCircuit className="w-4 h-4 mr-2" />Resumen IA</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto mb-4 sm:mb-6">
+                <TabsTrigger value="prices" className="text-xs sm:text-sm px-2 py-2 sm:px-3 sm:py-2.5">
+                    <BarChart2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Precios</span>
+                    <span className="sm:hidden">$</span>
+                </TabsTrigger>
+                <TabsTrigger value="fundamentals" className="text-xs sm:text-sm px-2 py-2 sm:px-3 sm:py-2.5">
+                    <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Indicadores</span>
+                    <span className="sm:hidden">📊</span>
+                </TabsTrigger>
+                <TabsTrigger value="correlation" className="text-xs sm:text-sm px-2 py-2 sm:px-3 sm:py-2.5">
+                    <GitCompareArrows className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Correlación</span>
+                    <span className="sm:hidden">⟷</span>
+                </TabsTrigger>
+                <TabsTrigger value="radar" className="text-xs sm:text-sm px-2 py-2 sm:px-3 sm:py-2.5">
+                    <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Radar</span>
+                    <span className="sm:hidden">⚡</span>
+                </TabsTrigger>
+                <TabsTrigger value="charts" className="text-xs sm:text-sm px-2 py-2 sm:px-3 sm:py-2.5">
+                    <AreaChart className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Gráficos</span>
+                    <span className="sm:hidden">📈</span>
+                </TabsTrigger>
+                <TabsTrigger value="summary" className="text-xs sm:text-sm px-2 py-2 sm:px-3 sm:py-2.5">
+                    <BrainCircuit className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Resumen IA</span>
+                    <span className="sm:hidden">🧠</span>
+                </TabsTrigger>
             </TabsList>
 
             <TabsContent value="prices"><PriceAnalysisTable assets={assets} /></TabsContent>

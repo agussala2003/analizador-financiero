@@ -241,15 +241,15 @@ export function AdminBlogsSection() {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
+      <div className="animate-pulse space-y-4 sm:space-y-6">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 bg-muted rounded-lg" />
+            <div key={i} className="h-20 sm:h-24 bg-muted rounded-lg" />
           ))}
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-64 bg-muted rounded-lg" />
+            <div key={i} className="h-56 sm:h-64 bg-muted rounded-lg" />
           ))}
         </div>
       </div>
@@ -257,39 +257,39 @@ export function AdminBlogsSection() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Estadísticas rápidas */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="pb-3">
-            <div className="body-sm font-medium text-muted-foreground">Total</div>
+          <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
+            <div className="text-xs sm:text-sm font-medium text-muted-foreground">Total</div>
           </CardHeader>
-          <CardContent>
-            <div className="heading-1 font-bold">{statusCounts.all}</div>
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-2xl sm:text-3xl font-bold">{statusCounts.all}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <div className="body-sm font-medium text-muted-foreground">En Revisión</div>
+          <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
+            <div className="text-xs sm:text-sm font-medium text-muted-foreground">En Revisión</div>
           </CardHeader>
-          <CardContent>
-            <div className="heading-1 font-bold text-yellow-600">{statusCounts.pending_review}</div>
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-2xl sm:text-3xl font-bold text-yellow-600">{statusCounts.pending_review}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <div className="body-sm font-medium text-muted-foreground">Aprobados</div>
+          <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
+            <div className="text-xs sm:text-sm font-medium text-muted-foreground">Aprobados</div>
           </CardHeader>
-          <CardContent>
-            <div className="heading-1 font-bold text-green-600">{statusCounts.approved}</div>
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600">{statusCounts.approved}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <div className="body-sm font-medium text-muted-foreground">Rechazados</div>
+          <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
+            <div className="text-xs sm:text-sm font-medium text-muted-foreground">Rechazados</div>
           </CardHeader>
-          <CardContent>
-            <div className="heading-1 font-bold text-red-600">{statusCounts.rejected}</div>
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-red-600">{statusCounts.rejected}</div>
           </CardContent>
         </Card>
       </div>
@@ -321,10 +321,10 @@ export function AdminBlogsSection() {
 
       {/* Grid de artículos */}
       {filteredBlogs.length === 0 ? (
-        <Card className="p-12 text-center">
-          <div className="space-y-4">
-            <h3 className="heading-2">No hay artículos</h3>
-            <p className="body text-muted-foreground">
+        <Card className="p-8 sm:p-12 text-center">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold">No hay artículos</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {searchQuery || statusFilter !== 'all'
                 ? 'No se encontraron artículos con los filtros aplicados.'
                 : 'No hay artículos para revisar en este momento.'}
@@ -354,10 +354,10 @@ export function AdminBlogsSection() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     {getStatusBadge(blog.status)}
                     {blog.category && (
-                      <Badge variant="outline">{blog.category}</Badge>
+                      <Badge variant="outline" className="text-xs">{blog.category}</Badge>
                     )}
                   </div>
-                  <h3 className="heading-3 line-clamp-2">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold line-clamp-2">
                     {blog.title}
                   </h3>
                 </CardHeader>
@@ -369,18 +369,18 @@ export function AdminBlogsSection() {
                       <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 body-sm">
+                      <div className="flex items-center gap-1 text-xs sm:text-sm">
                         <User className="w-3 h-3 text-muted-foreground" />
                         <span className="font-medium truncate">{authorName}</span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="body text-muted-foreground line-clamp-3 mb-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3 mb-4">
                     {blog.excerpt}
                   </p>
 
-                  <div className="flex items-center gap-4 body-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
                       <span>{blog.stats.likes}</span>

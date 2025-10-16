@@ -20,9 +20,9 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
             {/* --- TABLA --- */}
-            <div className="overflow-x-auto border rounded-md">
+            <div className="overflow-x-auto border rounded-md -mx-4 sm:mx-0">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -66,7 +66,7 @@ export function DataTable<TData>({
             </div>
 
             {/* --- PAGINACIÓN --- */}
-            <div className="flex flex-col items-center justify-between pt-2 pb-4 gap-5">
+            <div className="flex flex-col items-center justify-between pt-2 pb-3 sm:pb-4 gap-4 sm:gap-5 px-4 sm:px-0">
                 {totalPages > 1 && (
                      <PaginationDemo
                         currentPage={currentPage}
@@ -74,7 +74,7 @@ export function DataTable<TData>({
                         onPageChange={onPageChange}
                     />
                 )}
-                <div className="body-sm text-muted-foreground text-nowrap">
+                <div className="text-xs sm:text-sm text-muted-foreground text-nowrap">
                     {table.getFilteredRowModel().rows.length} resultados
                 </div>
             </div>

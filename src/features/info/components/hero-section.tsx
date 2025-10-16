@@ -40,13 +40,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   ctaLink 
 }) => {
   return (
-    <section className="relative text-center py-16 px-4 overflow-hidden">
+    <section className="relative text-center py-8 px-4 sm:py-12 md:py-16 lg:py-20 overflow-hidden">
       {/* Fondo decorativo con gradiente radial */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
       
       {/* Título principal con animación */}
       <motion.h1
-        className="heading-1 font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 mb-4"
+        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 mb-3 sm:mb-4 px-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -56,7 +56,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
       {/* Subtítulo con animación retrasada */}
       <motion.p
-        className="body-lg text-muted-foreground max-w-2xl mx-auto mb-8"
+        className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-full sm:max-w-xl md:max-w-2xl mx-auto mb-6 sm:mb-8 px-2 leading-relaxed"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -71,7 +71,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         transition={{ duration: 0.3, delay: 0.15 }}
       >
         <Link to={ctaLink}>
-          <Button size="lg" className="btn-press text-base py-2.5 px-6 shadow-sm hover:shadow-md transition-shadow">
+          <Button size="default" className="btn-press text-sm sm:text-base py-2 px-5 sm:py-2.5 sm:px-6 shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto max-w-xs sm:max-w-none">
             {ctaText}
           </Button>
         </Link>

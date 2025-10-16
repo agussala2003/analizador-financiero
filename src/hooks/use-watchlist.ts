@@ -6,6 +6,7 @@ import { useAuth } from './use-auth';
 import { toast } from 'sonner';
 import { logger } from '../lib/logger';
 import type { WatchlistItem, CreateWatchlistItemDto, UpdateWatchlistItemDto } from '../types/watchlist';
+import { usePlanLimits } from './use-plan-limits';
 
 /**
  * Hook para obtener la watchlist del usuario
@@ -63,11 +64,20 @@ export function useWatchlistMutations() {
   const queryClient = useQueryClient();
   const queryKey = ['watchlist', user?.id];
 
+  // Obtener watchlist actual para validar límites
+  const { data: currentWatchlist = [] } = useWatchlist();
+  const { isAtLimit, limit } = usePlanLimits('watchlist', currentWatchlist.length);
+
   // Agregar a watchlist
   const addToWatchlist = useMutation({
     mutationFn: async (dto: CreateWatchlistItemDto): Promise<WatchlistItem> => {
       if (!user?.id) {
         throw new Error('Usuario no autenticado');
+      }
+
+      // ✅ VALIDAR LÍMITE DEL PLAN ANTES DE AGREGAR
+      if (isAtLimit) {
+        throw new Error(`Has alcanzado el límite de ${limit} activos en tu watchlist. Actualiza tu plan para agregar más.`);
       }
 
       const result = await supabase
@@ -279,6 +289,11 @@ export function useWatchlistMutations() {
         if (error) throw error;
         return 'removed';
       } else {
+        // ✅ VALIDAR LÍMITE DEL PLAN ANTES DE AGREGAR
+        if (isAtLimit) {
+          throw new Error(`Has alcanzado el límite de ${limit} activos en tu watchlist. Actualiza tu plan para agregar más.`);
+        }
+
         // Agregar
         const result = await supabase
           .from('watchlist')

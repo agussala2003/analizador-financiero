@@ -77,23 +77,25 @@ export const PortfolioView = React.memo(function PortfolioView({ holdings, onDel
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8 sm:h-10 sm:w-10"
               onClick={() => onAddMore(holding.symbol, holding.currentPrice)}
               aria-label={`Agregar más ${holding.symbol}`}
             >
-              <PlusCircle className="w-4 h-4 text-green-500" />
+              <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8 sm:h-10 sm:w-10"
               onClick={() => onSell(holding)}
               aria-label={`Vender ${holding.symbol}`}
             >
-              <MinusCircle className="w-4 h-4 text-red-500" />
+              <MinusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={`Eliminar ${holding.symbol}`}>
-                  <Trash2 className="w-4 h-4 text-muted-foreground" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" aria-label={`Eliminar ${holding.symbol}`}>
+                  <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -127,20 +129,20 @@ export const PortfolioView = React.memo(function PortfolioView({ holdings, onDel
 
   if (holdings.length === 0) {
     return (
-      <Card className="text-center py-10">
-        <p className="text-muted-foreground">Aún no tienes posiciones abiertas.</p>
-        <p className="body-sm text-muted-foreground mt-2">Agrega tu primera transacción desde el Dashboard.</p>
+      <Card className="text-center py-8 sm:py-10 px-4">
+        <p className="text-sm sm:text-base text-muted-foreground">Aún no tienes posiciones abiertas.</p>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-2">Agrega tu primera transacción desde el Dashboard.</p>
       </Card>
     );
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Posiciones Abiertas</CardTitle>
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-lg sm:text-xl">Posiciones Abiertas</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="rounded-md border">
+      <CardContent className="p-4 sm:p-6">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

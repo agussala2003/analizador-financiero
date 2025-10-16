@@ -384,13 +384,13 @@ function BlogPostPage() {
             <Badge className="bg-primary">{blog.category}</Badge>
           )}
           {(blog.tags ?? []).map(tag => (
-            <Badge key={tag} variant="secondary">{tag}</Badge>
+            <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
           ))}
         </div>
 
-        <h1 className="heading-1 font-bold mb-6">{blog.title}</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">{blog.title}</h1>
 
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarFallback>{initials}</AvatarFallback>
@@ -487,13 +487,13 @@ function BlogPostPage() {
           {/* Otras notas relevantes */}
           {relatedBlogs.length > 0 && (
             <Card>
-              <CardHeader>
-                <h3 className="heading-4 font-semibold flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
+              <CardHeader className="p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   Otras Notas Relevantes
                 </h3>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 sm:space-y-3 p-4 sm:p-6">
                 {relatedBlogs.map((relatedBlog) => (
                   <Link
                     key={relatedBlog.id}
@@ -545,10 +545,10 @@ function BlogPostPage() {
 
           {/* Info del autor */}
           <Card>
-            <CardHeader>
-              <h3 className="heading-4 font-semibold">Sobre el Autor</h3>
+            <CardHeader className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold">Sobre el Autor</h3>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center gap-3 mb-3">
                 <Avatar className="h-12 w-12">
                   <AvatarFallback>{initials}</AvatarFallback>

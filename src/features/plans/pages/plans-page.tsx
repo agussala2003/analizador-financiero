@@ -32,9 +32,9 @@ export default function PlansPage() {
       price: 'Gratis',
       priceDetail: 'Para siempre',
       features: [
-        `${config.plans.roleLimits.basico} activos para analizar`,
-        `${config.plans.portfolioLimits.basico} portafolio`,
-        `Comparar hasta ${config.dashboard.maxTickersToCompare.basico} activos`,
+        `Acceso a ~${config.plans.freeTierSymbols.length} símbolos populares`,
+        `Dashboard comparativo (hasta ${config.dashboard.maxTickersToCompare.basico} activos)`,
+        `Portfolio de inversiones`,
         'Análisis fundamental completo',
         'Matriz de correlación',
         'Gráfico radar comparativo',
@@ -54,9 +54,9 @@ export default function PlansPage() {
       price: '$9.99',
       priceDetail: 'por mes',
       features: [
-        `${config.plans.roleLimits.plus} activos para analizar`,
-        `Hasta ${config.plans.portfolioLimits.plus} portafolios`,
-        `Comparar hasta ${config.dashboard.maxTickersToCompare.plus} activos`,
+        `Acceso a todos los símbolos (+8,000)`,
+        `Dashboard comparativo (hasta ${config.dashboard.maxTickersToCompare.plus} activos)`,
+        `Portfolio de inversiones`,
         'Todas las funciones del plan Básico',
         'Análisis de segmentación geográfica',
         'Análisis de segmentación de productos',
@@ -77,9 +77,9 @@ export default function PlansPage() {
       price: '$19.99',
       priceDetail: 'por mes',
       features: [
-        `${config.plans.roleLimits.premium} activos para analizar`,
-        `Hasta ${config.plans.portfolioLimits.premium} portafolios`,
-        `Comparar hasta ${config.dashboard.maxTickersToCompare.premium} activos`,
+        `Acceso a todos los símbolos (+8,000)`,
+        `Dashboard comparativo (hasta ${config.dashboard.maxTickersToCompare.premium} activos)`,
+        `Portfolio de inversiones`,
         'Todas las funciones del plan Plus',
         'Acceso API para automatización',
         'Alertas personalizadas en tiempo real',
@@ -97,29 +97,29 @@ export default function PlansPage() {
   const currentRole = profile?.role ?? 'basico';
 
   return (
-    <div className="container-wide stack-6">
+    <div className="container-wide space-y-4 sm:space-y-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="space-y-8"
+        className="space-y-6 sm:space-y-8"
       >
         {/* Header */}
-        <div className="text-center space-y-4">
-          <Badge variant="outline" className="mb-4">
+        <div className="text-center space-y-2 sm:space-y-4 px-4">
+          <Badge variant="outline" className="mb-2 sm:mb-4 text-xs sm:text-sm">
             Planes y Precios
           </Badge>
-          <h1 className="text-4xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
             Elige el plan perfecto para ti
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Comienza gratis y actualiza cuando necesites más poder de análisis.
             Todos los planes incluyen acceso a funciones esenciales. Para actualizar tu plan, <a href="/contact" className="text-primary hover:underline font-semibold">contáctanos</a>.
           </p>
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-8 sm:mt-12">
           {plans.map((plan, index) => {
             const Icon = plan.icon;
             const isCurrentPlan = currentRole === plan.role;
@@ -139,40 +139,40 @@ export default function PlansPage() {
                   )}
                 >
                   {plan.highlighted && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
+                    <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none text-xs sm:text-sm">
                         Más Popular
                       </Badge>
                     </div>
                   )}
 
-                  <CardHeader className="text-center pb-8">
+                  <CardHeader className="text-center pb-6 sm:pb-8">
                     <div
                       className={cn(
-                        'w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-br flex items-center justify-center',
+                        'w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 rounded-full bg-gradient-to-br flex items-center justify-center',
                         plan.color
                       )}
                     >
-                      <Icon className="h-6 w-6 text-white" />
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription className="mt-2">
+                    <CardTitle className="text-xl sm:text-2xl">{plan.name}</CardTitle>
+                    <CardDescription className="mt-1.5 sm:mt-2 text-xs sm:text-sm">
                       {plan.description}
                     </CardDescription>
-                    <div className="mt-4">
-                      <div className="text-4xl font-bold">{plan.price}</div>
-                      <div className="text-sm text-muted-foreground">
+                    <div className="mt-3 sm:mt-4">
+                      <div className="text-3xl sm:text-4xl font-bold">{plan.price}</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">
                         {plan.priceDetail}
                       </div>
                     </div>
                   </CardHeader>
 
                   <CardContent className="flex-1">
-                    <ul className="space-y-3">
+                    <ul className="space-y-2 sm:space-y-3">
                       {plan.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span className="text-sm">{feature}</span>
+                          <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0 mt-0.5" />
+                          <span className="text-xs sm:text-sm">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -180,7 +180,8 @@ export default function PlansPage() {
 
                   <CardFooter>
                     <Button
-                      className="w-full"
+                      className="w-full text-xs sm:text-sm"
+                      size="sm"
                       variant={plan.highlighted ? 'default' : 'outline'}
                       disabled={isCurrentPlan}
                       asChild={!isCurrentPlan}
@@ -199,110 +200,110 @@ export default function PlansPage() {
         </div>
 
         {/* Comparison Table */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-center mb-8">
+        <div className="mt-12 sm:mt-16">
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 px-4">
             Comparación Detallada
           </h2>
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-xs sm:text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-4 font-semibold">
+                      <th className="text-left p-2 sm:p-4 font-semibold whitespace-nowrap">
                         Característica
                       </th>
-                      <th className="text-center p-4 font-semibold">Básico</th>
-                      <th className="text-center p-4 font-semibold bg-primary/5">
+                      <th className="text-center p-2 sm:p-4 font-semibold whitespace-nowrap">Básico</th>
+                      <th className="text-center p-2 sm:p-4 font-semibold bg-primary/5 whitespace-nowrap">
                         Plus
                       </th>
-                      <th className="text-center p-4 font-semibold">Premium</th>
+                      <th className="text-center p-2 sm:p-4 font-semibold whitespace-nowrap">Premium</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b">
-                      <td className="p-4">Activos para analizar</td>
-                      <td className="text-center p-4">
-                        {config.plans.roleLimits.basico}
+                      <td className="p-2 sm:p-4">Símbolos disponibles</td>
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">
+                        ~{config.plans.freeTierSymbols.length} pop.
                       </td>
-                      <td className="text-center p-4 bg-primary/5">
-                        {config.plans.roleLimits.plus}
+                      <td className="text-center p-2 sm:p-4 bg-primary/5 whitespace-nowrap">
+                        Todos (+8K)
                       </td>
-                      <td className="text-center p-4">
-                        {config.plans.roleLimits.premium}
-                      </td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-4">Número de portafolios</td>
-                      <td className="text-center p-4">
-                        {config.plans.portfolioLimits.basico}
-                      </td>
-                      <td className="text-center p-4 bg-primary/5">
-                        {config.plans.portfolioLimits.plus}
-                      </td>
-                      <td className="text-center p-4">
-                        {config.plans.portfolioLimits.premium}
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">
+                        Todos (+8K)
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-4">Comparación simultánea</td>
-                      <td className="text-center p-4">
-                        {config.dashboard.maxTickersToCompare.basico}
+                      <td className="p-2 sm:p-4">Dashboard comparativo</td>
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">
+                        {config.dashboard.maxTickersToCompare.basico} activos
                       </td>
-                      <td className="text-center p-4 bg-primary/5">
-                        {config.dashboard.maxTickersToCompare.plus}
+                      <td className="text-center p-2 sm:p-4 bg-primary/5 whitespace-nowrap">
+                        {config.dashboard.maxTickersToCompare.plus} activos
                       </td>
-                      <td className="text-center p-4">
-                        {config.dashboard.maxTickersToCompare.premium}
-                      </td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-4">Análisis fundamental</td>
-                      <td className="text-center p-4">
-                        <Check className="h-5 w-5 text-primary mx-auto" />
-                      </td>
-                      <td className="text-center p-4 bg-primary/5">
-                        <Check className="h-5 w-5 text-primary mx-auto" />
-                      </td>
-                      <td className="text-center p-4">
-                        <Check className="h-5 w-5 text-primary mx-auto" />
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">
+                        {config.dashboard.maxTickersToCompare.premium} activos
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-4">Stock grades</td>
-                      <td className="text-center p-4">-</td>
-                      <td className="text-center p-4 bg-primary/5">
+                      <td className="p-2 sm:p-4">Portfolio de inversiones</td>
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">
                         <Check className="h-5 w-5 text-primary mx-auto" />
                       </td>
-                      <td className="text-center p-4">
-                        <Check className="h-5 w-5 text-primary mx-auto" />
+                      <td className="text-center p-2 sm:p-4 bg-primary/5">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
                       </td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-4">Exportar a PDF</td>
-                      <td className="text-center p-4">-</td>
-                      <td className="text-center p-4 bg-primary/5">
-                        <Check className="h-5 w-5 text-primary mx-auto" />
-                      </td>
-                      <td className="text-center p-4">
-                        <Check className="h-5 w-5 text-primary mx-auto" />
+                      <td className="text-center p-2 sm:p-4">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-4">API para automatización</td>
-                      <td className="text-center p-4">-</td>
-                      <td className="text-center p-4 bg-primary/5">-</td>
-                      <td className="text-center p-4">
-                        <Check className="h-5 w-5 text-primary mx-auto" />
+                      <td className="p-2 sm:p-4">Análisis fundamental</td>
+                      <td className="text-center p-2 sm:p-4">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                      <td className="text-center p-2 sm:p-4 bg-primary/5">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                      <td className="text-center p-2 sm:p-4">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="p-2 sm:p-4">Stock grades</td>
+                      <td className="text-center p-2 sm:p-4">-</td>
+                      <td className="text-center p-2 sm:p-4 bg-primary/5">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                      <td className="text-center p-2 sm:p-4">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="p-2 sm:p-4">Exportar a PDF</td>
+                      <td className="text-center p-2 sm:p-4">-</td>
+                      <td className="text-center p-2 sm:p-4 bg-primary/5">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                      <td className="text-center p-2 sm:p-4">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="p-2 sm:p-4">API automatización</td>
+                      <td className="text-center p-2 sm:p-4">-</td>
+                      <td className="text-center p-2 sm:p-4 bg-primary/5">-</td>
+                      <td className="text-center p-2 sm:p-4">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
                       </td>
                     </tr>
                     <tr>
-                      <td className="p-4">Soporte</td>
-                      <td className="text-center p-4">Email</td>
-                      <td className="text-center p-4 bg-primary/5">
+                      <td className="p-2 sm:p-4">Soporte</td>
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">Email</td>
+                      <td className="text-center p-2 sm:p-4 bg-primary/5 whitespace-nowrap">
                         Prioritario
                       </td>
-                      <td className="text-center p-4">24/7</td>
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">24/7</td>
                     </tr>
                   </tbody>
                 </table>
@@ -312,11 +313,11 @@ export default function PlansPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-center mb-8">
+        <div className="mt-12 sm:mt-16">
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 px-4">
             Preguntas Frecuentes
           </h2>
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">

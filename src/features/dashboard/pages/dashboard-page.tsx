@@ -82,11 +82,11 @@ function DashboardPageContent() {
                     initial={{ opacity: 0, y: 20 }} 
                     animate={{ opacity: 1, y: 0 }} 
                     transition={{ duration: 0.3 }}
-                    className="text-center py-20 px-6 border-2 border-dashed rounded-lg transition-smooth"
+                    className="text-center py-12 sm:py-20 px-4 sm:px-6 border-2 border-dashed rounded-lg transition-smooth"
                 >
-                    <Briefcase className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h2 className="heading-4 mb-2">Tu dashboard está vacío</h2>
-                    <p className="body text-muted-foreground">Comienza añadiendo un activo desde la barra de búsqueda superior.</p>
+                    <Briefcase className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+                    <h2 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">Tu dashboard está vacío</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Comienza añadiendo un activo desde la barra de búsqueda superior.</p>
                 </motion.div>
             ) : (
                 <DashboardTabs assets={assets} isLoading={isLoading} />

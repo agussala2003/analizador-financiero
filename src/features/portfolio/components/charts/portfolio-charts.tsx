@@ -40,12 +40,12 @@ const useChartData = (holdings: Holding[]) => {
 
 // --- Componente de Leyenda Genérico ---
 const LegendItem = ({ color, label }: { color: string; label: string }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex items-center gap-1.5 sm:gap-2">
     <div
-      className="w-3 h-3 rounded-full"
+      className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full"
       style={{ backgroundColor: color }}
     />
-    <span className="body-sm font-medium text-foreground">{label}</span>
+    <span className="text-xs sm:text-sm font-medium text-foreground">{label}</span>
   </div>
 );
 
@@ -56,16 +56,16 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
   if (holdings.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       {/* Gráfico Circular: Distribución de Activos */}
       <Card className="flex flex-col">
-        <CardHeader className="items-center pb-0">
-          <CardTitle className="flex items-center gap-2">
-            <PieChartIcon className="w-5 h-5" /> Distribución de Activos
+        <CardHeader className="items-center pb-0 p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5" /> Distribución de Activos
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 pb-0">
-          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px]">
+        <CardContent className="flex-1 pb-0 p-4 sm:p-6">
+          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <ChartTooltip
@@ -105,8 +105,8 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
           </ChartContainer>
         </CardContent>
         {/* Leyenda del PieChart: símbolo + porcentaje */}
-        <CardContent className="pt-0">
-          <div className="flex flex-wrap justify-center gap-4 mt-2">
+        <CardContent className="pt-0 p-3 sm:p-6">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-2">
             {allocationData.map((entry) => (
               <LegendItem
                 key={entry.name}
@@ -120,13 +120,13 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
 
       {/* Gráfico de Barras: Ganancia/Pérdida por Activo (%) */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" /> Ganancia/Pérdida por Activo (%)
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" /> Ganancia/Pérdida por Activo (%)
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={{ pl: { label: "G/P (%)" } }} className="h-[300px] w-full">
+        <CardContent className="p-4 sm:p-6">
+          <ChartContainer config={{ pl: { label: "G/P (%)" } }} className="h-[250px] sm:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={plData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -187,8 +187,8 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
           </ChartContainer>
         </CardContent>
         {/* Leyenda del Gráfico de Barras: Ganancia / Pérdida */}
-        <CardContent className="pt-0">
-          <div className="flex flex-wrap justify-center gap-6 mt-2">
+        <CardContent className="pt-0 p-3 sm:p-6">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-2">
             <LegendItem color="var(--chart-2)" label="Ganancia" />
             <LegendItem color="var(--chart-4)" label="Pérdida" />
           </div>

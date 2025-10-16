@@ -11,6 +11,7 @@ import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
 import { Button } from '../../../components/ui/button';
 import { logger } from '../../../lib/logger';
+import { contactService } from '../../../services/contact-service';
 
 /**
  * Página de contacto.
@@ -62,10 +63,19 @@ export default function ContactPage() {
           messageLength: formData.message.length,
         });
 
-        // En producción, aquí se enviaría el email o se guardaría en la base de datos
-        // Por ahora solo mostramos un mensaje de éxito
-        toast.success('Mensaje enviado correctamente.');
-        toast.info('Nos pondremos en contacto contigo pronto.');
+        // Enviar mensaje usando el servicio
+        const result = await contactService.sendContactMessage(formData);
+
+        if (!result.success) {
+          toast.error(result.error ?? 'Error al enviar el mensaje.');
+          return;
+        }
+
+        // Mensaje enviado correctamente
+        toast.success('¡Mensaje enviado correctamente!');
+        toast.info('Nos pondremos en contacto contigo pronto. Normalmente respondemos en menos de 24 horas.', {
+          duration: 5000,
+        });
 
         // Limpiar formulario
         setFormData({ name: '', email: '', message: '' });
@@ -73,7 +83,7 @@ export default function ContactPage() {
         await logger.error('CONTACT_FORM_ERROR', 'Error submitting contact form', {
           errorMessage: error instanceof Error ? error.message : String(error),
         });
-        toast.error('Error al enviar el mensaje. Intenta nuevamente.');
+        toast.error('Error al enviar el mensaje. Por favor, intenta nuevamente o contáctanos directamente por email.');
       } finally {
         setLoading(false);
       }
@@ -99,38 +109,38 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="container-wide stack-6">
+    <div className="container-wide space-y-4 sm:space-y-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="space-y-8"
+        className="space-y-6 sm:space-y-8"
       >
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Contacto</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+        <div className="text-center space-y-1.5 sm:space-y-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Contacto</h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto px-4">
             ¿Tienes alguna pregunta o sugerencia? Nos encantaría escucharte.
             Completa el formulario o contáctanos directamente.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {/* Formulario de contacto */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Send className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
                 Envíanos un mensaje
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Completa el formulario y te responderemos lo antes posible.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nombre</Label>
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="name" className="text-sm">Nombre</Label>
                   <Input
                     id="name"
                     name="name"
@@ -138,11 +148,12 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={handleChange}
                     required
+                    className="text-sm"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Correo Electrónico</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="email" className="text-sm">Correo Electrónico</Label>
                   <Input
                     id="email"
                     name="email"
@@ -151,27 +162,28 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    className="text-sm"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">Mensaje</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="message" className="text-sm">Mensaje</Label>
                   <Textarea
                     id="message"
                     name="message"
                     placeholder="Escribe tu mensaje aquí..."
-                    rows={6}
+                    rows={5}
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    className="resize-none"
+                    className="resize-none text-sm"
                   />
                   <p className="text-xs text-muted-foreground">
                     Mínimo 10 caracteres
                   </p>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full text-sm" disabled={loading} size="sm">
                   {loading ? 'Enviando...' : 'Enviar Mensaje'}
                 </Button>
               </form>
@@ -179,35 +191,35 @@ export default function ContactPage() {
           </Card>
 
           {/* Información de contacto */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
                   Información de Contacto
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Email</h3>
+                  <h3 className="text-sm sm:text-base font-semibold mb-1.5 sm:mb-2">Email</h3>
                   <a
                     href={`mailto:${config.app.contactEmail}`}
-                    className="text-primary hover:underline"
+                    className="text-sm text-primary hover:underline break-all"
                   >
                     {config.app.contactEmail}
                   </a>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">Horario de Atención</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="text-sm sm:text-base font-semibold mb-1.5 sm:mb-2">Horario de Atención</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Lunes a Viernes: 9:00 AM - 6:00 PM (ART)
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">Tiempo de Respuesta</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="text-sm sm:text-base font-semibold mb-1.5 sm:mb-2">Tiempo de Respuesta</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Normalmente respondemos en menos de 24 horas hábiles.
                   </p>
                 </div>
@@ -216,10 +228,10 @@ export default function ContactPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Síguenos en Redes Sociales</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Síguenos en Redes Sociales</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-4">
+                <div className="flex gap-3 sm:gap-4">
                   {socialLinks.map((social) => {
                     const Icon = social.icon;
                     return social.url ? (
@@ -228,10 +240,10 @@ export default function ContactPage() {
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                         aria-label={social.name}
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </a>
                     ) : null;
                   })}
@@ -241,10 +253,10 @@ export default function ContactPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Preguntas Frecuentes</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Preguntas Frecuentes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   ¿Tienes dudas sobre los planes, características o cómo usar la
                   plataforma? Consulta nuestra{' '}
                   <a href="/plans" className="text-primary hover:underline">

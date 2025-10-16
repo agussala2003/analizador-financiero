@@ -15,10 +15,10 @@ interface LoadingScreenProps {
  */
 export function LoadingScreen({ message = 'Cargando…' }: LoadingScreenProps) {
   return (
-    <div className="bg-[#010d16] flex h-screen w-full flex-col items-center justify-center gap-4">
+    <div className="bg-[#010d16] flex h-screen w-full flex-col items-center justify-center gap-3 sm:gap-4 px-4">
       {/* ✅ Mejora: Spinner accesible y visible con animación */}
-      <Loader2 className="h-10 w-10 animate-spin text-primary" aria-label="Cargando" />
-      <p className="text-sm text-white">{message}</p>
+      <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin text-primary" aria-label="Cargando" />
+      <p className="text-xs sm:text-sm text-white text-center">{message}</p>
     </div>
   );
 }

@@ -134,8 +134,8 @@ export const HistoricalPerformanceChart = React.memo(function HistoricalPerforma
 
   if (assets.length === 0) {
     return (
-      <Card className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Añade activos para ver su rendimiento.</p>
+      <Card className="flex items-center justify-center h-64 sm:h-96">
+        <p className="text-muted-foreground text-sm sm:text-base px-4">Añade activos para ver su rendimiento.</p>
       </Card>
     );
   }
@@ -146,17 +146,17 @@ export const HistoricalPerformanceChart = React.memo(function HistoricalPerforma
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-                <AreaChartIcon className="w-6 h-6 text-primary" />
+      <CardHeader className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+                <AreaChartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 <div>
-                    <CardTitle>Rendimiento Histórico</CardTitle>
-                    <CardDescription>Evolución del precio de cierre de los activos.</CardDescription>
+                    <CardTitle className="text-lg sm:text-xl">Rendimiento Histórico</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">Evolución del precio de cierre de los activos.</CardDescription>
                 </div>
             </div>
             <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-[160px] rounded-lg h-10">
+            <SelectTrigger className="w-full sm:w-[160px] rounded-lg h-9 sm:h-10 text-xs sm:text-sm">
               <SelectValue placeholder="Seleccionar rango" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
@@ -169,27 +169,27 @@ export const HistoricalPerformanceChart = React.memo(function HistoricalPerforma
             </SelectContent>
           </Select>
         </div>
-       <div className="w-full flex gap-2 overflow-x-auto mt-4">
+       <div className="w-full flex gap-1.5 sm:gap-2 overflow-x-auto mt-3 sm:mt-4 pb-2">
             {assets.map((asset) => {
             const color = `var(--chart-${(assets.findIndex(a => a.symbol === asset.symbol) % 12) + 1})`;
             return (
-              <label key={asset.symbol} className="inline-flex items-center gap-2 px-2 rounded-md border bg-muted/30 whitespace-nowrap h-10">
+              <label key={asset.symbol} className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 rounded-md border bg-muted/30 whitespace-nowrap h-8 sm:h-10">
                 <Checkbox
                   checked={visibleAssets[asset.symbol] ?? true}
                   onCheckedChange={() => toggleAsset(asset.symbol)}
-                  className="h-4 w-4"
+                  className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                 />
-                <span className="flex items-center gap-2">
-                  <span style={{ width: 10, height: 10, background: color, display: 'inline-block', borderRadius: 3 }} />
-                  <span className="text-sm">{asset.symbol}</span>
+                <span className="flex items-center gap-1.5 sm:gap-2">
+                  <span style={{ width: 8, height: 8, background: color, display: 'inline-block', borderRadius: 2 }} className="sm:w-[10px] sm:h-[10px]" />
+                  <span className="text-xs sm:text-sm">{asset.symbol}</span>
                 </span>
               </label>
             );
           })}
         </div>
       </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer config={chartConfig} className="w-full h-[400px]">
+      <CardContent className="px-2 pt-3 sm:px-6 sm:pt-6">
+        <ChartContainer config={chartConfig} className="w-full h-[280px] sm:h-[350px] lg:h-[400px]">
           <AreaChart data={chartData}>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -201,14 +201,16 @@ export const HistoricalPerformanceChart = React.memo(function HistoricalPerforma
               tickFormatter={(value: unknown, index: number) => {
                 return index % 4 === 0 && typeof value === 'string' ? value : "";
               }}
+              style={{ fontSize: 10 }}
             />
             <YAxis
               domain={yDomain as [number, number]}
               tickFormatter={(value) => `$${Math.round(Number(value))}`}
               tickLine={false}
               axisLine={false}
-              width={80}
+              width={60}
               tickMargin={8}
+              style={{ fontSize: 10 }}
             />
             <ChartTooltip
               cursor={false}
@@ -219,20 +221,20 @@ export const HistoricalPerformanceChart = React.memo(function HistoricalPerforma
                   value?: number | null;
                 }
                 return (
-                  <Card className="p-2 text-sm">
-                    <CardHeader className="p-1 font-bold">{label}</CardHeader>
-                    <CardContent className="p-1 space-y-1">
+                  <Card className="p-1.5 sm:p-2 text-xs sm:text-sm">
+                    <CardHeader className="p-1 font-bold text-xs sm:text-sm">{label}</CardHeader>
+                    <CardContent className="p-1 space-y-0.5 sm:space-y-1">
                       {Array.isArray(payload) && payload.map((itemRaw, index) => {
                         const item = itemRaw as AreaTooltipItem;
                         const color = typeof item.color === 'string' ? item.color : undefined;
                         const name = typeof item.name === 'string' ? item.name : '';
                         const value = typeof item.value === 'number' ? item.value : null;
                         return (
-                          <div key={index} className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                          <div key={index} className="flex items-center gap-1.5 sm:gap-2">
+                            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full" style={{ backgroundColor: color }} />
                             <div className="flex gap-1">
-                              <span>{name}: </span>
-                              <span className="font-semibold">
+                              <span className="text-xs sm:text-sm">{name}: </span>
+                              <span className="font-semibold text-xs sm:text-sm">
                                 {value !== null ? `$${value.toFixed(2)}` : 'N/A'}
                               </span>
                             </div>

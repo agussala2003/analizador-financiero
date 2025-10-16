@@ -33,16 +33,16 @@ interface AuthCardProps {
  */
 export function AuthCard({ title, description, children }: AuthCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="heading-3 font-semibold text-center">
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="space-y-1 px-4 sm:px-6 pt-6 pb-4">
+        <CardTitle className="text-xl sm:text-2xl font-semibold text-center">
           {title}
         </CardTitle>
-        <CardDescription className="text-center">
+        <CardDescription className="text-sm sm:text-base text-center">
           {description}
         </CardDescription>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="px-4 sm:px-6 pb-6">{children}</CardContent>
     </Card>
   );
 }

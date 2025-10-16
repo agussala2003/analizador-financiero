@@ -23,32 +23,32 @@ const getRiskBadge = (risk: 'low' | 'medium' | 'high') => {
 export default function WinnerCard({ symbol, companyName, score, recommendation, riskLevel, totalMetrics }: WinnerCardProps) {
     return (
         <Card className="border-primary/20 bg-primary/5">
-            <CardHeader>
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <Award className="w-8 h-8 text-primary" />
+            <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <Award className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                         <div>
-                            <CardTitle className="text-xl">Activo Destacado</CardTitle>
-                            <CardDescription>
+                            <CardTitle className="text-lg sm:text-xl">Activo Destacado</CardTitle>
+                            <CardDescription className="text-xs sm:text-sm">
                                 Análisis de {totalMetrics} métricas
                             </CardDescription>
                         </div>
                     </div>
-                    <Badge variant="outline" className={getRiskBadge(riskLevel).className}>
+                    <Badge variant="outline" className={`text-xs ${getRiskBadge(riskLevel).className}`}>
                         {getRiskBadge(riskLevel).label}
                     </Badge>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-                <div className="bg-background/80 p-4 rounded-lg border">
-                    <h3 className="font-bold text-lg text-primary mb-2 flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5" />
+            <CardContent className="space-y-3 p-4 sm:p-6">
+                <div className="bg-background/80 p-3 sm:p-4 rounded-lg border">
+                    <h3 className="font-bold text-base sm:text-lg text-primary mb-2 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                         {symbol} - {score} pts
                     </h3>
-                    <p className="text-sm text-foreground/90 mb-2">
+                    <p className="text-xs sm:text-sm text-foreground/90 mb-2">
                         <strong>{companyName}</strong>
                     </p>
-                    <p className="text-sm text-muted-foreground italic">
+                    <p className="text-xs sm:text-sm text-muted-foreground italic">
                         {recommendation}
                     </p>
                 </div>

@@ -122,19 +122,19 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
     return (
         <>
             <Card>
-                <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div className="flex items-center gap-3">
-                            <BarChart2 className="w-6 h-6 text-primary" />
+                <CardHeader className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                             <div>
-                                <CardTitle>Precios y Volatilidad</CardTitle>
-                                <CardDescription>Análisis de rendimiento y riesgo de los activos.</CardDescription>
+                                <CardTitle className="text-lg sm:text-xl">Precios y Volatilidad</CardTitle>
+                                <CardDescription className="text-xs sm:text-sm">Análisis de rendimiento y riesgo de los activos.</CardDescription>
                             </div>
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="w-full sm:w-auto">
-                                    <Download className="w-4 h-4 mr-2" />
+                                <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                     Exportar
                                 </Button>
                             </DropdownMenuTrigger>
@@ -146,7 +146,7 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                         </DropdownMenu>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                     {/* --- Vista de Tabla para Escritorio --- */}
                     <div className="hidden sm:block">
                         <div className="border rounded-lg overflow-hidden">
@@ -206,20 +206,25 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                         </div>
                     </div>
                     {/* --- Vista de Tarjetas para Móvil --- */}
-                    <div className="sm:hidden grid grid-cols-1 gap-4">
+                    <div className="sm:hidden grid grid-cols-1 gap-3">
                         {sortedAssets.map(asset => (
-                            <Card key={asset.symbol} className="p-4">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3 font-bold">
-                                        <img src={asset.image} alt={asset.companyName} className="w-8 h-8 rounded-full bg-muted object-contain border" />
+                            <Card key={asset.symbol} className="p-3">
+                                <div className="flex items-start justify-between mb-3">
+                                    <Link 
+                                        to={`/asset/${asset.symbol}`} 
+                                        className="flex items-center gap-2 font-bold"
+                                        onMouseEnter={() => prefetchAssetIfNotCached(asset.symbol)}
+                                        onFocus={() => prefetchAssetIfNotCached(asset.symbol)}
+                                    >
+                                        <img src={asset.image} alt={asset.companyName} className="w-7 h-7 rounded-full bg-muted object-contain border" />
                                         <div>
-                                            <div>{asset.symbol}</div>
-                                            <div className="caption text-muted-foreground font-normal truncate max-w-[150px]">{asset.companyName}</div>
+                                            <div className="text-sm">{asset.symbol}</div>
+                                            <div className="text-xs text-muted-foreground font-normal truncate max-w-[120px]">{asset.companyName}</div>
                                         </div>
-                                    </div>
-                                    <span className="font-semibold heading-4">{formatCurrency(asset.currentPrice)}</span>
+                                    </Link>
+                                    <span className="font-semibold text-base">{formatCurrency(asset.currentPrice)}</span>
                                 </div>
-                                <div className="space-y-2 body-sm border-t pt-3 mt-3">
+                                <div className="space-y-1.5 text-xs border-t pt-2.5 mt-2.5">
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Diaria</span>{pctNode(asset.dayChange)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Mensual</span>{pctNode(asset.monthChange)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Anual</span>{pctNode(asset.yearChange)}</div>
@@ -227,6 +232,15 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                     <div className="flex justify-between"><span className="text-muted-foreground">Ratio Sharpe</span><span className="font-semibold">{formatNumber(asset.sharpeRatio)}</span></div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Precio Objetivo</span><span className="font-semibold">{formatCurrency(asset.lastMonthAvgPriceTarget)}</span></div>
                                 </div>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="w-full mt-2.5 text-xs"
+                                    onClick={() => setBuyModalInfo({ isOpen: true, ticker: asset.symbol, price: asset.currentPrice })}
+                                >
+                                    <ShoppingCart className="w-3.5 h-3.5 mr-1.5" />
+                                    Comprar
+                                </Button>
                             </Card>
                         ))}
                     </div>

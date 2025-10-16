@@ -45,15 +45,15 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
   const autoplayPlugin = useRef(Autoplay({ delay: 3000, stopOnInteraction: true }));
 
   return (
-    <AnimatedSection className="py-12 px-4 bg-muted/30">
+    <AnimatedSection className="py-8 px-4 sm:py-10 md:py-12 bg-muted/30">
       <div className="max-w-6xl mx-auto text-center">
         {/* Título con soporte para HTML */}
         <h2 
-          className="heading-1 font-bold mb-4" 
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2" 
           dangerouslySetInnerHTML={{ __html: title }} 
         />
         
-        <p className="text-muted-foreground mb-10 max-w-xl mx-auto">
+        <p className="text-sm sm:text-base text-muted-foreground mb-8 sm:mb-10 max-w-full sm:max-w-xl mx-auto px-2 leading-relaxed">
           {subtitle}
         </p>
 
@@ -65,11 +65,11 @@ export const FeaturesSection: React.FC<FeaturesSectionProps> = ({
           onMouseEnter={() => autoplayPlugin.current.stop()}
           onMouseLeave={() => autoplayPlugin.current.reset()}
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-2 sm:-ml-4">
             {features.map((feature, index) => {
               const IconComponent = getIcon(feature.icon);
               return (
-                <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={index} className="pl-2 sm:pl-4 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3">
                   <div className="h-full">
                     <FeatureCard
                       icon={IconComponent}

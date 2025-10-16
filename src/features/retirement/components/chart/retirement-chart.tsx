@@ -33,11 +33,11 @@ const chartConfig: ChartConfig = {
  */
 export function RetirementChart({ chartData }: RetirementChartProps) {
   return (
-    <ChartContainer config={chartConfig} className="h-[350px] w-full">
+    <ChartContainer config={chartConfig} className="h-[280px] sm:h-[350px] w-full">
       <ResponsiveContainer>
         <AreaChart
           data={chartData}
-          margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
+          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
         >
           <CartesianGrid
             vertical={false}
@@ -49,14 +49,14 @@ export function RetirementChart({ chartData }: RetirementChartProps) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+            tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
           />
           <YAxis
             tickFormatter={(value) => formatCurrency(Number(value))}
             tickLine={false}
             axisLine={false}
-            width={80}
-            tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+            width={60}
+            tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
           />
           <ChartTooltip
             content={({ active, payload }) => {

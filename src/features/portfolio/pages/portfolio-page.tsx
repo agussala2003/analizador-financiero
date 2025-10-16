@@ -5,9 +5,11 @@ import { usePortfolio } from '../../../hooks/use-portfolio';
 import { motion } from 'framer-motion';
 import { LayoutDashboard, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTheme } from 'next-themes';
+import { useTheme } from '../../../components/ui/theme-provider';
 import { exportPortfolioToPdf } from '../../../utils/export-pdf';
 import { Button } from '../../../components/ui/button';
+import { usePlanFeature } from '../../../hooks/use-plan-feature';
+import { UpgradeModal } from '../../../components/shared/upgrade-modal';
 import { HoldingWithMetrics } from '../../../types/portfolio';
 import { AddModalInfo } from '../types/portfolio.types';
 import {
@@ -24,6 +26,7 @@ import { ErrorBoundary } from '../../../components/error-boundary';
 function PortfolioPageContent() {
   const { holdings, transactions, totalPerformance, loading, deleteAsset, portfolioData } = usePortfolio();
   const { theme } = useTheme();
+  const { hasAccess: canExportPdf, requiredPlan } = usePlanFeature('exportPdf');
 
   const [addModalInfo, setAddModalInfo] = useState<AddModalInfo>({
     isOpen: false,
@@ -32,6 +35,7 @@ function PortfolioPageContent() {
   });
   const [sellModalHolding, setSellModalHolding] = useState<HoldingWithMetrics | null>(null);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const handleOpenAddModal = (ticker: string, price: number) =>
     setAddModalInfo({ isOpen: true, ticker, price });
@@ -51,6 +55,12 @@ function PortfolioPageContent() {
   };
 
   const handleExportPdf = async () => {
+    // Verificar acceso a la funcionalidad
+    if (!canExportPdf) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     if (holdingsWithMetrics.length === 0) {
       toast.error('No hay posiciones para exportar.');
       return;
@@ -84,7 +94,7 @@ function PortfolioPageContent() {
           totalGainLossPercentage,
           averageBuyPrice,
         },
-        theme: (theme as 'light' | 'dark' | 'system') ?? 'light',
+        theme: theme,
         portfolioName: 'Mi Portafolio',
       });
       toast.success('Portafolio exportado correctamente.');
@@ -133,14 +143,14 @@ function PortfolioPageContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="flex items-center justify-between gap-4 section-divider flex-wrap">
-          <div className="flex items-center gap-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <LayoutDashboard className="w-8 h-8 text-primary" />
+        <div className="flex items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 mb-4 sm:mb-6 border-b flex-wrap">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+              <LayoutDashboard className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             </div>
             <div>
-              <h1 className="heading-2">Mi Portafolio</h1>
-              <p className="body text-muted-foreground">Un resumen de tus inversiones, rendimiento y distribución.</p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Mi Portafolio</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm">Un resumen de tus inversiones, rendimiento y distribución.</p>
             </div>
           </div>
           <Button
@@ -181,6 +191,14 @@ function PortfolioPageContent() {
         isOpen={!!sellModalHolding}
         onClose={() => setSellModalHolding(null)}
         holding={sellModalHolding}
+      />
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureName="Exportar Portfolio a PDF"
+        requiredPlan={requiredPlan}
+        description="Exporta tu portfolio completo con estadísticas detalladas y gráficos en formato PDF profesional."
       />
     </>
   );

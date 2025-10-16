@@ -1,7 +1,10 @@
 // src/features/auth/components/shared/form-input.tsx
 
+import { useState } from 'react';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
+import { Eye, EyeOff } from 'lucide-react';
+import { Button } from '../../../../components/ui/button';
 
 /**
  * Props para el componente FormInput.
@@ -57,28 +60,50 @@ export function FormInput({
   error,
   success,
 }: FormInputProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
+
   return (
-    <div className="grid gap-3">
-      <Label htmlFor={id} className={error ? 'text-destructive' : undefined}>
+    <div className="grid gap-2 sm:gap-3">
+      <Label htmlFor={id} className={`text-sm ${error ? 'text-destructive' : ''}`}>
         {label}
       </Label>
-      <Input
-        id={id}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          onChange(e.target.value)
-        }
-        required={required}
-        autoComplete={autoComplete}
-        className={error ? 'border-destructive focus-visible:ring-destructive' : success ? 'border-green-500 focus-visible:ring-green-500' : undefined}
-      />
+      <div className="relative">
+        <Input
+          id={id}
+          type={inputType}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange(e.target.value)
+          }
+          required={required}
+          autoComplete={autoComplete}
+          className={`h-10 sm:h-11 text-sm sm:text-base ${error ? 'border-destructive focus-visible:ring-destructive' : success ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
+        />
+        {isPassword && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-2 sm:px-3 py-2 hover:bg-transparent"
+            onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+            ) : (
+              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+            )}
+          </Button>
+        )}
+      </div>
       {error && (
-        <p className="body-sm text-destructive animate-slide-down">{error}</p>
+        <p className="text-xs sm:text-sm text-destructive animate-slide-down">{error}</p>
       )}
       {success && (
-        <p className="body-sm text-green-600 dark:text-green-500 animate-slide-down">{success}</p>
+        <p className="text-xs sm:text-sm text-green-600 dark:text-green-500 animate-slide-down">{success}</p>
       )}
     </div>
   );

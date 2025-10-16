@@ -146,24 +146,24 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
 
     return (
         <Card>
-            <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                     <div className="flex items-center gap-3">
-                        <LayoutGrid className="w-6 h-6 text-primary" />
+            <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                     <div className="flex items-center gap-2 sm:gap-3">
+                        <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                          <div>
-                            <CardTitle>Indicadores Fundamentales</CardTitle>
-                            <CardDescription>Comparativa detallada de los indicadores clave.</CardDescription>
+                            <CardTitle className="text-lg sm:text-xl">Indicadores Fundamentales</CardTitle>
+                            <CardDescription className="text-xs sm:text-sm">Comparativa detallada de los indicadores clave.</CardDescription>
                          </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                         <div className="flex items-center space-x-2">
-                            <Checkbox id="hideNA" checked={hideNA} onCheckedChange={(checked: boolean) => setHideNA(!!checked)} />
-                            <label htmlFor="hideNA" className="body-sm font-medium leading-none">Ocultar N/A</label>
+                            <Checkbox id="hideNA" checked={hideNA} onCheckedChange={(checked: boolean) => setHideNA(!!checked)} className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <label htmlFor="hideNA" className="text-xs sm:text-sm font-medium leading-none">Ocultar N/A</label>
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="w-full sm:w-auto">
-                                    <Download className="w-4 h-4 mr-2" />
+                                <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                     Exportar
                                 </Button>
                             </DropdownMenuTrigger>
@@ -176,21 +176,21 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
                 <Accordion type="multiple" value={openSections} onValueChange={setOpenSections}>
                     {indicatorSections.map(section => (
                         visibleKeysBySection[section.id].length > 0 && (
                             <AccordionItem value={section.id} key={section.id}>
-                                <AccordionTrigger className="heading-4 hover:no-underline">
+                                <AccordionTrigger className="text-base sm:text-lg hover:no-underline">
                                     {section.title}
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    <div className="overflow-x-auto border rounded-lg">
+                                    <div className="overflow-x-auto border rounded-lg -mx-4 sm:mx-0">
                                         <Table>
                                             <TableHeader className="bg-muted/50">
                                                 <TableRow>
-                                                    <TableHead className="w-[200px] font-semibold">Indicador</TableHead>
-                                                    {assets.map(asset => <TableHead key={asset.symbol} className="text-center font-semibold">{asset.symbol}</TableHead>)}
+                                                    <TableHead className="w-[150px] sm:w-[200px] font-semibold text-xs sm:text-sm">Indicador</TableHead>
+                                                    {assets.map(asset => <TableHead key={asset.symbol} className="text-center font-semibold text-xs sm:text-sm">{asset.symbol}</TableHead>)}
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -200,15 +200,15 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
 
                                                     return (
                                                         <TableRow key={key}>
-                                                            <TableCell className="font-medium">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span>{config.label}</span>
+                                                            <TableCell className="font-medium text-xs sm:text-sm">
+                                                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                                                    <span className="whitespace-nowrap">{config.label}</span>
                                                                     <TooltipProvider delayDuration={0}>
                                                                         <Tooltip>
                                                                             <TooltipTrigger asChild>
-                                                                                <button><HelpCircle className="w-4 h-4 text-muted-foreground" /></button>
+                                                                                <button><HelpCircle className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" /></button>
                                                                             </TooltipTrigger>
-                                                                            <TooltipContent className="max-w-xs">
+                                                                            <TooltipContent className="max-w-xs text-xs sm:text-sm">
                                                                                 <p>{config.explanation}</p>
                                                                             </TooltipContent>
                                                                         </Tooltip>
@@ -216,7 +216,7 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                                                                 </div>
                                                             </TableCell>
                                                             {assets.map(asset => (
-                                                                <TableCell key={asset.symbol} className={`text-center font-semibold ${getTrafficLightClass(config, asset.data?.[key])}`}>
+                                                                <TableCell key={asset.symbol} className={`text-center font-semibold text-xs sm:text-sm ${getTrafficLightClass(config, asset.data?.[key])}`}>
                                                                     {formatValue(config, asset.data?.[key])}
                                                                 </TableCell>
                                                             ))}

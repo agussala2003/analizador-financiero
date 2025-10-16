@@ -86,18 +86,18 @@ function CreateBlogPage() {
   }
 
   return (
-    <div className="container-wide stack-8">
+    <div className="container-wide space-y-6 sm:space-y-8">
       {/* Header mejorado */}
-      <div className="section-divider">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="pb-4 sm:pb-6 border-b">
+        <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+          <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+            <svg className="w-6 h-6 sm:w-8 sm:h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </div>
           <div>
-            <h1 className="heading-1 mb-2">Crear Nuevo Artículo</h1>
-            <p className="body text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1">Crear Nuevo Artículo</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Comparte tus conocimientos y análisis con la comunidad financiera
             </p>
           </div>
@@ -105,28 +105,28 @@ function CreateBlogPage() {
       </div>
 
       {/* Tips card */}
-      <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-primary/20 rounded-lg p-6 mb-4">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-primary/20 rounded-lg p-4 sm:p-6 mb-3 sm:mb-4">
+        <h3 className="text-sm sm:text-base font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Consejos para un buen artículo
         </h3>
-        <ul className="space-y-2 body-sm text-muted-foreground">
+        <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
           <li className="flex items-start gap-2">
-            <span className="text-primary font-semibold">•</span>
-            <span><strong>Título claro:</strong> Hazlo descriptivo y atractivo (ej: "Análisis del S&P 500 - Perspectivas para Q4 2025")</span>
+            <span className="text-primary font-semibold flex-shrink-0">•</span>
+            <span><strong>Título claro:</strong> Hazlo descriptivo y atractivo</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-primary font-semibold">•</span>
+            <span className="text-primary font-semibold flex-shrink-0">•</span>
             <span><strong>Extracto conciso:</strong> Resume tu artículo en 2-3 líneas</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-primary font-semibold">•</span>
+            <span className="text-primary font-semibold flex-shrink-0">•</span>
             <span><strong>Categorías:</strong> Usa Finanzas, Inversiones, Análisis, Mercados o Tutorial</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-primary font-semibold">•</span>
+            <span className="text-primary font-semibold flex-shrink-0">•</span>
             <span><strong>Tags relevantes:</strong> Ayuda a otros a encontrar tu contenido</span>
           </li>
         </ul>

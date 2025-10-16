@@ -73,9 +73,9 @@ export function AdminLogsTable() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-96 w-full" />
+      <div className="space-y-3 sm:space-y-4">
+        <Skeleton className="h-20 sm:h-24 w-full" />
+        <Skeleton className="h-80 sm:h-96 w-full" />
       </div>
     );
   }
@@ -83,28 +83,28 @@ export function AdminLogsTable() {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">
             Visor de Logs del Sistema ({logs.length} registros)
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Explora los eventos registrados para monitoreo y depuración.
           </CardDescription>
 
           {/* Barra de búsqueda y filtro de nivel */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por mensaje, tipo de evento, etc..."
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="pl-10"
+                className="pl-9 sm:pl-10 text-xs sm:text-sm"
               />
             </div>
 
             <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px] text-xs sm:text-sm">
                 <SelectValue placeholder="Filtrar por nivel" />
               </SelectTrigger>
               <SelectContent>
@@ -118,7 +118,7 @@ export function AdminLogsTable() {
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <DataTable
             table={table}
             totalPages={table.getPageCount()}

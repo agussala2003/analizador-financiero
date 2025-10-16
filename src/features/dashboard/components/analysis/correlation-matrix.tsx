@@ -107,11 +107,11 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
 
     if (assets.length < 2) {
         return (
-            <Card className="flex items-center justify-center h-96">
-                <div className="text-center text-muted-foreground">
-                    <GitCompareArrows className="w-10 h-10 mx-auto mb-3" />
-                    <p className="font-semibold">Necesitas al menos 2 activos</p>
-                    <p className="body-sm mt-1">Añade otro activo para calcular la correlación.</p>
+            <Card className="flex items-center justify-center h-64 sm:h-96">
+                <div className="text-center text-muted-foreground px-4">
+                    <GitCompareArrows className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 sm:mb-3" />
+                    <p className="font-semibold text-sm sm:text-base">Necesitas al menos 2 activos</p>
+                    <p className="text-xs sm:text-sm mt-1">Añade otro activo para calcular la correlación.</p>
                 </div>
             </Card>
         );
@@ -119,21 +119,21 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
 
     return (
         <Card>
-                <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <div className="flex items-center gap-3">
-                    <GitCompareArrows className="w-6 h-6 text-primary" />
+                <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                    <GitCompareArrows className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                     <div>
-                        <CardTitle>Matriz de Correlación</CardTitle>
-                        <CardDescription>
+                        <CardTitle className="text-lg sm:text-xl">Matriz de Correlación</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
                             Cómo se mueven los precios de tus activos entre sí (1: juntos, -1: opuestos).
                         </CardDescription>
                     </div>
                 </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto">
-                                <Download className="w-4 h-4 mr-2" />
+                            <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                 Exportar
                             </Button>
                         </DropdownMenuTrigger>
@@ -145,8 +145,8 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
                     </DropdownMenu>
                 </div>
             </CardHeader>
-            <CardContent>
-                <div className="overflow-x-auto border rounded-lg">
+            <CardContent className="p-4 sm:p-6">
+                <div className="overflow-x-auto border rounded-lg -mx-4 sm:mx-0">
                     <Table className="min-w-full">
                         <TableHeader className="bg-muted/50">
                             <TableRow>

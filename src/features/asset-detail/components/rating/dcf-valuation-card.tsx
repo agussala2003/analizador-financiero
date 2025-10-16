@@ -45,14 +45,14 @@ export function DCFValuationCard({ currentPrice, dcf }: DCFValuationCardProps) {
           Valoración (DCF)
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         <div className="flex justify-between items-baseline">
-          <span className="body text-muted-foreground">Precio Actual</span>
-          <span className="heading-2 font-bold">{formatPrice(currentPrice)}</span>
+          <span className="text-xs sm:text-sm text-muted-foreground">Precio Actual</span>
+          <span className="text-xl sm:text-2xl lg:text-3xl font-bold">{formatPrice(currentPrice)}</span>
         </div>
         <div className="flex justify-between items-baseline">
-          <span className="body text-muted-foreground">Valor Intrínseco (DCF)</span>
-          <span className="heading-2 font-bold">
+          <span className="text-xs sm:text-sm text-muted-foreground">Valor Intrínseco (DCF)</span>
+          <span className="text-xl sm:text-2xl lg:text-3xl font-bold">
             {dcfValue !== null ? (
               formatPrice(dcfValue)
             ) : (

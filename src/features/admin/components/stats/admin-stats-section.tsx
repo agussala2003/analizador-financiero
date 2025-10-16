@@ -48,19 +48,19 @@ export function AdminStatsSection() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-          <div className="h-10 w-48 bg-muted animate-pulse rounded" />
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="h-6 sm:h-8 w-40 sm:w-48 bg-muted animate-pulse rounded" />
+          <div className="h-9 sm:h-10 w-full sm:w-48 bg-muted animate-pulse rounded" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+            <div key={i} className="h-28 sm:h-32 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-96 bg-muted animate-pulse rounded-lg" />
+            <div key={i} className="h-80 sm:h-96 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
       </div>
@@ -69,24 +69,24 @@ export function AdminStatsSection() {
 
   if (error ?? !stats) {
     return (
-      <Card className="p-12 text-center">
-        <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
-        <h3 className="heading-2 mb-2">Error al cargar estadísticas</h3>
-        <p className="body text-muted-foreground">{error ?? 'Error desconocido'}</p>
+      <Card className="p-8 sm:p-12 text-center">
+        <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-destructive mx-auto mb-3 sm:mb-4" />
+        <h3 className="text-xl sm:text-2xl font-bold mb-1.5 sm:mb-2">Error al cargar estadísticas</h3>
+        <p className="text-sm sm:text-base text-muted-foreground">{error ?? 'Error desconocido'}</p>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header con filtro temporal */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <div>
-          <h2 className="heading-1">Estadísticas</h2>
-          <p className="body text-muted-foreground">{dateRange.label}</p>
+          <h2 className="text-2xl sm:text-3xl font-bold">Estadísticas</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">{dateRange.label}</p>
         </div>
         <Select value={timeRange} onValueChange={(value) => setTimeRange(value as TimeRange)}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px] text-xs sm:text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -102,8 +102,8 @@ export function AdminStatsSection() {
 
       {/* Métricas principales - Usuarios */}
       <div>
-        <h3 className="heading-3 mb-4">👥 Usuarios</h3>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">👥 Usuarios</h3>
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Usuarios"
             value={stats.users.total}
@@ -133,21 +133,21 @@ export function AdminStatsSection() {
 
       {/* Distribución por roles */}
       <Card>
-        <CardHeader>
-          <h4 className="heading-4">Distribución por Roles</h4>
+        <CardHeader className="p-4 sm:p-6">
+          <h4 className="text-base sm:text-lg font-semibold">Distribución por Roles</h4>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-2.5 sm:space-y-3">
             {stats.users.byRole.map((role) => (
-              <div key={role.role} className="flex items-center justify-between">
+              <div key={role.role} className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant={role.role === 'administrador' ? 'default' : 'secondary'}>
+                  <Badge variant={role.role === 'administrador' ? 'default' : 'secondary'} className="text-xs">
                     {role.role.charAt(0).toUpperCase() + role.role.slice(1)}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="body-sm text-muted-foreground">{role.count} usuarios</div>
-                  <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{role.count} usuarios</div>
+                  <div className="w-24 sm:w-32 h-2 bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-primary rounded-full"
                       style={{ width: `${(role.count / stats.users.total) * 100}%` }}
@@ -162,8 +162,8 @@ export function AdminStatsSection() {
 
       {/* Métricas principales - Blog */}
       <div>
-        <h3 className="heading-3 mb-4">📝 Blog</h3>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">📝 Blog</h3>
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Artículos"
             value={stats.blogs.total}
@@ -192,11 +192,11 @@ export function AdminStatsSection() {
       </div>
 
       {/* Blog stats detalladas */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
         {/* Artículos por estado */}
         <Card>
-          <CardHeader>
-            <h4 className="heading-4">Artículos por Estado</h4>
+          <CardHeader className="p-4 sm:p-6">
+            <h4 className="text-base sm:text-lg font-semibold">Artículos por Estado</h4>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -213,11 +213,11 @@ export function AdminStatsSection() {
                   <div key={status.status} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-3 h-3 rounded-full ${config.color}`} />
-                      <span>{config.label}</span>
+                      <span className="text-xs sm:text-sm">{config.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="body-sm text-muted-foreground">{status.count} artículos</span>
-                      <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                      <span className="text-xs sm:text-sm text-muted-foreground">{status.count} artículos</span>
+                      <div className="w-20 sm:w-24 h-2 bg-muted rounded-full overflow-hidden">
                         <div 
                           className={`h-full rounded-full ${config.color}`}
                           style={{ width: `${(status.count / stats.blogs.total) * 100}%` }}
@@ -233,20 +233,20 @@ export function AdminStatsSection() {
 
         {/* Top autores */}
         <Card>
-          <CardHeader>
-            <h4 className="heading-4">Top Autores</h4>
+          <CardHeader className="p-4 sm:p-6">
+            <h4 className="text-base sm:text-lg font-semibold">Top Autores</h4>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-2 sm:space-y-3">
               {stats.blogs.topAuthors.length === 0 ? (
-                <p className="body-sm text-muted-foreground text-center py-4">
+                <p className="text-xs sm:text-sm text-muted-foreground text-center py-4">
                   No hay artículos publicados
                 </p>
               ) : (
                 stats.blogs.topAuthors.map((author, index) => (
-                  <div key={author.author} className="flex items-center justify-between">
+                  <div key={author.author} className="flex items-center justify-between text-xs sm:text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="heading-4 text-muted-foreground">#{index + 1}</span>
+                      <span className="text-base sm:text-lg font-semibold text-muted-foreground">#{index + 1}</span>
                       <span className="font-medium">{author.author}</span>
                     </div>
                     <Badge variant="secondary">{author.count} artículos</Badge>
@@ -259,9 +259,9 @@ export function AdminStatsSection() {
       </div>
 
       {/* Métricas - Portfolio y Watchlist */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
         <div>
-          <h3 className="heading-3 mb-4">💼 Portfolio</h3>
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">💼 Portfolio</h3>
           <div className="grid gap-4 mb-4">
             <StatCard
               title="Total Transacciones"
@@ -282,18 +282,18 @@ export function AdminStatsSection() {
           
           {/* Top símbolos en portfolio */}
           <Card>
-            <CardHeader>
-              <h4 className="heading-4">Top Símbolos en Portfolio</h4>
+            <CardHeader className="p-4 sm:p-6">
+              <h4 className="text-base sm:text-lg font-semibold">Top Símbolos en Portfolio</h4>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-1.5 sm:space-y-2">
                 {stats.portfolio.topSymbols.length === 0 ? (
-                  <p className="body-sm text-muted-foreground text-center py-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center py-4">
                     No hay transacciones registradas
                   </p>
                 ) : (
                   stats.portfolio.topSymbols.slice(0, 5).map((symbol, index) => (
-                    <div key={symbol.symbol} className="flex items-center justify-between body-sm">
+                    <div key={symbol.symbol} className="flex items-center justify-between text-xs sm:text-sm">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-muted-foreground">#{index + 1}</span>
                         <Badge>{symbol.symbol}</Badge>
@@ -308,8 +308,8 @@ export function AdminStatsSection() {
         </div>
 
         <div>
-          <h3 className="heading-3 mb-4">⭐ Watchlist</h3>
-          <div className="grid gap-4 mb-4">
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">⭐ Watchlist</h3>
+          <div className="grid gap-3 sm:gap-4 mb-3 sm:mb-4">
             <StatCard
               title="Total Items"
               value={stats.watchlist.totalItems}
@@ -329,18 +329,18 @@ export function AdminStatsSection() {
           
           {/* Top símbolos en watchlist */}
           <Card>
-            <CardHeader>
-              <h4 className="heading-4">Símbolos Más Guardados</h4>
+            <CardHeader className="p-4 sm:p-6">
+              <h4 className="text-base sm:text-lg font-semibold">Símbolos Más Guardados</h4>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-1.5 sm:space-y-2">
                 {stats.watchlist.topSymbols.length === 0 ? (
-                  <p className="body-sm text-muted-foreground text-center py-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center py-4">
                     No hay símbolos en watchlist
                   </p>
                 ) : (
                   stats.watchlist.topSymbols.slice(0, 5).map((symbol, index) => (
-                    <div key={symbol.symbol} className="flex items-center justify-between body-sm">
+                    <div key={symbol.symbol} className="flex items-center justify-between text-xs sm:text-sm">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-muted-foreground">#{index + 1}</span>
                         <Badge>{symbol.symbol}</Badge>
@@ -357,8 +357,8 @@ export function AdminStatsSection() {
 
       {/* Sugerencias */}
       <div>
-        <h3 className="heading-3 mb-4">💡 Sugerencias</h3>
-        <div className="grid gap-6 md:grid-cols-2">
+        <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">💡 Sugerencias</h3>
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <StatCard
               title="Total Sugerencias"
@@ -367,17 +367,17 @@ export function AdminStatsSection() {
             />
             
             <Card>
-              <CardHeader>
-                <h4 className="heading-4">Por Estado</h4>
+              <CardHeader className="p-4 sm:p-6">
+                <h4 className="text-base sm:text-lg font-semibold">Por Estado</h4>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-2 sm:space-y-3">
                   {stats.suggestions.byStatus.map((status) => (
                     <div key={status.status} className="flex items-center justify-between">
-                      <Badge variant={status.status === 'pending' ? 'default' : 'secondary'}>
+                      <Badge variant={status.status === 'pending' ? 'default' : 'secondary'} className="text-xs">
                         {status.status}
                       </Badge>
-                      <span className="body-sm">{status.count}</span>
+                      <span className="text-xs sm:text-sm">{status.count}</span>
                     </div>
                   ))}
                 </div>
@@ -386,23 +386,23 @@ export function AdminStatsSection() {
           </div>
 
           <Card>
-            <CardHeader>
-              <h4 className="heading-4">Sugerencias Recientes</h4>
+            <CardHeader className="p-4 sm:p-6">
+              <h4 className="text-base sm:text-lg font-semibold">Sugerencias Recientes</h4>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-2 sm:space-y-3">
                 {stats.suggestions.recent.length === 0 ? (
-                  <p className="body-sm text-muted-foreground text-center py-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center py-4">
                     No hay sugerencias
                   </p>
                 ) : (
                   stats.suggestions.recent.map((suggestion) => (
                     <div key={suggestion.id} className="border-b pb-2 last:border-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="body-sm font-medium line-clamp-1">{suggestion.title}</p>
-                        <Badge variant="outline" className="shrink-0">{suggestion.status}</Badge>
+                        <p className="text-xs sm:text-sm font-medium line-clamp-1">{suggestion.title}</p>
+                        <Badge variant="outline" className="shrink-0 text-xs">{suggestion.status}</Badge>
                       </div>
-                      <p className="caption text-muted-foreground mt-1">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {format(new Date(suggestion.created_at), 'PPp', { locale: es })}
                       </p>
                     </div>
@@ -414,9 +414,9 @@ export function AdminStatsSection() {
         </div>
       </div>
 
-      {/* Actividad y Logs */}
+      {/* Sección de Actividad y Seguridad */}
       <div>
-        <h3 className="heading-3 mb-4">🔒 Actividad y Seguridad</h3>
+        <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">🔒 Actividad y Seguridad</h3>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <StatCard
             title="Intentos de Login"
@@ -478,11 +478,11 @@ export function AdminStatsSection() {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Distribución de logs por nivel */}
         <Card>
-          <CardHeader>
-            <h4 className="heading-4">Logs por Nivel</h4>
+          <CardHeader className="p-4 sm:p-6">
+            <h4 className="text-base sm:text-lg font-semibold">Logs por Nivel</h4>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-2 sm:space-y-3">
               {stats.logs.byLevel.map((level) => {
                 const levelColors: Record<string, string> = {
                   INFO: 'bg-blue-500',
@@ -496,11 +496,11 @@ export function AdminStatsSection() {
                   <div key={level.level} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-3 h-3 rounded-full ${color}`} />
-                      <span className="font-medium">{level.level}</span>
+                      <span className="font-medium text-xs sm:text-sm">{level.level}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="body-sm text-muted-foreground">{level.count} eventos</span>
-                      <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                      <span className="text-xs sm:text-sm text-muted-foreground">{level.count} eventos</span>
+                      <div className="w-20 sm:w-24 h-2 bg-muted rounded-full overflow-hidden">
                         <div 
                           className={`h-full rounded-full ${color}`}
                           style={{ width: `${(level.count / stats.logs.total) * 100}%` }}
@@ -516,18 +516,18 @@ export function AdminStatsSection() {
 
         {/* Top eventos */}
         <Card>
-          <CardHeader>
-            <h4 className="heading-4">Eventos Más Frecuentes</h4>
+          <CardHeader className="p-4 sm:p-6">
+            <h4 className="text-base sm:text-lg font-semibold">Eventos Más Frecuentes</h4>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-1.5 sm:space-y-2">
               {stats.logs.topEvents.slice(0, 8).map((event, index) => (
-                <div key={event.event_type} className="flex items-center justify-between body-sm">
+                <div key={event.event_type} className="flex items-center justify-between text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-muted-foreground">#{index + 1}</span>
-                    <span className="font-mono caption">{event.event_type}</span>
+                    <span className="font-mono text-[10px] sm:text-xs">{event.event_type}</span>
                   </div>
-                  <Badge variant="secondary">{event.count}</Badge>
+                  <Badge variant="secondary" className="text-xs">{event.count}</Badge>
                 </div>
               ))}
             </div>
@@ -538,21 +538,21 @@ export function AdminStatsSection() {
       {/* Errores recientes */}
       {stats.logs.recentErrors.length > 0 && (
         <Card>
-          <CardHeader>
-            <h4 className="heading-4 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-destructive" />
+          <CardHeader className="p-4 sm:p-6">
+            <h4 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               Errores Más Frecuentes
             </h4>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-2 sm:space-y-3">
               {stats.logs.recentErrors.map((error) => (
-                <div key={error.event_type} className="border-l-4 border-red-500 pl-4 py-2">
+                <div key={error.event_type} className="border-l-4 border-red-500 pl-3 sm:pl-4 py-2">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="font-mono body-sm font-semibold">{error.event_type}</span>
-                    <Badge variant="destructive">{error.count}x</Badge>
+                    <span className="font-mono text-xs sm:text-sm font-semibold">{error.event_type}</span>
+                    <Badge variant="destructive" className="text-xs">{error.count}x</Badge>
                   </div>
-                  <p className="body-sm text-muted-foreground line-clamp-2 mb-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-1">
                     {error.message}
                   </p>
                   <p className="caption text-muted-foreground">

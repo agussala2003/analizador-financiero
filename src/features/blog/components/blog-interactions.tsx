@@ -52,7 +52,7 @@ export function BlogInteractions({
   };
 
   return (
-    <div className="flex items-center gap-4 flex-wrap">
+    <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
       <TooltipProvider>
         {/* Like */}
         <Tooltip>
@@ -62,13 +62,13 @@ export function BlogInteractions({
               size="sm"
               onClick={onLike}
               className={cn(
-                "flex items-center gap-2",
+                "flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm",
                 userHasLiked && "text-red-500 hover:text-red-600"
               )}
             >
               <Heart 
                 className={cn(
-                  "w-5 h-5",
+                  "w-4 h-4 sm:w-5 sm:h-5",
                   userHasLiked && "fill-current"
                 )} 
               />
@@ -87,10 +87,10 @@ export function BlogInteractions({
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center gap-2 cursor-default"
+              className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm cursor-default"
               onClick={(e) => e.preventDefault()}
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="font-semibold">{commentsCount}</span>
               {showLabels && <span className="hidden sm:inline">Comentarios</span>}
             </Button>
@@ -108,13 +108,13 @@ export function BlogInteractions({
               size="sm"
               onClick={onBookmark}
               className={cn(
-                "flex items-center gap-2",
+                "flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm",
                 userHasBookmarked && "text-yellow-500 hover:text-yellow-600"
               )}
             >
               <Bookmark 
                 className={cn(
-                  "w-5 h-5",
+                  "w-4 h-4 sm:w-5 sm:h-5",
                   userHasBookmarked && "fill-current"
                 )} 
               />
@@ -133,9 +133,9 @@ export function BlogInteractions({
               variant="ghost"
               size="sm"
               onClick={handleShare}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
             >
-              <Share2 className="w-5 h-5" />
+              <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
               {showLabels && <span className="hidden sm:inline">Compartir</span>}
             </Button>
           </TooltipTrigger>

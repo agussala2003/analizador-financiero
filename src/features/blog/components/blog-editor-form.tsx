@@ -133,100 +133,100 @@ export function BlogEditorForm({
   };
 
   return (
-    <form className="space-y-6">
+    <form className="space-y-4 sm:space-y-6">
       {/* Título */}
-      <div className="space-y-2">
-        <Label htmlFor="title">Título *</Label>
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="title" className="text-sm">Título *</Label>
         <Input
           id="title"
           value={formData.title}
           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
           placeholder="Título del artículo"
-          className={errors.title ? 'border-red-500' : ''}
+          className={`text-sm ${errors.title ? 'border-red-500' : ''}`}
         />
         {errors.title && (
-          <p className="body-sm text-red-500">{errors.title}</p>
+          <p className="text-xs sm:text-sm text-red-500">{errors.title}</p>
         )}
       </div>
 
       {/* Slug */}
-      <div className="space-y-2">
-        <Label htmlFor="slug">Slug (URL) *</Label>
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="slug" className="text-sm">Slug (URL) *</Label>
         <Input
           id="slug"
           value={formData.slug}
           onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
           placeholder="titulo-del-articulo"
-          className={errors.slug ? 'border-red-500' : ''}
+          className={`text-sm ${errors.slug ? 'border-red-500' : ''}`}
         />
         {errors.slug && (
-          <p className="body-sm text-red-500">{errors.slug}</p>
+          <p className="text-xs sm:text-sm text-red-500">{errors.slug}</p>
         )}
-        <p className="caption text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           URL: /blog/{formData.slug || 'titulo-del-articulo'}
         </p>
       </div>
 
       {/* Resumen */}
-      <div className="space-y-2">
-        <Label htmlFor="excerpt">Resumen *</Label>
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="excerpt" className="text-sm">Resumen *</Label>
         <Input
           id="excerpt"
           value={formData.excerpt}
           onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
           placeholder="Breve descripción del artículo (max 160 caracteres)"
           maxLength={160}
-          className={errors.excerpt ? 'border-red-500' : ''}
+          className={`text-sm ${errors.excerpt ? 'border-red-500' : ''}`}
         />
         {errors.excerpt && (
-          <p className="body-sm text-red-500">{errors.excerpt}</p>
+          <p className="text-xs sm:text-sm text-red-500">{errors.excerpt}</p>
         )}
-        <p className="caption text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {formData.excerpt.length}/160 caracteres
         </p>
       </div>
 
       {/* Categoría y Estado */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="category">Categoría</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="category" className="text-sm">Categoría</Label>
           <Select
             value={formData.category}
             onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
           >
-            <SelectTrigger id="category">
+            <SelectTrigger id="category" className="text-sm">
               <SelectValue placeholder="Selecciona una categoría" />
             </SelectTrigger>
             <SelectContent>
               {categories.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="status">Estado</Label>
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="status" className="text-sm">Estado</Label>
           <Select
             value={formData.status}
             onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as BlogFormData['status'] }))}
           >
-            <SelectTrigger id="status">
+            <SelectTrigger id="status" className="text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="draft">Borrador</SelectItem>
-              <SelectItem value="pending_review">Pendiente de Revisión</SelectItem>
-              <SelectItem value="approved">Aprobado</SelectItem>
-              <SelectItem value="rejected">Rechazado</SelectItem>
+              <SelectItem value="draft" className="text-sm">Borrador</SelectItem>
+              <SelectItem value="pending_review" className="text-sm">Pendiente de Revisión</SelectItem>
+              <SelectItem value="approved" className="text-sm">Aprobado</SelectItem>
+              <SelectItem value="rejected" className="text-sm">Rechazado</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       {/* Tags */}
-      <div className="space-y-2">
-        <Label htmlFor="tags">Etiquetas</Label>
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="tags" className="text-sm">Etiquetas</Label>
         <div className="flex gap-2">
           <Input
             id="tags"
@@ -238,16 +238,17 @@ export function BlogEditorForm({
                 handleAddTag();
               }
             }}
-            placeholder="Agregar etiqueta (Enter para añadir)"
+            placeholder="Agregar etiqueta (Enter)"
+            className="text-sm"
           />
-          <Button type="button" onClick={handleAddTag} variant="outline" size="icon">
+          <Button type="button" onClick={handleAddTag} variant="outline" size="icon" className="flex-shrink-0">
             <Tag className="w-4 h-4" />
           </Button>
         </div>
         {formData.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
             {formData.tags.map(tag => (
-              <Badge key={tag} variant="secondary" className="gap-1">
+              <Badge key={tag} variant="secondary" className="gap-1 text-xs">
                 {tag}
                 <button
                   type="button"
@@ -263,11 +264,11 @@ export function BlogEditorForm({
       </div>
 
       {/* Imagen destacada */}
-      <div className="space-y-2">
-        <Label htmlFor="featured_image">Imagen Destacada</Label>
-        <Card className="p-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="featured_image" className="text-sm">Imagen Destacada</Label>
+        <Card className="p-3 sm:p-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <Input
                 id="featured_image"
                 type="file"
@@ -278,9 +279,11 @@ export function BlogEditorForm({
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={() => document.getElementById('featured_image')?.click()}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <Upload className="w-4 h-4 mr-2" />
+                <Upload className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 Subir Imagen
               </Button>
               {imagePreview && (
@@ -292,14 +295,15 @@ export function BlogEditorForm({
                     setImagePreview(null);
                     setFormData(prev => ({ ...prev, featured_image: '' }));
                   }}
+                  className="w-full sm:w-auto text-xs sm:text-sm"
                 >
-                  <X className="w-4 h-4 mr-1" />
+                  <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   Eliminar
                 </Button>
               )}
             </div>
             {imagePreview && (
-              <div className="relative w-full h-48 rounded-md overflow-hidden">
+              <div className="relative w-full h-40 sm:h-48 rounded-md overflow-hidden">
                 <img
                   src={imagePreview}
                   alt="Preview"
@@ -312,55 +316,60 @@ export function BlogEditorForm({
       </div>
 
       {/* Editor de contenido */}
-      <div className="space-y-2">
-        <Label htmlFor="content">Contenido *</Label>
+      <div className="space-y-1.5 sm:space-y-2">
+        <Label htmlFor="content" className="text-sm">Contenido *</Label>
         <RichTextEditor
           value={formData.content}
           onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
         />
         {errors.content && (
-          <p className="body-sm text-red-500">{errors.content}</p>
+          <p className="text-xs sm:text-sm text-red-500">{errors.content}</p>
         )}
       </div>
 
       {/* Alerta de estado */}
       {formData.status === 'draft' && (
-        <Card className="p-4 bg-muted">
-          <p className="body-sm text-muted-foreground">
+        <Card className="p-3 sm:p-4 bg-muted">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Este artículo está guardado como borrador. Cambia el estado a "Pendiente de Revisión" cuando esté listo para publicar.
           </p>
         </Card>
       )}
 
       {/* Botones de acción */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
         {onSaveDraft && (
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={(e) => handleSubmit(e, true)}
             disabled={isSubmitting}
+            className="text-xs sm:text-sm"
           >
-            <Save className="w-4 h-4 mr-2" />
+            <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             Guardar Borrador
           </Button>
         )}
         <Button
           type="button"
           variant="outline"
+          size="sm"
           onClick={() => window.history.back()}
           disabled={isSubmitting}
+          className="text-xs sm:text-sm"
         >
           Cancelar
         </Button>
         <Button
           type="submit"
+          size="sm"
           onClick={(e) => handleSubmit(e, false)}
           disabled={isSubmitting}
-          className="sm:ml-auto"
+          className="sm:ml-auto text-xs sm:text-sm"
         >
-          <Eye className="w-4 h-4 mr-2" />
-          {isSubmitting ? 'Guardando...' : isEditing ? 'Actualizar Artículo' : 'Publicar Artículo'}
+          <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+          {isSubmitting ? 'Guardando...' : isEditing ? 'Actualizar' : 'Publicar'}
         </Button>
       </div>
     </form>

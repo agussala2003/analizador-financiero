@@ -37,11 +37,11 @@ interface CompanyInfoItemProps {
  */
 export function CompanyInfoItem({ icon, label, value }: CompanyInfoItemProps) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="text-primary mt-0.5 flex-shrink-0">{icon}</div>
+    <div className="flex items-start gap-2 sm:gap-3">
+      <div className="text-primary mt-0.5 flex-shrink-0 scale-90 sm:scale-100">{icon}</div>
       <div className="min-w-0">
-        <p className="body-sm font-semibold text-muted-foreground">{label}</p>
-        <p className="body font-medium break-words">{value}</p>
+        <p className="text-xs sm:text-sm font-semibold text-muted-foreground">{label}</p>
+        <p className="text-sm sm:text-base font-medium break-words">{value}</p>
       </div>
     </div>
   );

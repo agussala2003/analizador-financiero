@@ -33,7 +33,7 @@ interface AssetKeyMetricsProps {
 export function AssetKeyMetrics({ asset }: AssetKeyMetricsProps) {
   return (
     <Card>
-      <CardContent className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+      <CardContent className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
         <KeyMetricItem
           label="Market Cap"
           value={`$${formatLargeNumber(asset.marketCap)}`}

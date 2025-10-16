@@ -36,18 +36,18 @@ interface FinancialMetricCardProps {
  */
 export function FinancialMetricCard({ section }: FinancialMetricCardProps) {
   return (
-    <Card className="p-6">
-      <h3 className="heading-4 mb-4">{section.title}</h3>
-      <div className="space-y-3">
+    <Card className="p-4 sm:p-6">
+      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{section.title}</h3>
+      <div className="space-y-2.5 sm:space-y-3">
         {section.metrics.map((metric) => (
           <div
             key={metric.label}
             className="flex justify-between items-center"
           >
-            <span className="body-sm text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground">
               {metric.label}
             </span>
-            <span className="body font-semibold">{metric.value}</span>
+            <span className="text-sm sm:text-base font-semibold">{metric.value}</span>
           </div>
         ))}
       </div>

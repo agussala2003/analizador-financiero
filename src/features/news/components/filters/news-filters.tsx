@@ -18,23 +18,23 @@ export const NewsFilters = ({
   onClearFilters,
 }: NewsFiltersProps) => {
   return (
-    <Card className="mb-8 p-4">
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        <ListFilter className="w-5 h-5 text-muted-foreground hidden sm:block" />
+    <Card className="mb-6 sm:mb-8 p-3 sm:p-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+        <ListFilter className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground hidden sm:block" />
         <Input
           placeholder="Filtrar por Símbolo..."
           value={symbolFilter}
           onChange={(e) => onSymbolFilterChange(e.target.value)}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto text-sm"
         />
         <Input
           placeholder="Filtrar por Compañía..."
           value={companyFilter}
           onChange={(e) => onCompanyFilterChange(e.target.value)}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto text-sm"
         />
-        <Button variant="ghost" onClick={onClearFilters} className="w-full sm:w-auto ml-auto">
-          <X className="w-4 h-4 mr-2" />
+        <Button variant="ghost" size="sm" onClick={onClearFilters} className="w-full sm:w-auto sm:ml-auto text-xs sm:text-sm">
+          <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
           Limpiar
         </Button>
       </div>

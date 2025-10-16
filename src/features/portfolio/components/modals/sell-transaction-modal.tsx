@@ -59,17 +59,49 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
     setLoading(true);
     try {
       const enteredQuantity = parseFloat(quantity);
+      const enteredPrice = parseFloat(price);
+
+      // ✅ Validación: Cantidad debe ser un número válido y positivo
       if (isNaN(enteredQuantity) || enteredQuantity <= 0) {
-        throw new Error("La cantidad debe ser un número positivo.");
+        toast.error("Cantidad inválida", {
+          description: "La cantidad debe ser un número positivo mayor a 0.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Validación: Precio debe ser un número válido y positivo
+      if (isNaN(enteredPrice) || enteredPrice <= 0) {
+        toast.error("Precio inválido", {
+          description: "El precio de venta debe ser un número positivo mayor a 0.",
+        });
+        setLoading(false);
+        return;
       }
 
       const finalQuantityInShares = calculateFinalQuantity(enteredQuantity, isCedears, ratio);
 
+      // ✅ Validación: No puede vender más de lo que posee
       if (finalQuantityInShares > maxShares + 1e-9) {
-        throw new Error(`No puedes vender más de lo que posees (${isCedears ? maxCedears.toFixed(2) : maxShares.toFixed(4)}).`);
+        const maxAvailable = isCedears ? maxCedears.toFixed(2) : maxShares.toFixed(4);
+        const unit = isCedears ? 'CEDEARs' : 'acciones';
+        toast.error("Cantidad excede lo disponible", {
+          description: `Solo puedes vender hasta ${maxAvailable} ${unit}.`,
+        });
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Validación: Precio no puede ser extremadamente grande
+      if (enteredPrice > 1000000) {
+        toast.error("Precio muy alto", {
+          description: "El precio de venta no puede exceder $1,000,000 por unidad.",
+        });
+        setLoading(false);
+        return;
       }
       
-      const finalPricePerShare = calculateFinalPrice(parseFloat(price), isCedears, ratio);
+      const finalPricePerShare = calculateFinalPrice(enteredPrice, isCedears, ratio);
 
       await addTransaction({
         symbol: holding.symbol,
@@ -113,11 +145,32 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="quantity-sell">Cantidad a Vender</Label>
-              <Input id="quantity-sell" type="number" step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} max={isCedears ? maxCedears : maxShares} required />
+              <Input 
+                id="quantity-sell" 
+                type="number" 
+                step="any" 
+                min="0.0001"
+                max={isCedears ? maxCedears : maxShares} 
+                value={quantity} 
+                onChange={(e) => setQuantity(e.target.value)} 
+                required 
+              />
+              <p className="text-xs text-muted-foreground">
+                Máximo: {isCedears ? maxCedears.toFixed(2) : maxShares.toFixed(4)} {isCedears ? 'CEDEARs' : 'acciones'}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="price-sell">Precio de Venta (USD)</Label>
-              <Input id="price-sell" type="number" step="any" value={price} onChange={(e) => setPrice(e.target.value)} required />
+              <Input 
+                id="price-sell" 
+                type="number" 
+                step="any" 
+                min="0.01"
+                max="1000000"
+                value={price} 
+                onChange={(e) => setPrice(e.target.value)} 
+                required 
+              />
             </div>
           </div>
           <div className="space-y-2">

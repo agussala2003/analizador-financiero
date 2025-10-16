@@ -17,7 +17,7 @@ export function SuggestionsList({ suggestions, loading }: SuggestionsListProps) 
 
   return (
     <AnimatePresence mode="wait">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {suggestions.map((suggestion) => (
           <SuggestionCard key={suggestion.id} suggestion={suggestion} />
         ))}

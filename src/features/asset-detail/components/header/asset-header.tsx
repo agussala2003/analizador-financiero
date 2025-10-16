@@ -27,11 +27,11 @@ export function AssetHeader({ asset }: AssetHeaderProps) {
   const changeColor = isPositiveChange ? 'text-green-500' : 'text-red-500';
 
   return (
-    <div className="flex flex-col sm:flex-row gap-6 items-start">
+    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
       <img
         src={asset.image}
         alt={asset.companyName}
-        className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg border object-contain bg-background shadow-sm"
+        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg border object-contain bg-background shadow-sm"
         onError={(e) => {
           const target = e.target as HTMLImageElement;
           target.onerror = null;
@@ -39,26 +39,26 @@ export function AssetHeader({ asset }: AssetHeaderProps) {
         }}
       />
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="flex items-start justify-between gap-2 sm:gap-4 mb-1.5 sm:mb-2">
           <div className="flex-1 min-w-0">
-            <h1 className="heading-1 truncate">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold truncate">
               {asset.companyName} ({asset.symbol})
             </h1>
-            <p className="heading-4 text-muted-foreground">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
               {asset.exchangeFullName}
             </p>
           </div>
-          <WatchlistToggleButton symbol={asset.symbol} variant="outline" />
+          <WatchlistToggleButton symbol={asset.symbol} variant="outline" size="sm" />
         </div>
-        <div className="flex items-baseline gap-4 flex-wrap">
-          <span className="heading-1 font-bold">
+        <div className="flex items-baseline gap-2 sm:gap-4 flex-wrap">
+          <span className="text-2xl sm:text-3xl md:text-4xl font-bold">
             {formatPrice(asset.currentPrice)}
           </span>
-          <span className={`flex items-center gap-1 heading-4 font-semibold ${changeColor}`}>
+          <span className={`flex items-center gap-1 text-base sm:text-lg md:text-xl font-semibold ${changeColor}`}>
             {isPositiveChange ? (
-              <TrendingUp className="w-5 h-5" />
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             ) : (
-              <TrendingDown className="w-5 h-5" />
+              <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
             {formatPercentage(Math.abs(asset.dayChange))}
           </span>

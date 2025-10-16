@@ -40,14 +40,14 @@ export function AssetProfileTab({ asset }: AssetProfileTabProps) {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>Acerca de {asset.companyName}</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Acerca de {asset.companyName}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="body leading-relaxed text-muted-foreground">
+        <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+          <p className="text-sm sm:text-base leading-relaxed text-muted-foreground">
             {asset.description}
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
             <CompanyInfoItem
               icon={<Briefcase className="w-5 h-5" />}
               label="Sector"

@@ -14,14 +14,14 @@ interface ErrorScreenProps {
  */
 export function ErrorScreen({ title, message, onRetry }: ErrorScreenProps) {
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background p-4 text-center">
-      <AlertTriangle className="h-12 w-12 text-destructive" />
-      <h1 className="text-2xl font-bold text-destructive">{title}</h1>
-      <p className="max-w-md text-muted-foreground">
+    <div className="flex h-screen w-full flex-col items-center justify-center gap-3 sm:gap-4 bg-background p-4 text-center">
+      <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-destructive" />
+      <h1 className="text-xl sm:text-2xl font-bold text-destructive">{title}</h1>
+      <p className="max-w-md text-sm sm:text-base text-muted-foreground px-4">
         {message}
       </p>
       {onRetry && (
-        <Button onClick={onRetry} variant="destructive" className="mt-4">
+        <Button onClick={onRetry} variant="destructive" size="sm" className="mt-3 sm:mt-4 text-sm">
           Reintentar
         </Button>
       )}

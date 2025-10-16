@@ -18,21 +18,21 @@ interface StatCardProps {
 export function StatCard({ title, value, description, icon: Icon, trend, className }: StatCardProps) {
   return (
     <Card className={cn('overflow-hidden', className)}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4">
         <div className="flex items-center justify-between">
-          <div className="body-sm font-medium text-muted-foreground">{title}</div>
+          <div className="text-xs sm:text-sm font-medium text-muted-foreground">{title}</div>
           {Icon && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Icon className="h-5 w-5 text-primary" />
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-1">
-          <div className="heading-2 font-bold">{value}</div>
+      <CardContent className="p-3 sm:p-4 pt-0">
+        <div className="space-y-0.5 sm:space-y-1">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold">{value}</div>
           {(description ?? trend) && (
-            <div className="flex items-center gap-2 body-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
               {trend && (
                 <span className={cn(
                   'font-medium',

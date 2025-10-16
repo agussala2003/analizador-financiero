@@ -101,13 +101,13 @@ export default function NewsPage() {
         <div className="min-h-screen">
             <div className="container-wide stack-8">
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                    <div className="flex items-center gap-4 section-divider">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Newspaper className="w-8 h-8 text-primary" />
+                    <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-6 mb-4 sm:mb-6 border-b">
+                        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                            <Newspaper className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                         </div>
                         <div>
-                            <h1 className="heading-2">Últimas Noticias Financieras</h1>
-                            <p className="body text-muted-foreground">
+                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Últimas Noticias Financieras</h1>
+                            <p className="text-muted-foreground text-xs sm:text-sm">
                                 Mantente al día con las últimas noticias del mercado y los eventos que pueden afectar tus inversiones.
                             </p>
                         </div>

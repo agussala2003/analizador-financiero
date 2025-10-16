@@ -23,22 +23,22 @@ export function RiskPremiumFilters({
 }: RiskPremiumFiltersProps) {
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row items-center gap-4">
+      <CardHeader className="p-3 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           {/* Country Search */}
           <div className="relative w-full sm:flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar país..."
               value={countryFilter}
               onChange={(e) => onCountryFilterChange(e.target.value)}
-              className="pl-10"
+              className="pl-9 sm:pl-10 text-sm"
             />
           </div>
 
           {/* Continent Filter */}
           <Select value={continentFilter} onValueChange={onContinentFilterChange}>
-            <SelectTrigger className="w-full sm:w-[220px]">
+            <SelectTrigger className="w-full sm:w-[220px] text-sm">
               <SelectValue placeholder="Filtrar por continente" />
             </SelectTrigger>
             <SelectContent>
@@ -54,10 +54,11 @@ export function RiskPremiumFilters({
           {/* Clear Button */}
           <Button
             variant="ghost"
+            size="sm"
             onClick={onClearFilters}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-xs sm:text-sm"
           >
-            <X className="w-4 h-4 mr-2" /> Limpiar
+            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> Limpiar
           </Button>
         </div>
       </CardHeader>

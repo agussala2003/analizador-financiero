@@ -23,17 +23,22 @@ export function TickerAddForm({ onAddTicker }: TickerAddFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-2">
-      <SearchIcon className="w-5 h-5 text-muted-foreground hidden sm:block" />
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+      <SearchIcon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground hidden sm:block" />
       <Input
-        placeholder="Añadir símbolo (ej: AAPL, MELI)..."
+        placeholder="Símbolo (ej: AAPL)"
         value={tickerInput}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTickerInput(e.target.value)}
-        className="flex-grow"
+        className="flex-grow text-sm"
         disabled={isFetching > 0}
       />
-      <Button type="submit" disabled={isFetching > 0 || !tickerInput} className="w-full sm:w-auto">
-        <PlusIcon className="w-4 h-4 mr-2" />
+      <Button 
+        type="submit" 
+        disabled={isFetching > 0 || !tickerInput} 
+        className="w-full sm:w-auto text-sm"
+        size="sm"
+      >
+        <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
         {isFetching > 0 ? 'Cargando...' : 'Añadir'}
       </Button>
     </form>

@@ -23,15 +23,15 @@ interface NotFoundErrorProps {
  */
 export function NotFoundError({ symbol }: NotFoundErrorProps) {
   return (
-    <div className="text-center py-20 px-4">
-      <h2 className="heading-2">Activo no encontrado</h2>
-      <p className="body text-muted-foreground mt-2">
+    <div className="text-center py-12 sm:py-20 px-4">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Activo no encontrado</h2>
+      <p className="text-sm sm:text-base text-muted-foreground mt-2">
         No pudimos encontrar datos para el símbolo{' '}
-        <span className="font-mono bg-muted px-1 rounded">"{symbol}"</span>.
+        <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs sm:text-sm">"{symbol}"</span>.
       </p>
-      <Button asChild className="mt-6" variant="outline">
+      <Button asChild className="mt-4 sm:mt-6" variant="outline" size="sm">
         <Link to="/dashboard">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
           Volver al Dashboard
         </Link>
       </Button>

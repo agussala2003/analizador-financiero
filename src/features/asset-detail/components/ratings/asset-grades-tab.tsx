@@ -11,6 +11,8 @@ import { useConfig } from '../../../../hooks/use-config';
 import { supabase } from '../../../../lib/supabase';
 import { logger } from '../../../../lib/logger';
 import { cn } from '../../../../lib/utils';
+import { usePlanFeature } from '../../../../hooks/use-plan-feature';
+import { FeatureLocked } from '../../../../components/shared/feature-locked';
 
 /**
  * Interfaz para una calificación individual de un activo.
@@ -376,6 +378,7 @@ function formatDate(dateString: string): string {
 export function AssetGradesTab({ symbol }: AssetGradesTabProps) {
   const config = useConfig();
   const endpoint = config.api.fmpProxyEndpoints.stockGrades;
+  const { hasAccess } = usePlanFeature('stockGrades');
   
   // Estado para paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -385,7 +388,20 @@ export function AssetGradesTab({ symbol }: AssetGradesTabProps) {
     queryKey: ['stockGrades', symbol],
     queryFn: () => fetchStockGrades(symbol, endpoint),
     staleTime: 1000 * 60 * 30, // 30 minutos
+    enabled: hasAccess, // Solo ejecutar query si tiene acceso
   });
+
+  // Verificar acceso (después de todos los hooks)
+  if (!hasAccess) {
+    return (
+      <FeatureLocked
+        featureName="Calificaciones de Analistas"
+        requiredPlan="plus"
+        description="Accede al historial completo de calificaciones de analistas, con explicaciones detalladas de cada recomendación."
+        variant="card"
+      />
+    );
+  }
 
   // Calcular paginación
   const totalPages = grades ? Math.ceil(grades.length / itemsPerPage) : 0;

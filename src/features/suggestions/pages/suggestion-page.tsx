@@ -31,15 +31,15 @@ export default function SuggestionsPage() {
       transition={{ duration: 0.3 }}
     >
       {/* Header */}
-      <div className="flex items-center gap-4 section-divider">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <MessageSquareHeart className="w-8 h-8 text-primary" />
+      <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-6 mb-4 sm:mb-6 border-b">
+        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+          <MessageSquareHeart className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
         </div>
         <div>
-          <h1 className="heading-2">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">
             Buzón de Sugerencias
           </h1>
-          <p className="body text-muted-foreground">
+          <p className="text-muted-foreground text-xs sm:text-sm">
             ¿Tienes una idea para mejorar la app? ¡Nos encantaría escucharla!
           </p>
         </div>
@@ -53,8 +53,8 @@ export default function SuggestionsPage() {
       />
 
       {/* List */}
-      <div className="stack-4">
-        <h2 className="heading-3">Tus sugerencias</h2>
+      <div className="space-y-3 sm:space-y-4">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">Tus sugerencias</h2>
         <SuggestionsList suggestions={suggestions} loading={loading} />
       </div>
     </motion.div>

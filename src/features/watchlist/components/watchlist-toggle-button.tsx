@@ -30,17 +30,17 @@ export function WatchlistToggleButton({
       size={size}
       onClick={handleToggle}
       disabled={toggleWatchlist.isPending}
-      className="gap-2"
+      className="gap-1.5 sm:gap-2"
     >
       {toggleWatchlist.isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
       ) : (
         <Star 
-          className={`h-4 w-4 ${isInWatchlist ? 'fill-yellow-400 text-yellow-400' : ''}`} 
+          className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isInWatchlist ? 'fill-yellow-400 text-yellow-400' : ''}`} 
         />
       )}
       {size !== 'icon' && (
-        <span>{isInWatchlist ? 'En Watchlist' : 'Agregar a Watchlist'}</span>
+        <span className="text-xs sm:text-sm">{isInWatchlist ? 'En Watchlist' : 'Agregar a Watchlist'}</span>
       )}
     </Button>
   );

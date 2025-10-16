@@ -26,13 +26,13 @@ export function PageHeader({ icon, title, description }: PageHeaderProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center gap-4 section-divider">
-        <div className="p-2 bg-primary/10 rounded-lg">
+      <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b">
+        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
           {icon}
         </div>
         <div>
-          <h1 className="heading-2">{title}</h1>
-          <p className="body text-muted-foreground">{description}</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">{title}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-0.5 sm:mt-1">{description}</p>
         </div>
       </div>
     </motion.div>

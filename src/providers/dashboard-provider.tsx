@@ -7,6 +7,8 @@ import { useConfig } from "../hooks/use-config";
 import { DashboardContextType } from "../types/dashboard";
 import { indicatorConfig } from "../utils/financial";
 import { logger } from "../lib/logger";
+import { usePlanLimits } from "../hooks/use-plan-limits";
+import { getSymbolRestrictionMessage } from "../utils/plan-validators";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -15,6 +17,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const { profile } = useAuth();
     const config = useConfig();
     const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
+    
+    // Hook para verificar límite de comparación
+    const { isAtLimit, limit, limitMessage } = usePlanLimits('comparison', selectedTickers.length);
 
     const addTicker = useCallback((tickerRaw: string) => {
         const ticker = tickerRaw.trim().toUpperCase();
@@ -39,16 +44,15 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
          * Dónde se aplica: DashboardProvider.addTicker()
          * Impacto: Limita la cantidad de columnas en las tablas comparativas
          */
-        const maxTickers = config.dashboard.maxTickersToCompare[role as keyof typeof config.dashboard.maxTickersToCompare] || 2;
-
-        if (selectedTickers.length >= maxTickers) {
-            void logger.warn('DASHBOARD_MAX_TICKERS_REACHED', `User attempted to add more than ${maxTickers} tickers`, {
+        // Verificar límite de comparación
+        if (isAtLimit) {
+            void logger.warn('DASHBOARD_MAX_TICKERS_REACHED', `User attempted to add more than ${limit} tickers`, {
                 role,
-                maxTickers,
+                maxTickers: limit,
                 currentCount: selectedTickers.length,
             });
-            toast.error(`Puedes comparar hasta ${maxTickers} activos a la vez en tu plan.`, {
-                description: 'Elimina un activo de la lista para añadir uno nuevo.',
+            toast.error(`Límite de comparación alcanzado`, {
+                description: limitMessage || `Puedes comparar hasta ${limit} activos a la vez en tu plan.`,
             });
             return;
         }
@@ -69,7 +73,10 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                 role,
                 ticker,
             });
-            toast.error(`El símbolo ${ticker} no está disponible en el plan Básico.`);
+            const message = getSymbolRestrictionMessage(ticker);
+            toast.error(`Símbolo no disponible`, {
+                description: message,
+            });
             return;
         }
         
@@ -80,7 +87,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         });
         setSelectedTickers(prev => [...prev, ticker]);
 
-    }, [config, profile?.role, selectedTickers]);
+    }, [config, profile?.role, selectedTickers, isAtLimit, limit, limitMessage]);
 
     const removeTicker = useCallback((ticker: string) => {
         void logger.info('DASHBOARD_TICKER_REMOVED', `Ticker ${ticker} removed from comparison`, {

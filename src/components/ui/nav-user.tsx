@@ -50,7 +50,11 @@ export function NavUser({
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left body-sm leading-tight">
-                <span className="truncate font-medium">{profile?.first_name + " " + profile?.last_name || "Anónimo"}</span>
+                <span className="truncate font-medium">
+                  {profile?.first_name && profile?.last_name 
+                    ? `${profile.first_name} ${profile.last_name}` 
+                    : profile?.first_name ?? profile?.last_name ?? "Anónimo"}
+                </span>
                 <span className="text-muted-foreground truncate caption">
                   {user.email}
                 </span>
@@ -71,7 +75,11 @@ export function NavUser({
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left body-sm leading-tight">
-                  <span className="truncate font-medium">{profile?.first_name + " " + profile?.last_name || "Anónimo"}</span>
+                  <span className="truncate font-medium">
+                    {profile?.first_name && profile?.last_name 
+                      ? `${profile.first_name} ${profile.last_name}` 
+                      : profile?.first_name ?? profile?.last_name ?? "Anónimo"}
+                  </span>
                   <span className="text-muted-foreground truncate caption">
                     {user.email}
                   </span>

@@ -23,19 +23,19 @@ export function PersonalInfoForm({
 }: PersonalInfoFormProps) {
   return (
     <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-6">
         <div className="flex items-center gap-2">
-          <User className="w-5 h-5 text-muted-foreground" />
-          <CardTitle className="heading-4">Información Personal</CardTitle>
+          <User className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+          <CardTitle className="text-base sm:text-lg font-semibold">Información Personal</CardTitle>
         </div>
-        <CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
           Estos datos se mostrarán en la plataforma y en tus interacciones.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="firstName" className="body-sm font-medium">
+      <CardContent className="p-4 sm:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium">
               Nombre
             </Label>
             <Input
@@ -46,8 +46,8 @@ export function PersonalInfoForm({
               placeholder="Tu nombre"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="lastName" className="body-sm font-medium">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="lastName" className="text-xs sm:text-sm font-medium">
               Apellido
             </Label>
             <Input

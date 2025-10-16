@@ -13,24 +13,24 @@ import { Skeleton } from '../../../../components/ui/skeleton';
 
 export function RiskPremiumSkeleton() {
   return (
-    <div className="container-wide stack-6">
+    <div className="container-wide space-y-4 sm:space-y-6">
       {/* Header Skeleton */}
-      <div className="flex items-center gap-4">
-        <Skeleton className="w-10 h-10 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-80" />
+      <div className="flex items-center gap-3 sm:gap-4">
+        <Skeleton className="w-8 h-8 sm:w-10 sm:h-10 rounded-full" />
+        <div className="space-y-1.5 sm:space-y-2">
+          <Skeleton className="h-6 sm:h-8 w-48 sm:w-64" />
+          <Skeleton className="h-3 sm:h-4 w-60 sm:w-80" />
         </div>
       </div>
 
       {/* Filters Skeleton */}
       <Card>
-        <CardHeader className="space-y-3">
-          <Skeleton className="h-6 w-48" />
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Skeleton className="h-10 w-full sm:w-80" />
-            <Skeleton className="h-10 w-full sm:w-60" />
-            <Skeleton className="h-10 w-full sm:w-40" />
+        <CardHeader className="space-y-2 sm:space-y-3">
+          <Skeleton className="h-5 sm:h-6 w-40 sm:w-48" />
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+            <Skeleton className="h-9 sm:h-10 w-full sm:w-80" />
+            <Skeleton className="h-9 sm:h-10 w-full sm:w-60" />
+            <Skeleton className="h-9 sm:h-10 w-full sm:w-40" />
           </div>
         </CardHeader>
       </Card>
@@ -42,7 +42,7 @@ export function RiskPremiumSkeleton() {
             <TableRow>
               {Array.from({ length: 4 }).map((_, i) => (
                 <TableHead key={i}>
-                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-4 sm:h-5 w-20 sm:w-24" />
                 </TableHead>
               ))}
             </TableRow>
@@ -52,7 +52,7 @@ export function RiskPremiumSkeleton() {
               <TableRow key={i}>
                 {Array.from({ length: 4 }).map((_, j) => (
                   <TableCell key={j}>
-                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-4 sm:h-5 w-full" />
                   </TableCell>
                 ))}
               </TableRow>

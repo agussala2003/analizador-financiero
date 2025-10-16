@@ -31,12 +31,12 @@ interface FeatureCardProps {
  */
 export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
   <div className="p-[1px] rounded-xl bg-background from-border/50 to-transparent h-full">
-    <div className="bg-background backdrop-blur-sm h-full p-6 rounded-xl text-left transition-all duration-300 hover:-translate-y-1">
-      <div className="mb-4 inline-block p-3 rounded-lg bg-muted/50 border border-border/50">
+    <div className="bg-background backdrop-blur-sm h-full p-4 sm:p-5 md:p-6 rounded-xl text-left transition-all duration-300 hover:-translate-y-1">
+      <div className="mb-3 sm:mb-4 inline-block p-2.5 sm:p-3 rounded-lg bg-muted/50 border border-border/50">
         {icon}
       </div>
-      <h3 className="heading-4 mb-2 text-foreground">{title}</h3>
-      <p className="body text-muted-foreground leading-relaxed">{description}</p>
+      <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">{title}</h3>
+      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{description}</p>
     </div>
   </div>
 );

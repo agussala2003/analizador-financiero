@@ -33,21 +33,21 @@ export function InvestmentPreferencesForm({
 }: InvestmentPreferencesFormProps) {
   return (
     <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-6">
         <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-muted-foreground" />
-          <CardTitle className="heading-4">Preferencias de Inversión</CardTitle>
+          <Target className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+          <CardTitle className="text-base sm:text-lg font-semibold">Preferencias de Inversión</CardTitle>
         </div>
-        <CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
           Ayúdanos a personalizar el contenido, alertas y recomendaciones que
           recibes.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
         {/* Selects de perfil y experiencia */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label className="body-sm font-medium">Perfil de Inversor</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm font-medium">Perfil de Inversor</Label>
             <Select
               value={investorProfile || undefined}
               onValueChange={onInvestorProfileChange}
@@ -62,8 +62,8 @@ export function InvestmentPreferencesForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label className="body-sm font-medium">Nivel de Experiencia</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm font-medium">Nivel de Experiencia</Label>
             <Select value={experience || undefined} onValueChange={onExperienceChange}>
               <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
                 <SelectValue placeholder="Selecciona tu experiencia..." />
@@ -78,9 +78,9 @@ export function InvestmentPreferencesForm({
         </div>
 
         {/* Áreas de interés */}
-        <div className="space-y-3">
-          <Label className="body-sm font-medium flex items-center gap-2">
-            <Heart className="w-4 h-4" />
+        <div className="space-y-2 sm:space-y-3">
+          <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
+            <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             Áreas de Interés
           </Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
@@ -94,7 +94,7 @@ export function InvestmentPreferencesForm({
                 />
                 <label
                   htmlFor={item.id}
-                  className="body-sm font-medium leading-relaxed cursor-pointer text-foreground/90 hover:text-foreground"
+                  className="text-xs sm:text-sm font-medium leading-relaxed cursor-pointer text-foreground/90 hover:text-foreground"
                 >
                   {item.label}
                 </label>
