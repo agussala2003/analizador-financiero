@@ -16,6 +16,8 @@ export const DashboardContext = createContext<DashboardContextType | undefined>(
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const { profile } = useAuth();
     const config = useConfig();
+    
+    // NO persistir selectedTickers - se reconstruyen en cada carga
     const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
     
     // Hook para verificar límite de comparación

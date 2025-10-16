@@ -27,14 +27,34 @@ function DashboardPageContent() {
     const config = useConfig();
     const portfolioLoadedRef = useRef(false);
 
-    // Carga los activos del portafolio al dashboard una sola vez
+    // Referencia para trackear qué tickers vienen del portafolio (no deben contar API calls)
+    const portfolioTickersRef = useRef<Set<string>>(new Set());
+
+    // Cargar tickers del portfolio, actualizar la referencia y agregarlos al dashboard
     useEffect(() => {
+        // Ejecutar solo una vez cuando el portfolio cargue y no se haya cargado antes
         if (!portfolioLoading && holdings.length > 0 && !portfolioLoadedRef.current) {
             portfolioLoadedRef.current = true;
+            
             const portfolioSymbols = holdings.map(h => h.symbol);
-            portfolioSymbols.forEach(symbol => addTicker(symbol));
+            
+            // 1. Actualizar la referencia PRIMERO
+            portfolioTickersRef.current = new Set(portfolioSymbols);
+            
+            // 2. Agregar los tickers al dashboard DESPUÉS
+            // Esto causará re-renders, pero la referencia ya estará actualizada
+            portfolioSymbols.forEach(symbol => {
+                addTicker(symbol);
+            });
         }
     }, [portfolioLoading, holdings, addTicker]);
+
+    // Limpiar localStorage viejo (ejecutar solo una vez)
+    useEffect(() => {
+        localStorage.removeItem('portfolioTickers');
+        localStorage.removeItem('manualTickers');
+        localStorage.removeItem('selectedTickers');
+    }, []);
 
     // Estabilizar valores para las query keys (usar solo primitivos)
     const userId = user?.id ?? null;
@@ -42,18 +62,27 @@ function DashboardPageContent() {
     const useMockData = config?.useMockData ?? false;
 
     const assetQueries = useQueries({
-        queries: selectedTickers.map(ticker => ({
-            // Query key solo con valores primitivos para evitar refetches innecesarios
-            queryKey: ['assetData', ticker, userId, profileId, useMockData] as const,
-            queryFn: () => fetchTickerData({ queryKey: ['assetData', ticker, config, user, profile] }),
-            staleTime: 1000 * 60 * 5, // 5 minutos de caché
-            gcTime: 1000 * 60 * 15, // 15 minutos en caché aunque no esté en uso
-            retry: 2, // Solo 2 reintentos
-            retryDelay: 1000, // 1 segundo entre reintentos
-            refetchOnWindowFocus: false, // No revalidar al cambiar de pestaña
-            refetchOnReconnect: false, // No revalidar al reconectar
-            enabled: !!ticker && !!config, // Solo ejecutar si tenemos datos
-        })),
+        queries: selectedTickers.map(ticker => {
+            return {
+                // Query key solo con valores primitivos para evitar refetches innecesarios
+                queryKey: ['assetData', ticker, userId, profileId, useMockData] as const,
+                queryFn: () => {
+                    // Verificar si es del portfolio AL MOMENTO de ejecutar la query
+                    const isFromPortfolio = portfolioTickersRef.current.has(ticker);
+                    return fetchTickerData({ 
+                        queryKey: ['assetData', ticker, config, user, profile],
+                        fromPortfolio: isFromPortfolio // No cuenta API call si viene del portafolio
+                    });
+                },
+                staleTime: 1000 * 60 * 10, // 10 minutos de caché (aumentado de 5)
+                gcTime: 1000 * 60 * 30, // 30 minutos en caché (aumentado de 15)
+                retry: 2, // Solo 2 reintentos
+                retryDelay: 1000, // 1 segundo entre reintentos
+                refetchOnWindowFocus: false, // No revalidar al cambiar de pestaña
+                refetchOnReconnect: false, // No revalidar al reconectar
+                enabled: !!ticker && !!config, // Solo ejecutar si tenemos datos
+            };
+        }),
     });
 
     // Procesamos los resultados de las queries

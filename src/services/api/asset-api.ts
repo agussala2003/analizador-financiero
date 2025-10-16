@@ -19,12 +19,15 @@ type RevenueApiResponse = Parameters<typeof processAssetData>[2];
  * Busca los datos completos de un activo desde la API (vía proxy),
  * los procesa y los cachea en Supabase.
  * @param queryKey - Objeto de React Query que contiene el ticker y otros datos.
+ * @param fromPortfolio - Si viene del portafolio, usa solo caché sin contar API call
  * @returns {Promise<AssetData>} - Los datos del activo procesados.
  */
 export async function fetchTickerData({
     queryKey,
+    fromPortfolio = false,
 }: {
     queryKey: [string, string, Config, User | null, Profile | null];
+    fromPortfolio?: boolean;
 }): Promise<AssetData> {
     const [, ticker, config, user, profile] = queryKey;
 
@@ -35,13 +38,20 @@ export async function fetchTickerData({
         .eq('symbol', ticker)
         .single();
 
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    // Caché válido por 2 horas (en lugar de 1)
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
-    if (cached && new Date(cached.last_updated_at as string) > oneHourAgo) {
+    if (cached && new Date(cached.last_updated_at as string) > twoHoursAgo) {
         return cached.data as AssetData;
     }
 
-    // 2. Si no hay caché o está desactualizada, vamos a la API
+    // 2. Si viene del portafolio y hay caché (aunque esté un poco viejo), úsalo sin contar API call
+    if (fromPortfolio && cached?.data) {
+        toast.info(`Mostrando datos cacheados para ${ticker} desde tu portafolio.`, { duration: 2000 });
+        return cached.data as AssetData;
+    }
+
+    // 3. Si no hay caché o está desactualizada, vamos a la API (SOLO SI NO ES DEL PORTAFOLIO)
     if (!await checkApiLimit(user, profile, config)) {
         if (cached?.data) {
             toast.warning(`Límite de API alcanzado. Mostrando datos cacheados para ${ticker}.`);
