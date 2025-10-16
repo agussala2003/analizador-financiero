@@ -71,9 +71,9 @@ export const queryClient = new QueryClient({
       // Deduplication Settings
       // TanStack Query automáticamente deduplica requests con la misma key
       // Estos settings optimizan el comportamiento:
-      refetchOnWindowFocus: true, // ✅ Refetch al volver a la pestaña SI datos están stale (evita datos clavados)
-      refetchOnReconnect: true, // Sí refetch al recuperar conexión (datos pueden estar desactualizados)
-      refetchOnMount: true, // Refetch solo si los datos están stale
+      refetchOnWindowFocus: false, // ❌ NO refetch al cambiar de pestaña (mejora UX en dashboards)
+      refetchOnReconnect: false, // NO refetch al recuperar conexión (usa datos cacheados)
+      refetchOnMount: true, // Refetch solo si los datos están stale al montar
       
       // Network Optimization
       networkMode: 'online', // Solo hacer requests cuando hay conexión

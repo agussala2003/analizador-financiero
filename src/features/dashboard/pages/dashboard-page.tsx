@@ -7,9 +7,7 @@ import { useQueries } from '@tanstack/react-query';
 import { useAuth } from "../../../hooks/use-auth";
 import { useConfig } from "../../../hooks/use-config";
 import { fetchTickerData } from "../../../services/api/asset-api";
-import type { Config } from "../../../types/config";
-import type { Profile } from "../../../types/auth";
-import type { User } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
 import { Card, CardHeader } from "../../../components/ui/card";
 import { Briefcase, ChartCandlestick } from "lucide-react";
@@ -38,14 +36,25 @@ function DashboardPageContent() {
         }
     }, [portfolioLoading, holdings, addTicker]);
 
+    // Estabilizar valores para las query keys (usar solo primitivos)
+    const userId = user?.id ?? null;
+    const profileId = profile?.id ?? null;
+    const useMockData = config?.useMockData ?? false;
+
     const assetQueries = useQueries({
         queries: selectedTickers.map(ticker => ({
-            queryKey: ['assetData', ticker, config, user, profile] as [string, string, Config, User | null, Profile | null],
-            queryFn: fetchTickerData,
+            // Query key solo con valores primitivos para evitar refetches innecesarios
+            queryKey: ['assetData', ticker, userId, profileId, useMockData] as const,
+            queryFn: () => fetchTickerData({ queryKey: ['assetData', ticker, config, user, profile] }),
             staleTime: 1000 * 60 * 5, // 5 minutos de caché
+            gcTime: 1000 * 60 * 15, // 15 minutos en caché aunque no esté en uso
+            retry: 2, // Solo 2 reintentos
+            retryDelay: 1000, // 1 segundo entre reintentos
+            refetchOnWindowFocus: false, // No revalidar al cambiar de pestaña
+            refetchOnReconnect: false, // No revalidar al reconectar
+            enabled: !!ticker && !!config, // Solo ejecutar si tenemos datos
         })),
     });
-
 
     // Procesamos los resultados de las queries
     const assets = useMemo(() =>
@@ -54,6 +63,27 @@ function DashboardPageContent() {
             .filter((asset): asset is AssetData => asset !== undefined),
         [assetQueries]
     );
+
+    // Detectar activos con error y removerlos automáticamente
+    const failedTickers = useMemo(() => 
+        assetQueries
+            .map((query, index) => query.isError ? selectedTickers[index] : null)
+            .filter((ticker): ticker is string => ticker !== null),
+        [assetQueries, selectedTickers]
+    );
+
+    // Remover tickers que fallaron y mostrar toast
+    useEffect(() => {
+        if (failedTickers.length > 0) {
+            failedTickers.forEach(ticker => {
+                removeTicker(ticker);
+                toast.error(`No se pudo cargar "${ticker}"`, {
+                    description: "Verifica que el símbolo sea correcto o intenta nuevamente más tarde.",
+                    duration: 5000,
+                });
+            });
+        }
+    }, [failedTickers, removeTicker]);
 
     const isLoading = assetQueries.some(query => query.isLoading);
     const isInitialLoading = isLoading && assets.length === 0;
