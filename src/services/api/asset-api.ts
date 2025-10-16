@@ -58,19 +58,30 @@ export async function fetchTickerData({
     ];
 
     try {
+        // Crear promesas con timeout de 15 segundos
         const promises = endpoints.map(path =>
-            supabase.functions.invoke('fmp-proxy', { body: { endpointPath: `${path}?symbol=${ticker}` } })
+            Promise.race([
+                supabase.functions.invoke('fmp-proxy', { body: { endpointPath: `${path}?symbol=${ticker}` } }),
+                new Promise<never>((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timeout - el servidor tardó demasiado en responder')), 15000)
+                )
+            ])
         );
         const results = await Promise.all(promises);
 
+        // Verificar errores con type guard
         for (const result of results) {
-            if (result.error) throw result.error;
+            if (result && typeof result === 'object' && 'error' in result && result.error) {
+                throw result.error;
+            }
         }
 
-        const [profileRes, keyMetricsRes, quoteRes, historicalRes, priceTargetRes, dcfRes, ratingRes, geoRes, prodRes] = results.map(r => r.data as unknown);
+        const [profileRes, keyMetricsRes, quoteRes, historicalRes, priceTargetRes, dcfRes, ratingRes, geoRes, prodRes] = results.map(r => 
+            (r && typeof r === 'object' && 'data' in r) ? r.data as unknown : undefined
+        );
 
         if (!Array.isArray(profileRes) || profileRes.length === 0) {
-            throw new Error(`Ticker "${ticker}" no encontrado.`);
+            throw new Error(`El símbolo "${ticker}" no fue encontrado. Verifica que sea correcto.`);
         }
 
         const raw: RawApiData = {

@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
 } from "./sidebar";
 import {
-  Wallet, LogIn, UserPlus, Home, ChartCandlestick, LayoutDashboard,
+  LogIn, UserPlus, Home, ChartCandlestick, LayoutDashboard,
   Divide, Newspaper, BookCopy, BookMarked, FilePenLine, FileEdit,
   MessageSquareHeart, Shield, User, Globe, PiggyBank, Star, Bookmark,
   Crown, Mail
@@ -38,8 +38,8 @@ const SidebarHeaderContent = React.memo(({ config }: { config: Config }) => (
       <SidebarMenuItem>
         <NavLink to="/" className="flex items-center gap-2">
           <SidebarMenuButton size="lg">
-            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-              <Wallet className="size-5" />
+            <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <img src="/logo.png" alt="Logo" />
             </div>
             <div className="grid flex-1 text-left body-sm leading-tight">
               <span className="truncate font-medium">{config.app.name}</span>
