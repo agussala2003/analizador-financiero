@@ -56,6 +56,7 @@ export interface Config {
       twitter?: string;
       linkedin?: string;
       github?: string;
+      instagram?: string;
     };
   };
   api: {

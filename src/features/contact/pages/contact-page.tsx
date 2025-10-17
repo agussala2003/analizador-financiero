@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Send, Twitter, Linkedin, Github } from 'lucide-react';
+import { Mail, Send, Twitter, Linkedin, Github, Instagram } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConfig } from '../../../hooks/use-config';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
@@ -105,6 +105,11 @@ export default function ContactPage() {
       name: 'GitHub',
       icon: Github,
       url: config.app.socialMedia?.github,
+    },
+    {
+      name: 'Instagram',
+      icon: Instagram,
+      url: config.app.socialMedia?.instagram,
     },
   ];
 

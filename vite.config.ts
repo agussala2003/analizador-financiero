@@ -7,6 +7,16 @@ import { defineConfig } from "vite"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Configuración de desarrollo para reducir warnings
+  server: {
+    warmup: {
+      // Pre-cargar estos módulos para evitar warnings de preload
+      clientFiles: [
+        './src/main.tsx',
+        './src/App.tsx',
+      ]
+    }
+  },
   test: {
     globals: true,
     environment: 'happy-dom',
@@ -30,6 +40,10 @@ export default defineConfig({
     },
   },
   build: {
+    // Configuración de módulos preload
+    modulePreload: {
+      polyfill: false, // Desactiva el polyfill de modulepreload
+    },
     rollupOptions: {
       output: {
         manualChunks: {

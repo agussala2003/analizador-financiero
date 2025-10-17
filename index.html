@@ -27,7 +27,8 @@
     <meta name="twitter:description" content="Herramientas de nivel profesional para visualizar el mercado y tomar decisiones informadas." />
     <meta name="twitter:image" content="/og-image.png" />
 
-    <link rel="preload" href="/src/main.tsx" as="script">
+    <!-- Preload con crossorigin para evitar warnings en dev -->
+    <link rel="preload" href="/src/main.tsx" as="script" crossorigin="anonymous">
 
   </head>
   <body>

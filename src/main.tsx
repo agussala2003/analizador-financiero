@@ -6,6 +6,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 
+// Suprimir warnings de desarrollo no críticos
+import './lib/suppress-dev-warnings';
+
 import './index.css';
 import App from './App.tsx';
 import { AuthProvider } from './providers/auth-provider.tsx';
