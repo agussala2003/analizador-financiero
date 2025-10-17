@@ -10,7 +10,9 @@ import { AddTransactionModal } from "../../../portfolio/components";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../../components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../../../components/ui/tooltip";
 import { usePrefetchAsset } from "../../../../hooks/use-prefetch-asset";
+import { usePlanFeature } from "../../../../hooks/use-plan-feature";
 
 // --- Props del Componente ---
 interface PriceAnalysisTableProps {
@@ -65,6 +67,7 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
     const { theme } = useTheme();
     const [buyModalInfo, setBuyModalInfo] = useState({ isOpen: false, ticker: null as string | null, price: null as number | null });
     const { prefetchAssetIfNotCached } = usePrefetchAsset();
+    const { hasAccess: canExportPdf, upgradeMessage } = usePlanFeature('exportPdf');
 
     const sortedAssets = useMemo(() => {
         return [...assets].sort((a, b) => {
@@ -131,19 +134,35 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                 <CardDescription className="text-xs sm:text-sm">Análisis de rendimiento y riesgo de los activos.</CardDescription>
                             </div>
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-                                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-                                    Exportar
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
-                            <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
-                                <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                className="w-full sm:w-auto text-xs sm:text-sm"
+                                                disabled={!canExportPdf}
+                                            >
+                                                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                                                Exportar
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
+                                        <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
+                                            <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </TooltipTrigger>
+                            {!canExportPdf && (
+                                <TooltipContent>
+                                    <p className="text-xs">{upgradeMessage}</p>
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
                     </div>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6">

@@ -10,6 +10,7 @@ import { Button } from "../../../../components/ui/button";
 import { exportToPdf } from "../../../../utils/export-pdf";
 import { indicatorConfig } from "../../../../utils/financial";
 import { useTheme } from "../../../../components/ui/theme-provider";
+import { usePlanFeature } from "../../../../hooks/use-plan-feature";
 
 // --- Props del Componente ---
 interface CorrelationMatrixProps {
@@ -50,6 +51,7 @@ const getCellStyle = (value: number | null): React.CSSProperties => {
 // --- Componente Principal ---
 export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets }: CorrelationMatrixProps) {
     const { theme } = useTheme();
+    const { hasAccess: canExportPdf, upgradeMessage } = usePlanFeature('exportPdf');
     
     const correlationMatrix = useMemo(() => {
         const matrix: (number | null)[][] = [];
@@ -130,19 +132,35 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
                         </CardDescription>
                     </div>
                 </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-                                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                                Exportar
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
-                            <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
-                            <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="w-full sm:w-auto text-xs sm:text-sm"
+                                            disabled={!canExportPdf}
+                                        >
+                                            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                                            Exportar
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
+                                        <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
+                                        <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </TooltipTrigger>
+                        {!canExportPdf && (
+                            <TooltipContent>
+                                <p className="text-xs">{upgradeMessage}</p>
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
                 </div>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">

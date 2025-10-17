@@ -33,8 +33,9 @@ export default function PlansPage() {
       priceDetail: 'Para siempre',
       features: [
         `Acceso a ~${config.plans.freeTierSymbols.length} símbolos populares`,
+        `${config.plans.roleLimits.basico} llamadas API diarias`,
         `Dashboard comparativo (hasta ${config.dashboard.maxTickersToCompare.basico} activos)`,
-        `Portfolio de inversiones`,
+        `${config.plans.portfolioLimits.basico} portfolio de inversiones`,
         'Análisis fundamental completo',
         'Matriz de correlación',
         'Gráfico radar comparativo',
@@ -55,8 +56,9 @@ export default function PlansPage() {
       priceDetail: 'por mes',
       features: [
         `Acceso a todos los símbolos (+8,000)`,
+        `${config.plans.roleLimits.plus} llamadas API diarias`,
         `Dashboard comparativo (hasta ${config.dashboard.maxTickersToCompare.plus} activos)`,
-        `Portfolio de inversiones`,
+        `${config.plans.portfolioLimits.plus} portfolios de inversión`,
         'Todas las funciones del plan Básico',
         'Análisis de segmentación geográfica',
         'Análisis de segmentación de productos',
@@ -78,9 +80,12 @@ export default function PlansPage() {
       priceDetail: 'por mes',
       features: [
         `Acceso a todos los símbolos (+8,000)`,
+        `${config.plans.roleLimits.premium} llamadas API diarias`,
         `Dashboard comparativo (hasta ${config.dashboard.maxTickersToCompare.premium} activos)`,
-        `Portfolio de inversiones`,
+        `${config.plans.portfolioLimits.premium} portfolios de inversión`,
         'Todas las funciones del plan Plus',
+        'Publicar artículos en el blog',
+        'Participación activa en la comunidad',
         'Acceso API para automatización',
         'Alertas personalizadas en tiempo real',
         'Análisis predictivo con IA',
@@ -246,6 +251,18 @@ export default function PlansPage() {
                       </td>
                     </tr>
                     <tr className="border-b">
+                      <td className="p-2 sm:p-4">Llamadas API diarias</td>
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">
+                        {config.plans.roleLimits.basico}
+                      </td>
+                      <td className="text-center p-2 sm:p-4 bg-primary/5 whitespace-nowrap">
+                        {config.plans.roleLimits.plus}
+                      </td>
+                      <td className="text-center p-2 sm:p-4 whitespace-nowrap">
+                        {config.plans.roleLimits.premium}
+                      </td>
+                    </tr>
+                    <tr className="border-b">
                       <td className="p-2 sm:p-4">Portfolio de inversiones</td>
                       <td className="text-center p-2 sm:p-4 whitespace-nowrap">
                         <Check className="h-5 w-5 text-primary mx-auto" />
@@ -297,6 +314,14 @@ export default function PlansPage() {
                         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
                       </td>
                     </tr>
+                    <tr className="border-b">
+                      <td className="p-2 sm:p-4">Publicar en el blog</td>
+                      <td className="text-center p-2 sm:p-4">-</td>
+                      <td className="text-center p-2 sm:p-4 bg-primary/5">-</td>
+                      <td className="text-center p-2 sm:p-4">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary mx-auto" />
+                      </td>
+                    </tr>
                     <tr>
                       <td className="p-2 sm:p-4">Soporte</td>
                       <td className="text-center p-2 sm:p-4 whitespace-nowrap">Email</td>
@@ -307,6 +332,39 @@ export default function PlansPage() {
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Popular Symbols Section */}
+        <div className="mt-12 sm:mt-16">
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-3 sm:mb-4 px-4">
+            Símbolos Populares Incluidos en el Plan Básico
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground text-center mb-6 sm:mb-8 px-4 max-w-3xl mx-auto">
+            Accede a {config.plans.freeTierSymbols.length} de los símbolos más negociados y populares del mercado, incluyendo acciones de tecnología, finanzas, consumo y más.
+          </p>
+          <Card>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {config.plans.freeTierSymbols.map((symbol) => (
+                  <Badge 
+                    key={symbol} 
+                    variant="secondary"
+                    className="text-xs sm:text-sm px-2 sm:px-3 py-1 font-mono"
+                  >
+                    {symbol}
+                  </Badge>
+                ))}
+              </div>
+              <div className="mt-6 text-center">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  ¿Necesitas acceso a más de 8,000 símbolos?{' '}
+                  <a href="/contact" className="text-primary hover:underline font-semibold">
+                    Actualiza a Plus o Premium
+                  </a>
+                </p>
               </div>
             </CardContent>
           </Card>

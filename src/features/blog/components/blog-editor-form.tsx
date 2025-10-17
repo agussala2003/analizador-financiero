@@ -217,8 +217,7 @@ export function BlogEditorForm({
             <SelectContent>
               <SelectItem value="draft" className="text-sm">Borrador</SelectItem>
               <SelectItem value="pending_review" className="text-sm">Pendiente de Revisión</SelectItem>
-              <SelectItem value="approved" className="text-sm">Aprobado</SelectItem>
-              <SelectItem value="rejected" className="text-sm">Rechazado</SelectItem>
+              {/* Solo administradores pueden aprobar artículos */}
             </SelectContent>
           </Select>
         </div>
@@ -331,7 +330,15 @@ export function BlogEditorForm({
       {formData.status === 'draft' && (
         <Card className="p-3 sm:p-4 bg-muted">
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Este artículo está guardado como borrador. Cambia el estado a "Pendiente de Revisión" cuando esté listo para publicar.
+            Este artículo está guardado como borrador. Cambia el estado a "Pendiente de Revisión" cuando esté listo para publicar. Un administrador revisará y aprobará tu artículo antes de que sea visible públicamente.
+          </p>
+        </Card>
+      )}
+      
+      {formData.status === 'pending_review' && (
+        <Card className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+          <p className="text-xs sm:text-sm text-blue-900 dark:text-blue-100">
+            Este artículo está pendiente de revisión por un administrador. Te notificaremos cuando sea aprobado o si necesita cambios.
           </p>
         </Card>
       )}

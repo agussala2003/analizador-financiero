@@ -11,6 +11,7 @@ import { Download, HelpCircle, LayoutGrid } from "lucide-react";
 import { Indicator, indicatorConfig } from "../../../../utils/financial";
 import { exportToPdf } from "../../../../utils/export-pdf";
 import { useTheme } from "../../../../components/ui/theme-provider";
+import { usePlanFeature } from "../../../../hooks/use-plan-feature";
 
 // --- Props del Componente ---
 interface FundamentalsTableProps {
@@ -76,6 +77,7 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
     const [hideNA, setHideNA] = useState(true);
     const [openSections, setOpenSections] = useState<string[]>(["valuation"]);
     const { theme } = useTheme();
+    const { hasAccess: canExportPdf, upgradeMessage } = usePlanFeature('exportPdf');
 
     const visibleKeysBySection = useMemo(() => {
         const visible: Record<string, string[]> = {};
@@ -160,19 +162,35 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                             <Checkbox id="hideNA" checked={hideNA} onCheckedChange={(checked: boolean) => setHideNA(!!checked)} className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             <label htmlFor="hideNA" className="text-xs sm:text-sm font-medium leading-none">Ocultar N/A</label>
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
-                                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-                                    Exportar
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
-                                <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
-                                <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                className="w-full sm:w-auto text-xs sm:text-sm"
+                                                disabled={!canExportPdf}
+                                            >
+                                                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                                                Exportar
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
+                                            <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
+                                            <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </TooltipTrigger>
+                            {!canExportPdf && (
+                                <TooltipContent>
+                                    <p className="text-xs">{upgradeMessage}</p>
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
                     </div>
                 </div>
             </CardHeader>
