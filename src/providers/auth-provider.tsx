@@ -8,6 +8,7 @@ import { logger } from '../lib/logger';
 import { toast } from 'sonner';
 import { LoadingScreen } from '../components/ui/loading-screen';
 import { ErrorScreen } from '../components/ui/error-screen';
+import { queryClient } from '../lib/react-query';
 
 // ✅ Mejora: Contexto con guard que lanza si se usa fuera del Provider
 const authContextGuard = new Proxy({}, {
@@ -162,15 +163,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [fetchProfile]);
 
   const signOut = async (): Promise<void> => {
-    const toastId = toast.loading('Cerrando sesión...');
-    await supabase.auth.signOut();
-    // El listener onAuthStateChange se encarga del resto.
-    toast.dismiss(toastId);
-    toast.success('Sesión cerrada');
-    setProfile(null);
-    setSession(null);
-    window.location.href = '/login';
-    window.location.reload();
+    try {
+      const toastId = toast.loading('Cerrando sesión...');
+      
+      // 1. Limpiar estado local PRIMERO (antes de intentar signOut)
+      setProfile(null);
+      setSession(null);
+      setIsLoaded(false);
+      
+      // 2. Limpiar cache de React Query
+      queryClient.clear();
+      
+      // 3. Limpiar localStorage manualmente (incluyendo tokens de Supabase)
+      try {
+        const keysToRemove = Object.keys(localStorage).filter(key => 
+          key.includes('supabase') || key.includes('sb-')
+        );
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+      } catch {
+        // Ignorar errores de storage
+      }
+      
+      // 4. Intentar cerrar sesión en Supabase (sin bloquear si falla)
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch (error) {
+        // Loggear pero no bloquear - la limpieza local ya está hecha
+        void logger.error('AUTH_SIGNOUT_SUPABASE_FAILED', error instanceof Error ? error.message : 'Unknown error');
+      }
+      
+      toast.dismiss(toastId);
+      toast.success('Sesión cerrada correctamente');
+      
+      // 5. Pequeño delay para asegurar que todo se limpió
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // 6. Redirect a login con reload forzado para limpiar estado de React
+      window.location.href = '/login';
+    } catch (error) {
+      // Incluso si hay error, intentar limpiar y redirect
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error('Cerrando sesión de todas formas...', { description: msg });
+      void logger.error('AUTH_SIGNOUT_FAILED', msg);
+      
+      // Forzar limpieza y redirect de todas formas
+      setProfile(null);
+      setSession(null);
+      queryClient.clear();
+      
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 500);
+    }
   };
 
   const refreshProfile = useCallback(async () => {

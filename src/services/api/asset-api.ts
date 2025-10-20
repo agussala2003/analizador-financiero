@@ -9,7 +9,6 @@ import type { Profile } from '../../types/auth';
 import type { User } from '@supabase/supabase-js';
 import { hasApiCallsAvailable, incrementApiCallCounter } from './apiLimiter';
 import { toast } from 'sonner';
-import { formatDate } from '../../lib/utils';
 
 // Tipos auxiliares que estaban en tu provider
 type FmpArray<T = Record<string, unknown>> = T[];
@@ -20,22 +19,23 @@ type RevenueApiResponse = Parameters<typeof processAssetData>[2];
  * Busca los datos completos de un activo desde la API (vía proxy),
  * los procesa y los cachea en Supabase.
  * 
- * LÓGICA DE CACHÉ MEJORADA:
- * - Cache < 2h: Devuelve inmediatamente (fresco)
- * - Cache 2h-24h + API disponible: Intenta refresh, fallback a cache
- * - Cache 2h-24h + Sin API: Devuelve cache con aviso
- * - Cache > 24h + Sin API: Error (cache muy antiguo)
+ * LÓGICA DE CACHÉ SIMPLIFICADA:
+ * - Cache < 1h: Devuelve inmediatamente (fresco) SIN llamar a la API
+ * - Cache > 1h: SIEMPRE intenta actualizar desde la API
+ *   - Si API disponible: Fetch y actualiza
+ *   - Si API no disponible o falla: Fallback al cache antiguo
+ * - forceRefresh = true: Ignora cache y SIEMPRE actualiza (para botón manual)
  * 
  * @param queryKey - Objeto de React Query que contiene el ticker y otros datos.
- * @param fromPortfolio - Si viene del portafolio, usa solo caché sin contar API call
+ * @param forceRefresh - Si es true, ignora el cache y fuerza actualización desde API
  * @returns {Promise<AssetData>} - Los datos del activo procesados.
  */
 export async function fetchTickerData({
     queryKey,
-    fromPortfolio = false,
+    forceRefresh = false,
 }: {
     queryKey: [string, string, Config, User | null, Profile | null];
-    fromPortfolio?: boolean;
+    forceRefresh?: boolean;
 }): Promise<AssetData> {
     const [, ticker, config, user, profile] = queryKey;
 
@@ -46,43 +46,42 @@ export async function fetchTickerData({
         .eq('symbol', ticker)
         .single();
 
-    // Definir umbrales de frescura
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Definir umbral de frescura: 1 hora
+    const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
 
-    // 2. ✅ Cache fresco (< 2 horas) - Devolver inmediatamente
-    if (cached && new Date(cached.last_updated_at as string) > twoHoursAgo) {
+    // 2. ✅ Cache fresco (< 1 hora) - Devolver inmediatamente SIN llamar a la API
+    // EXCEPCIÓN: Si forceRefresh = true, continuar a actualizar
+    if (!forceRefresh && cached && new Date(cached.last_updated_at as string) > oneHourAgo) {
         return cached.data as AssetData;
     }
 
-    // 3. ✅ Del portafolio con cache < 24h - Usar cache sin consumir API
-    if (fromPortfolio && cached?.data) {
-        const cacheDate = new Date(cached.last_updated_at as string);
-        if (cacheDate > oneDayAgo) {
-            toast.info(`Datos del portafolio (${formatDate(cacheDate)})`, { duration: 2000 });
-            return cached.data as AssetData;
+        // Si llegamos aquí con forceRefresh, informar al usuario
+        if (forceRefresh && cached && new Date(cached.last_updated_at as string) > oneHourAgo) {
+            toast.info(`Forzando actualización de ${ticker}...`, { duration: 2000 });
         }
-        // Si el cache del portfolio tiene > 24h, intentamos refresh normal
-    }
 
-    // 4. ✅ Verificar disponibilidad de API (SIN consumir todavía)
+        // 3. ✅ Cache > 1 hora (o forceRefresh) - SIEMPRE intentar actualizar desde la API
+    
+    // 3.1. Verificar disponibilidad de API antes de intentar fetch
     const hasApiAvailable = await hasApiCallsAvailable(user, profile, config);
 
     if (!hasApiAvailable) {
-        // Si hay cache < 24h, usarlo aunque esté desactualizado
-        if (cached?.data && new Date(cached.last_updated_at as string) > oneDayAgo) {
-            toast.warning(`Límite de API alcanzado. Datos del ${formatDate(cached.last_updated_at as string)}.`);
+        // Sin API disponible - Usar cache como fallback (si existe)
+        if (cached?.data) {
+            const cacheDate = new Date(cached.last_updated_at as string);
+            const hoursOld = Math.floor((Date.now() - cacheDate.getTime()) / (1000 * 60 * 60));
+            toast.warning(`Límite de API alcanzado. Usando datos de hace ${hoursOld}h.`);
             return cached.data as AssetData;
         }
         
-        // Cache muy antiguo o inexistente
-        toast.error('Límite de API alcanzado y sin datos recientes en caché.', {
+        // Sin cache disponible - Error
+        toast.error('Límite de API alcanzado y sin datos en caché.', {
             description: 'Actualiza tu plan para obtener más acceso.'
         });
         throw new Error('Límite de API alcanzado sin datos en caché disponibles.');
     }
 
-    // 5. ✅ Intentar fetch desde API
+    // 3.2. ✅ API disponible - Intentar fetch
 
     const { fmpProxyEndpoints } = config.api;
     const endpoints = [
@@ -154,13 +153,16 @@ export async function fetchTickerData({
         const msg = e instanceof Error ? e.message : 'Error al consultar datos del activo.';
         void logger.error('API_FETCH_FAILED', `Failed to fetch data for ${ticker}`, { ticker, errorMessage: msg });
         
-        // Fallback a cache si existe (aunque esté desactualizado)
+        // 3.3. ✅ Fetch falló - Fallback a cache si existe
         if (cached?.data) {
-            toast.warning(`No se pudo actualizar ${ticker}. Mostrando última versión disponible (${formatDate(cached.last_updated_at as string)}).`);
+            const cacheDate = new Date(cached.last_updated_at as string);
+            const hoursOld = Math.floor((Date.now() - cacheDate.getTime()) / (1000 * 60 * 60));
+            toast.warning(`No se pudo actualizar ${ticker}. Usando datos de hace ${hoursOld}h.`);
             return cached.data as AssetData;
         }
 
-        // Sin cache disponible, propagar error
+        // Sin cache disponible - Propagar error
+        toast.error(`Error al cargar ${ticker}`, { description: msg });
         throw new Error(msg);
     }
 }
