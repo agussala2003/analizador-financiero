@@ -4,9 +4,22 @@ import { ResultsSectionProps } from "../../types/retirement.types";
 import { formatCurrency } from "../../lib/retirement.utils";
 import { Wallet, TrendingUp, Sparkles } from "lucide-react";
 import { Card } from "../../../../components/ui/card";
+import { EmptyState } from "./empty-state";
+
+/**
+ * Formatea el porcentaje para el badge, truncando valores muy altos
+ */
+function formatPercentage(value: number): string {
+  if (value === 0) return "0%";
+  if (!isFinite(value)) return "∞%";
+  if (value >= 10000) return `+${(value / 1000).toFixed(0)}k%`;
+  if (value >= 1000) return `+${(value / 1000).toFixed(1)}k%`;
+  return `+${value.toFixed(0)}%`;
+}
 
 /**
  * Sección con las 3 tarjetas de resultados principales mejoradas
+ * Muestra un estado vacío cuando no hay datos para calcular
  */
 export function ResultsSection({
   finalAhorro,
@@ -14,6 +27,11 @@ export function ResultsSection({
   diferencia,
   porcentajeMejor,
 }: ResultsSectionProps) {
+  // Mostrar estado vacío si no hay inversión
+  if (finalInversion === 0 && finalAhorro === 0) {
+    return <EmptyState />;
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
       {/* Solo Ahorro */}
@@ -64,7 +82,7 @@ export function ResultsSection({
               <span className="text-xs sm:text-sm font-medium text-blue-900 dark:text-blue-100">Ganancia Extra</span>
             </div>
             <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-              +{porcentajeMejor.toFixed(0)}%
+              {formatPercentage(porcentajeMejor)}
             </span>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-500 mb-1">

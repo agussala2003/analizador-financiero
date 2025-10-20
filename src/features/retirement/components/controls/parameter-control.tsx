@@ -43,9 +43,25 @@ export function ParameterControl({
         id={`${id}-input`}
         type="number"
         value={value}
-        onChange={(e) =>
-          onChange(clampValue(Number(e.target.value) || 0, min, max))
-        }
+        onChange={(e) => {
+          const inputValue = e.target.value;
+          // Evitar ceros a la izquierda y manejar valores vacíos
+          if (inputValue === '' || inputValue === '-') {
+            onChange(min);
+            return;
+          }
+          const numValue = Number(inputValue);
+          if (!isNaN(numValue)) {
+            onChange(clampValue(numValue, min, max));
+          }
+        }}
+        onBlur={(e) => {
+          // Asegurar que el valor sea válido al salir del input
+          const numValue = Number(e.target.value);
+          if (isNaN(numValue) || e.target.value === '') {
+            onChange(min);
+          }
+        }}
         min={min}
         max={max}
         step={step}

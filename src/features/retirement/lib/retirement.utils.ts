@@ -4,15 +4,46 @@ import { ChartDatum, RetirementParams, RetirementResults } from "../types/retire
 
 /**
  * Formatea un valor numérico como moneda con notación compacta
+ * Maneja valores extremadamente altos (billones, trillones) y valores en 0
  */
 export function formatCurrency(value: number): string {
-  if (Math.abs(value) >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(2)}M`;
+  // Manejar valores especiales
+  if (value === 0) return "$0";
+  if (!isFinite(value)) return "$∞";
+  if (isNaN(value)) return "$0";
+  
+  const absValue = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  
+  // Valores extremadamente altos (notación científica)
+  if (absValue >= 1e15) {
+    const exponent = Math.floor(Math.log10(absValue));
+    const mantissa = (absValue / Math.pow(10, exponent)).toFixed(1);
+    return `${sign}$${mantissa}e${exponent}`;
   }
-  if (Math.abs(value) >= 1_000) {
-    return `$${(value / 1_000).toFixed(1)}k`;
+  
+  // Trillones (1,000,000,000,000+)
+  if (absValue >= 1_000_000_000_000) {
+    return `${sign}$${(absValue / 1_000_000_000_000).toFixed(2)}T`;
   }
-  return `$${value.toLocaleString("es-ES", {
+  
+  // Billones (1,000,000,000+)
+  if (absValue >= 1_000_000_000) {
+    return `${sign}$${(absValue / 1_000_000_000).toFixed(2)}B`;
+  }
+  
+  // Millones (1,000,000+)
+  if (absValue >= 1_000_000) {
+    return `${sign}$${(absValue / 1_000_000).toFixed(2)}M`;
+  }
+  
+  // Miles (1,000+)
+  if (absValue >= 1_000) {
+    return `${sign}$${(absValue / 1_000).toFixed(1)}k`;
+  }
+  
+  // Valores menores a 1,000
+  return `${sign}$${absValue.toLocaleString("es-ES", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   })}`;
@@ -118,6 +149,8 @@ export function calculateResults(chartData: ChartDatum[]): RetirementResults {
   const finalAhorro = lastData["Solo Ahorro"];
   const finalInversion = lastData.Invirtiendo;
   const diferencia = finalInversion - finalAhorro;
+  
+  // Cálculo corregido: retorno porcentual real vs ahorro
   const porcentajeMejor =
     finalAhorro > 0 ? (diferencia / finalAhorro) * 100 : 0;
 

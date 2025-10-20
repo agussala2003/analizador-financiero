@@ -51,6 +51,8 @@ export interface ResultCardProps {
   value: string;
   colorClass?: string;
   subtitle?: string;
+  /** Valor completo sin formatear para mostrar en tooltip */
+  fullValue?: string;
 }
 
 /**

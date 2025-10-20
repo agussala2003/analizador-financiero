@@ -33,8 +33,8 @@ export function ParametersSection({
             onParamsChange({ ...params, initialInvestment: val })
           }
           min={0}
-          max={50000}
-          step={500}
+          max={1000000}
+          step={1000}
           unit=""
           id="initial-investment"
         />
@@ -45,8 +45,8 @@ export function ParametersSection({
             onParamsChange({ ...params, monthlyContribution: val })
           }
           min={0}
-          max={5000}
-          step={50}
+          max={100000}
+          step={100}
           unit=""
           id="monthly-contribution"
         />
@@ -55,7 +55,7 @@ export function ParametersSection({
           value={params.years}
           onChange={(val) => onParamsChange({ ...params, years: val })}
           min={1}
-          max={50}
+          max={100}
           step={1}
           unit=" años"
           id="years"
@@ -65,7 +65,7 @@ export function ParametersSection({
           value={params.annualReturn}
           onChange={(val) => onParamsChange({ ...params, annualReturn: val })}
           min={0}
-          max={20}
+          max={50}
           step={0.5}
           unit="%"
           id="annual-return"

@@ -30,6 +30,12 @@ export default function RetirementCalculatorPage() {
     [chartData]
   );
 
+  // Ganancia extra simple: años × rendimiento anual
+  const gananciaExtraSimple = useMemo(
+    () => params.years * params.annualReturn,
+    [params.years, params.annualReturn]
+  );
+
   return (
     <motion.div
       className="container-wide stack-8"
@@ -70,10 +76,13 @@ export default function RetirementCalculatorPage() {
               finalAhorro={results.finalAhorro}
               finalInversion={results.finalInversion}
               diferencia={results.diferencia}
-              porcentajeMejor={results.porcentajeMejor}
+              porcentajeMejor={gananciaExtraSimple}
             />
 
-            <RetirementChart chartData={chartData} years={params.years} />
+            {/* Solo mostrar el gráfico si hay datos */}
+            {results.finalInversion > 0 || results.finalAhorro > 0 ? (
+              <RetirementChart chartData={chartData} years={params.years} />
+            ) : null}
           </CardContent>
         </Card>
       </div>
