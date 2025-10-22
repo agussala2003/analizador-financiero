@@ -11,6 +11,7 @@ import { AuthButton } from '../shared/auth-button';
 import { Button } from '../../../../components/ui/button';
 import { updatePassword, validatePassword } from '../../lib/auth-utils';
 import { supabase } from '../../../../lib/supabase';
+import { useAuth } from '../../../../hooks/use-auth';
 
 /**
  * Props para el componente ResetPasswordForm.
@@ -45,6 +46,7 @@ export function ResetPasswordForm({
   const [loading, setLoading] = React.useState(false);
   const [invalidToken, setInvalidToken] = React.useState<boolean | null>(null); // null = checking
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   // Verificar si hay una sesión de recovery activa
   React.useEffect(() => {
@@ -108,7 +110,7 @@ export function ResetPasswordForm({
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Cerrar sesión en background sin esperar
-        void supabase.auth.signOut();
+        await signOut();
         
         // Informar al usuario que debe iniciar sesión con la nueva contraseña
         toast.info('Por favor, inicie sesión con su nueva contraseña');
