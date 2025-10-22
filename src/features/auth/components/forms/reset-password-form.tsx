@@ -3,12 +3,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AlertCircle } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
 import { AuthCard } from '../shared/auth-card';
 import { FormInput } from '../shared/form-input';
 import { AuthButton } from '../shared/auth-button';
 import { Button } from '../../../../components/ui/button';
 import { updatePassword, validatePassword } from '../../lib/auth-utils';
+import { supabase } from '../../../../lib/supabase';
 
 /**
  * Props para el componente ResetPasswordForm.
@@ -95,6 +97,13 @@ export function ResetPasswordForm({
         }
 
         toast.success('Contraseña actualizada correctamente.');
+        
+        // Cerrar sesión inmediatamente después de cambiar la contraseña
+        await supabase.auth.signOut();
+        
+        // Informar al usuario que debe iniciar sesión con la nueva contraseña
+        toast.info('Por favor, inicie sesión con su nueva contraseña');
+        
         setTimeout(() => {
           void navigate('/login');
         }, 1000);
@@ -130,6 +139,23 @@ export function ResetPasswordForm({
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
+      {/* Banner de advertencia de sesión temporal */}
+      <div className="rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-900/10 p-4">
+        <div className="flex gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-sm text-amber-900 dark:text-amber-100">
+              Sesión temporal activa
+            </h3>
+            <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
+              Esta sesión es temporal y solo permite cambiar su contraseña. 
+              Después de actualizar su contraseña, se cerrará automáticamente 
+              la sesión y deberá iniciar sesión nuevamente con sus nuevas credenciales.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <AuthCard
         title="Restablecer contraseña"
         description="Ingresa tu nueva contraseña a continuación"
