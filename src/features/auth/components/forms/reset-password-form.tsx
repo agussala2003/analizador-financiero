@@ -109,15 +109,9 @@ export function ResetPasswordForm({
         // Pequeña pausa para que el usuario vea el mensaje de éxito
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Cerrar sesión en background sin esperar
-        await signOut();
-        
-        // Informar al usuario que debe iniciar sesión con la nueva contraseña
-        toast.info('Por favor, inicie sesión con su nueva contraseña');
-        
-        // Navegar al login inmediatamente
+        // Cerrar sesión (esto maneja todo: limpieza, toasts y redirect)
         setLoading(false);
-        void navigate('/login');
+        void signOut();
       } catch (err) {
         console.error('Error inesperado al actualizar contraseña:', err);
         toast.error('Error inesperado al actualizar la contraseña');
