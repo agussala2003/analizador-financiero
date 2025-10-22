@@ -66,6 +66,9 @@ const router = createBrowserRouter([
             { path: "contact", element: <Suspense fallback={<PageSkeleton />}><ContactPage /></Suspense> },
             { path: "plans", element: <Suspense fallback={<PageSkeleton />}><PlansPage /></Suspense> },
 
+            // --- Ruta de Reset Password (permite usuarios autenticados con token de recovery) ---
+            { path: "reset-password", element: <Suspense fallback={<AuthPageSkeleton />}><ResetPasswordPage /></Suspense> },
+
             // --- Rutas solo para Invitados (no logueados) ---
             {
                 element: <GuestRoute />,
@@ -73,7 +76,6 @@ const router = createBrowserRouter([
                     { path: "login", element: <Suspense fallback={<AuthPageSkeleton />}><LoginPage /></Suspense> },
                     { path: "register", element: <Suspense fallback={<AuthPageSkeleton />}><RegisterPage /></Suspense> },
                     { path: "forgot-password", element: <Suspense fallback={<AuthPageSkeleton />}><ForgotPasswordPage /></Suspense> },
-                    { path: "reset-password", element: <Suspense fallback={<AuthPageSkeleton />}><ResetPasswordPage /></Suspense> },
                 ]
             },
 

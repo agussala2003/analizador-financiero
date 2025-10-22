@@ -13,6 +13,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../../components/ui/tooltip";
 import { usePrefetchAsset } from "../../../../hooks/use-prefetch-asset";
 import { usePlanFeature } from "../../../../hooks/use-plan-feature";
+import { useAssetFreshness } from "../../hooks/use-asset-freshness";
+import { AssetFreshnessBadge } from "../../../../components/ui/asset-freshness-badge";
 
 // --- Props del Componente ---
 interface PriceAnalysisTableProps {
@@ -68,6 +70,10 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
     const [buyModalInfo, setBuyModalInfo] = useState({ isOpen: false, ticker: null as string | null, price: null as number | null });
     const { prefetchAssetIfNotCached } = usePrefetchAsset();
     const { hasAccess: canExportPdf, upgradeMessage } = usePlanFeature('exportPdf');
+
+    // Hook para obtener frescura de datos por activo
+    const symbols = useMemo(() => assets.map(a => a.symbol), [assets]);
+    const { freshnessMap } = useAssetFreshness(symbols);
 
     const sortedAssets = useMemo(() => {
         return [...assets].sort((a, b) => {
@@ -197,8 +203,13 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                                 >
                                                     <img src={asset.image} alt={asset.companyName} className="w-8 h-8 rounded-full bg-muted object-contain border" />
                                                     <div>
-                                                        <div className="font-bold group-hover:text-primary transition-colors">{asset.symbol}</div>
-                                                        <div className="caption text-muted-foreground truncate max-w-[200px]">{asset.companyName}</div>
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="font-bold group-hover:text-primary transition-colors">{asset.symbol}</div>
+                                                                <div className="caption text-muted-foreground truncate max-w-[180px]">{asset.companyName}</div>
+                                                            </div>
+                                                            <AssetFreshnessBadge lastUpdated={freshnessMap.get(asset.symbol) ?? null} size="xs" />
+                                                        </div>
                                                     </div>
                                                 </Link>
                                             </TableCell>
@@ -231,17 +242,20 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                 <div className="flex items-start justify-between mb-3">
                                     <Link 
                                         to={`/asset/${asset.symbol}`} 
-                                        className="flex items-center gap-2 font-bold"
+                                        className="flex items-center gap-2 font-bold flex-1 min-w-0"
                                         onMouseEnter={() => prefetchAssetIfNotCached(asset.symbol)}
                                         onFocus={() => prefetchAssetIfNotCached(asset.symbol)}
                                     >
-                                        <img src={asset.image} alt={asset.companyName} className="w-7 h-7 rounded-full bg-muted object-contain border" />
-                                        <div>
-                                            <div className="text-sm">{asset.symbol}</div>
-                                            <div className="text-xs text-muted-foreground font-normal truncate max-w-[120px]">{asset.companyName}</div>
+                                        <img src={asset.image} alt={asset.companyName} className="w-7 h-7 rounded-full bg-muted object-contain border flex-shrink-0" />
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-sm flex items-center gap-1.5">
+                                                {asset.symbol}
+                                                <AssetFreshnessBadge lastUpdated={freshnessMap.get(asset.symbol) ?? null} size="xs" />
+                                            </div>
+                                            <div className="text-xs text-muted-foreground font-normal truncate">{asset.companyName}</div>
                                         </div>
                                     </Link>
-                                    <span className="font-semibold text-base">{formatCurrency(asset.currentPrice)}</span>
+                                    <span className="font-semibold text-base flex-shrink-0 ml-2">{formatCurrency(asset.currentPrice)}</span>
                                 </div>
                                 <div className="space-y-1.5 text-xs border-t pt-2.5 mt-2.5">
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Diaria</span>{pctNode(asset.dayChange)}</div>

@@ -7,6 +7,7 @@ import { cn } from '../../../../lib/utils';
 import { AuthCard } from '../shared/auth-card';
 import { FormInput } from '../shared/form-input';
 import { AuthButton } from '../shared/auth-button';
+import { Button } from '../../../../components/ui/button';
 import { updatePassword, validatePassword } from '../../lib/auth-utils';
 
 /**
@@ -40,7 +41,21 @@ export function ResetPasswordForm({
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [invalidToken, setInvalidToken] = React.useState(false);
   const navigate = useNavigate();
+
+  // Verificar si hay un token de recovery en la URL
+  React.useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    const accessToken = hashParams.get('access_token');
+
+    // Si no hay token de recovery, mostrar error
+    if (type !== 'recovery' || !accessToken) {
+      setInvalidToken(true);
+      toast.error('Link de recuperación inválido o expirado.');
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -78,6 +93,30 @@ export function ResetPasswordForm({
       }
     })();
   };
+
+  // Si el token es inválido, mostrar mensaje de error
+  if (invalidToken) {
+    return (
+      <div className={cn('flex flex-col gap-6', className)} {...props}>
+        <AuthCard
+          title="Link inválido"
+          description="El link de recuperación es inválido o ha expirado"
+        >
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground">
+              Por favor, solicita un nuevo link de recuperación de contraseña.
+            </p>
+            <Button 
+              onClick={() => void navigate('/forgot-password')}
+              className="w-full"
+            >
+              Solicitar nuevo link
+            </Button>
+          </div>
+        </AuthCard>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
