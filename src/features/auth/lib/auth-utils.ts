@@ -127,13 +127,20 @@ export async function updatePassword(
   newPassword: string
 ): Promise<AuthResult> {
   try {
+    console.log('📝 updatePassword: Llamando a supabase.auth.updateUser...');
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
     });
+    console.log('📝 updatePassword: Respuesta recibida, error:', error);
 
-    if (error) throw error;
+    if (error) {
+      console.error('📝 updatePassword: Error detectado:', error.message);
+      throw error;
+    }
 
+    console.log('📝 updatePassword: Llamando a logger.info...');
     await logger.info('PASSWORD_UPDATE_SUCCESS', 'Password updated successfully.');
+    console.log('📝 updatePassword: Logger completado, retornando success');
 
     return { success: true };
   } catch (error: unknown) {
@@ -142,9 +149,12 @@ export async function updatePassword(
         ? (error as { message: string }).message
         : String(error);
 
+    console.error('📝 updatePassword: En catch, error:', errorMessage);
+    console.log('📝 updatePassword: Llamando a logger.error...');
     await logger.error('PASSWORD_UPDATE_FAILED', 'Failed to update password.', {
       errorMessage,
     });
+    console.log('📝 updatePassword: Logger error completado, retornando failure');
 
     return { success: false, error: errorMessage };
   }
