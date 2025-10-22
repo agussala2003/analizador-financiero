@@ -110,22 +110,26 @@ export function ResetPasswordForm({
           return;
         }
 
+        console.log('✅ Contraseña actualizada correctamente');
         toast.success('Contraseña actualizada correctamente.');
         
+        // Pequeña pausa para que el usuario vea el mensaje de éxito
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
         // Cerrar sesión inmediatamente después de cambiar la contraseña
+        console.log('🔒 Cerrando sesión...');
         await supabase.auth.signOut();
         
         // Informar al usuario que debe iniciar sesión con la nueva contraseña
         toast.info('Por favor, inicie sesión con su nueva contraseña');
         
-        setTimeout(() => {
-          void navigate('/login');
-        }, 1000);
+        // Navegar al login
+        setLoading(false);
+        void navigate('/login');
       } catch (err) {
         console.error('❌ Error inesperado:', err);
         toast.error('Error inesperado al actualizar la contraseña');
-      } finally {
-        setTimeout(() => setLoading(false), 500);
+        setLoading(false);
       }
     })();
   };
