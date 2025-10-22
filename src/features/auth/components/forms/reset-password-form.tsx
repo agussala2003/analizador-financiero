@@ -101,7 +101,12 @@ export function ResetPasswordForm({
         const result = await updatePassword(password);
 
         if (!result.success) {
-          toast.error('Error al actualizar la contraseña. Intenta nuevamente.');
+          // Mostrar mensaje de error específico de Supabase
+          const errorMsg = result.error ?? 'Error al actualizar la contraseña. Intenta nuevamente.';
+          console.error('❌ Error al actualizar contraseña:', errorMsg);
+          toast.error('Error al actualizar la contraseña', {
+            description: errorMsg,
+          });
           return;
         }
 
@@ -116,6 +121,9 @@ export function ResetPasswordForm({
         setTimeout(() => {
           void navigate('/login');
         }, 1000);
+      } catch (err) {
+        console.error('❌ Error inesperado:', err);
+        toast.error('Error inesperado al actualizar la contraseña');
       } finally {
         setTimeout(() => setLoading(false), 500);
       }
@@ -195,6 +203,7 @@ export function ResetPasswordForm({
               onChange={setPassword}
               required
               autoComplete="new-password"
+              placeholder="Mínimo 6 caracteres"
             />
 
             <FormInput
@@ -205,10 +214,13 @@ export function ResetPasswordForm({
               onChange={setConfirmPassword}
               required
               autoComplete="new-password"
+              placeholder="Repite la contraseña"
             />
 
             <div className="caption text-muted-foreground">
-              <p>La contraseña debe tener al menos 6 caracteres.</p>
+              <p className="text-xs">
+                La contraseña debe tener al menos 6 caracteres y debe ser diferente a tu contraseña actual.
+              </p>
             </div>
 
             <div className="flex flex-col gap-3">
