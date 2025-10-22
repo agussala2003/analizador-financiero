@@ -43,7 +43,7 @@ export function ResetPasswordForm({
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [invalidToken, setInvalidToken] = React.useState(false);
+  const [invalidToken, setInvalidToken] = React.useState<boolean | null>(null); // null = checking
   const navigate = useNavigate();
 
   // Verificar si hay una sesión de recovery activa
@@ -54,9 +54,8 @@ export function ResetPasswordForm({
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error al obtener sesión:', error);
+          console.error('❌ Error al obtener sesión:', error);
           setInvalidToken(true);
-          toast.error('Error al verificar la sesión de recuperación.');
           return;
         }
 
@@ -69,12 +68,10 @@ export function ResetPasswordForm({
         } else {
           console.warn('❌ No hay sesión activa - token inválido o expirado');
           setInvalidToken(true);
-          toast.error('Link de recuperación inválido o expirado.');
         }
       } catch (err) {
-        console.error('Error inesperado al verificar sesión:', err);
+        console.error('❌ Error inesperado al verificar sesión:', err);
         setInvalidToken(true);
-        toast.error('Error al verificar la sesión.');
       }
     };
 
@@ -124,6 +121,22 @@ export function ResetPasswordForm({
       }
     })();
   };
+
+  // Mientras se verifica la sesión, mostrar loading
+  if (invalidToken === null) {
+    return (
+      <div className={cn('flex flex-col gap-6', className)} {...props}>
+        <AuthCard
+          title="Verificando..."
+          description="Validando el link de recuperación"
+        >
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </AuthCard>
+      </div>
+    );
+  }
 
   // Si el token es inválido, mostrar mensaje de error
   if (invalidToken) {
