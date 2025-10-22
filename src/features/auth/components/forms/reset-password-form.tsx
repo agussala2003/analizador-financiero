@@ -98,7 +98,9 @@ export function ResetPasswordForm({
 
     void (async () => {
       try {
+        console.log('🔄 Iniciando actualización de contraseña...');
         const result = await updatePassword(password);
+        console.log('📦 Resultado updatePassword:', result);
 
         if (!result.success) {
           // Mostrar mensaje de error específico de Supabase
@@ -107,6 +109,7 @@ export function ResetPasswordForm({
           toast.error('Error al actualizar la contraseña', {
             description: errorMsg,
           });
+          setLoading(false); // ⚠️ IMPORTANTE: resetear loading en error
           return;
         }
 
@@ -119,17 +122,19 @@ export function ResetPasswordForm({
         // Cerrar sesión inmediatamente después de cambiar la contraseña
         console.log('🔒 Cerrando sesión...');
         await supabase.auth.signOut();
+        console.log('✅ Sesión cerrada');
         
         // Informar al usuario que debe iniciar sesión con la nueva contraseña
         toast.info('Por favor, inicie sesión con su nueva contraseña');
         
         // Navegar al login
         setLoading(false);
+        console.log('🚀 Navegando a /login...');
         void navigate('/login');
       } catch (err) {
         console.error('❌ Error inesperado:', err);
         toast.error('Error inesperado al actualizar la contraseña');
-        setLoading(false);
+        setLoading(false); // ⚠️ IMPORTANTE: resetear loading en catch
       }
     })();
   };
