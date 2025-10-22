@@ -50,8 +50,18 @@ export function ResetPasswordForm({
     const type = hashParams.get('type');
     const accessToken = hashParams.get('access_token');
 
-    // Si no hay token de recovery, mostrar error
-    if (type !== 'recovery' || !accessToken) {
+    // Validar token de recovery
+    if (type === 'recovery' && accessToken) {
+      // ✅ Token válido detectado - permitir mostrar formulario
+      console.log('Sesión de recuperación activa detectada.');
+      console.log('Token type:', type);
+      console.log('Access token presente:', !!accessToken);
+      setInvalidToken(false); // Explícitamente marcar como válido
+    } else {
+      // ❌ Token inválido o faltante - mostrar error
+      console.warn('Token de recuperación inválido o faltante.');
+      console.warn('Token type:', type);
+      console.warn('Access token presente:', !!accessToken);
       setInvalidToken(true);
       toast.error('Link de recuperación inválido o expirado.');
     }
