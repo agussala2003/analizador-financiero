@@ -18,10 +18,11 @@ interface ForgotPasswordFormProps extends React.ComponentProps<'div'> {
 }
 
 /**
- * Formulario para solicitar recuperación de contraseña.
- * Envía un email con un link para resetear la contraseña.
+ * Formulario para solicitar enlace de acceso único.
+ * Envía un email con un link mágico para acceder sin contraseña.
  * 
  * Incluye:
+ * - Explicación del funcionamiento del enlace único
  * - Campo de email
  * - Botón de submit
  * - Link para volver al login
@@ -67,18 +68,30 @@ export function ForgotPasswordForm({
     return (
       <div className={cn('flex flex-col gap-6', className)} {...props}>
         <AuthCard
-          title="Correo enviado"
-          description="Hemos enviado un enlace de recuperación a tu correo electrónico"
+          title="¡Correo enviado!"
+          description="Te hemos enviado un enlace de acceso único"
         >
           <div className="space-y-4">
-            <p className="body-sm text-muted-foreground text-center">
-              Revisa tu bandeja de entrada y sigue las instrucciones para
-              restablecer tu contraseña.
-            </p>
-            <p className="body-sm text-muted-foreground text-center">
-              Si no recibes el correo en unos minutos, revisa tu carpeta de
-              spam.
-            </p>
+            <div className="rounded-lg bg-primary/10 border border-primary/20 p-4">
+              <p className="text-sm font-medium text-primary mb-2">
+                📧 Revisa tu correo electrónico
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Hemos enviado un enlace de acceso único a <strong>{email}</strong>. 
+                Al hacer clic en el enlace, accederás automáticamente a tu cuenta sin necesidad de cambiar la contraseña.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                ⏱️ El enlace expirará en 1 hora por seguridad
+              </p>
+              <p className="text-xs text-muted-foreground">
+                📁 Si no ves el correo, revisa tu carpeta de spam
+              </p>
+              <p className="text-xs text-muted-foreground">
+                🔒 Solo podrás usar este enlace una vez
+              </p>
+            </div>
             <FormFooter
               text="¿Recordaste tu contraseña?"
               linkText="Volver al inicio de sesión"
@@ -93,16 +106,23 @@ export function ForgotPasswordForm({
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <AuthCard
-        title="¿Olvidaste tu contraseña?"
-        description="Ingresa tu correo electrónico y te enviaremos un enlace para recuperarla"
+        title="Acceso por enlace único"
+        description="Te enviaremos un enlace mágico para acceder sin contraseña"
       >
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6">
+            <div className="rounded-lg bg-muted p-4">
+              <p className="text-sm text-muted-foreground">
+                💡 <strong>¿Cómo funciona?</strong> Recibirás un correo con un enlace de acceso único. 
+                Al hacer clic, entrarás directamente a tu cuenta sin necesidad de contraseña.
+              </p>
+            </div>
+
             <FormInput
               id="email"
               label="Correo Electrónico"
               type="email"
-              placeholder="m@example.com"
+              placeholder="tu@email.com"
               value={email}
               onChange={setEmail}
               required
@@ -110,7 +130,7 @@ export function ForgotPasswordForm({
             />
 
             <div className="flex flex-col gap-3">
-              <AuthButton loading={loading}>Enviar enlace de recuperación</AuthButton>
+              <AuthButton loading={loading}>Enviar enlace de acceso</AuthButton>
             </div>
           </div>
 
