@@ -128,21 +128,15 @@ export function updatePassword(
 ): Promise<AuthResult> {
   return new Promise((resolve) => {
     try {
-      console.log('📝 updatePassword: Iniciando actualización de contraseña...');
-      
       // Llamar a updateUser sin esperar la respuesta
       // Supabase lo procesará en background
       void supabase.auth.updateUser({
         password: newPassword,
       }).then(({ error }) => {
         if (error) {
-          console.error('📝 updatePassword (async): Error al actualizar:', error.message);
-        } else {
-          console.log('📝 updatePassword (async): Contraseña actualizada en Supabase');
+          console.error('Error al actualizar contraseña:', error.message);
         }
       });
-
-      console.log('📝 updatePassword: Retornando success inmediatamente');
       
       // Registrar en logger sin esperar
       void logger.info('PASSWORD_UPDATE_SUCCESS', 'Password updated successfully.');
@@ -154,7 +148,7 @@ export function updatePassword(
           ? (error as { message: string }).message
           : String(error);
 
-      console.error('📝 updatePassword: Error inesperado:', errorMessage);
+      console.error('Error al actualizar contraseña:', errorMessage);
       void logger.error('PASSWORD_UPDATE_FAILED', 'Failed to update password.', {
         errorMessage,
       });

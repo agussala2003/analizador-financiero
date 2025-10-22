@@ -50,27 +50,20 @@ export function ResetPasswordForm({
   React.useEffect(() => {
     const checkRecoverySession = async () => {
       try {
-        // Obtener la sesión actual de Supabase
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('❌ Error al obtener sesión:', error);
           setInvalidToken(true);
           return;
         }
 
-        // Verificar si existe una sesión y si es de tipo recovery
         if (session?.user) {
-          console.log('✅ Sesión de recuperación activa detectada');
-          console.log('User ID:', session.user.id);
-          console.log('Email:', session.user.email);
           setInvalidToken(false);
         } else {
-          console.warn('❌ No hay sesión activa - token inválido o expirado');
           setInvalidToken(true);
         }
       } catch (err) {
-        console.error('❌ Error inesperado al verificar sesión:', err);
+        console.error('Error al verificar sesión:', err);
         setInvalidToken(true);
       }
     };
@@ -98,43 +91,35 @@ export function ResetPasswordForm({
 
     void (async () => {
       try {
-        console.log('🔄 Iniciando actualización de contraseña...');
         const result = await updatePassword(password);
-        console.log('📦 Resultado updatePassword:', result);
 
         if (!result.success) {
-          // Mostrar mensaje de error específico de Supabase
           const errorMsg = result.error ?? 'Error al actualizar la contraseña. Intenta nuevamente.';
-          console.error('❌ Error al actualizar contraseña:', errorMsg);
           toast.error('Error al actualizar la contraseña', {
             description: errorMsg,
           });
-          setLoading(false); // ⚠️ IMPORTANTE: resetear loading en error
+          setLoading(false);
           return;
         }
 
-        console.log('✅ Contraseña actualizada correctamente');
         toast.success('Contraseña actualizada correctamente.');
         
         // Pequeña pausa para que el usuario vea el mensaje de éxito
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Cerrar sesión inmediatamente después de cambiar la contraseña
-        console.log('🔒 Cerrando sesión...');
-        await supabase.auth.signOut();
-        console.log('✅ Sesión cerrada');
+        // Cerrar sesión en background sin esperar
+        void supabase.auth.signOut();
         
         // Informar al usuario que debe iniciar sesión con la nueva contraseña
         toast.info('Por favor, inicie sesión con su nueva contraseña');
         
-        // Navegar al login
+        // Navegar al login inmediatamente
         setLoading(false);
-        console.log('🚀 Navegando a /login...');
         void navigate('/login');
       } catch (err) {
-        console.error('❌ Error inesperado:', err);
+        console.error('Error inesperado al actualizar contraseña:', err);
         toast.error('Error inesperado al actualizar la contraseña');
-        setLoading(false); // ⚠️ IMPORTANTE: resetear loading en catch
+        setLoading(false);
       }
     })();
   };
