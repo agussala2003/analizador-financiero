@@ -46,27 +46,39 @@ export function ResetPasswordForm({
   const [invalidToken, setInvalidToken] = React.useState(false);
   const navigate = useNavigate();
 
-  // Verificar si hay un token de recovery en la URL
+  // Verificar si hay una sesión de recovery activa
   React.useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
-    const accessToken = hashParams.get('access_token');
+    const checkRecoverySession = async () => {
+      try {
+        // Obtener la sesión actual de Supabase
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error al obtener sesión:', error);
+          setInvalidToken(true);
+          toast.error('Error al verificar la sesión de recuperación.');
+          return;
+        }
 
-    // Validar token de recovery
-    if (type === 'recovery' && accessToken) {
-      // ✅ Token válido detectado - permitir mostrar formulario
-      console.log('Sesión de recuperación activa detectada.');
-      console.log('Token type:', type);
-      console.log('Access token presente:', !!accessToken);
-      setInvalidToken(false); // Explícitamente marcar como válido
-    } else {
-      // ❌ Token inválido o faltante - mostrar error
-      console.warn('Token de recuperación inválido o faltante.');
-      console.warn('Token type:', type);
-      console.warn('Access token presente:', !!accessToken);
-      setInvalidToken(true);
-      toast.error('Link de recuperación inválido o expirado.');
-    }
+        // Verificar si existe una sesión y si es de tipo recovery
+        if (session?.user) {
+          console.log('✅ Sesión de recuperación activa detectada');
+          console.log('User ID:', session.user.id);
+          console.log('Email:', session.user.email);
+          setInvalidToken(false);
+        } else {
+          console.warn('❌ No hay sesión activa - token inválido o expirado');
+          setInvalidToken(true);
+          toast.error('Link de recuperación inválido o expirado.');
+        }
+      } catch (err) {
+        console.error('Error inesperado al verificar sesión:', err);
+        setInvalidToken(true);
+        toast.error('Error al verificar la sesión.');
+      }
+    };
+
+    void checkRecoverySession();
   }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
