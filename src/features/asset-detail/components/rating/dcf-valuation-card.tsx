@@ -63,20 +63,20 @@ export function DCFValuationCard({ currentPrice, dcf }: DCFValuationCardProps) {
         {dcfDifference !== null && (
           <div
             className={`flex items-center justify-center p-3 rounded-lg ${
-              dcfDifference > 5
-                ? 'bg-red-500/10 text-red-500'
-                : 'bg-green-500/10 text-green-500'
+              dcfDifference >= 0
+                ? 'bg-green-500/10 text-green-500'
+                : 'bg-red-500/10 text-red-500'
             }`}
           >
-            {dcfDifference > 5 ? (
-              <TrendingUp className="w-5 h-5 mr-2" />
+            {dcfDifference >= 0 ? (
+              <TrendingDown className="w-5 h-5 mr-2 rotate-180" />
             ) : (
-              <TrendingDown className="w-5 h-5 mr-2" />
+              <TrendingUp className="w-5 h-5 mr-2" />
             )}
-            <span className="font-semibold">
-              {dcfDifference > 5
-                ? `Sobrevalorada un ${dcfDifference.toFixed(2)}%`
-                : `Infravalorada un ${Math.abs(dcfDifference).toFixed(2)}%`}
+            <span className="font-semibold tabular-nums">
+              {dcfDifference >= 0
+                ? `Infravalorada un ${dcfDifference.toFixed(2)}%`
+                : `Sobrevalorada un ${Math.abs(dcfDifference).toFixed(2)}%`}
             </span>
           </div>
         )}

@@ -74,6 +74,15 @@
       "administrador": 20
     }
   },
+  "insights": {
+    "maxItems": {
+      "basico": 5,
+      "plus": 20,
+      "premium": 100,
+      "administrador": 1000
+    },
+    "updatedWithinHours": 48
+  },
   "news": {
     "pageSize": 6,
     "defaultLimit": 10
@@ -216,6 +225,7 @@
           { "to": "/dashboard", "label": "Dashboard", "icon": "ChartCandlestick", "requiresAuth": true },
           { "to": "/portfolio", "label": "Portafolio", "icon": "LayoutDashboard", "requiresAuth": true },
           { "to": "/watchlist", "label": "Watchlist", "icon": "Star", "requiresAuth": true },
+          { "to": "/insights", "label": "Insights", "icon": "TrendingUp", "requiresAuth": true },
           { "to": "/dividends", "label": "Dividendos", "icon": "Divide", "requiresAuth": true },
           { "to": "/risk-premium", "label": "Riesgo País", "icon": "Globe", "requiresAuth": true },
           { "to": "/profile", "label": "Mi Perfil", "icon": "User", "requiresAuth": true },

@@ -71,6 +71,8 @@ export function calculateDCFDifference(
   currentPrice: number,
   dcf: number | 'N/A'
 ): number | null {
-  if (typeof dcf !== 'number' || dcf <= 0) return null;
-  return ((currentPrice / dcf) - 1) * 100;
+  if (typeof dcf !== 'number' || dcf <= 0 || currentPrice <= 0) return null;
+  // Investing-style potential: (Target - Current) / Current * 100
+  // Positive => upside (undervalued), Negative => downside (overvalued)
+  return ((dcf - currentPrice) / currentPrice) * 100;
 }

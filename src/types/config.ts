@@ -66,6 +66,11 @@ export interface Config {
   dashboard: {
     maxTickersToCompare: RoleLimits;
   };
+  insights?: {
+    maxItems: RoleLimits;
+    updatedWithinHours: number;
+    gradesWithinDays?: number;
+  };
   sidebar: {
     groups: {
       label: string;
