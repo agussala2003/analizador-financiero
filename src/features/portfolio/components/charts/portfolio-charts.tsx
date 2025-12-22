@@ -19,13 +19,15 @@ import {
 } from "../../../../components/ui/chart";
 import { Holding } from "../../../../types/portfolio";
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
-import { 
-  formatCurrency, 
-  formatPercent, 
-  calculateAllocationData, 
-  calculatePlData, 
-  generateChartConfig 
+import {
+  formatCurrency,
+  formatPercent,
+  calculateAllocationData,
+  calculatePlData,
+  generateChartConfig
 } from "../../lib/portfolio.utils";
+import { HistoricalHolding, AssetData } from "../../../../types/dashboard";
+import { HistoricalPerformanceChart } from "../../../dashboard/components/charts/historical-performance-chart";
 
 // --- Hook para procesar y configurar los datos de los gráficos ---
 const useChartData = (holdings: Holding[]) => {
@@ -50,13 +52,64 @@ const LegendItem = ({ color, label }: { color: string; label: string }) => (
 );
 
 // --- Componente principal de Gráficos ---
-export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }: { holdings: Holding[] }) {
+interface PortfolioChartsProps {
+  holdings: Holding[];
+  portfolioHistory?: HistoricalHolding[];
+}
+
+export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings, portfolioHistory }: PortfolioChartsProps) {
   const { allocationData, plData, chartConfig } = useChartData(holdings);
+
+  // Construct dummy asset for the historical chart
+  const portfolioAsset = useMemo(() => {
+    if (!portfolioHistory || portfolioHistory.length === 0) return null;
+    return {
+      symbol: 'PORTFOLIO',
+      historicalRaw: portfolioHistory,
+      // Mock required fields
+      companyName: 'Mi Portafolio',
+      currency: 'USD',
+      exchangeFullName: '',
+      industry: '',
+      website: '',
+      description: '',
+      ceo: '',
+      sector: '',
+      country: '',
+      employees: 0,
+      image: '',
+      marketCap: 0,
+      lastDividend: 0,
+      averageVolume: 0,
+      lastMonthAvgPriceTarget: 0,
+      range: '',
+      volume: 0,
+      beta: 0,
+      data: {},
+      historicalReturns: [],
+      currentPrice: portfolioHistory[portfolioHistory.length - 1].close,
+      dayChange: 0,
+      weekChange: 'N/A', monthChange: 'N/A', quarterChange: 'N/A', yearChange: 'N/A', ytdChange: 'N/A',
+      stdDev: 'N/A', sharpeRatio: 'N/A',
+      dcf: 'N/A',
+      rating: null,
+      geographicRevenue: [],
+      productRevenue: []
+    } as AssetData;
+  }, [portfolioHistory]);
 
   if (holdings.length === 0) return null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+
+      {/* Gráfico de Evolución Histórica (Full Width) */}
+      {portfolioAsset && (
+        <div className="col-span-1 lg:col-span-2">
+          <HistoricalPerformanceChart assets={[portfolioAsset]} />
+        </div>
+      )}
+
       {/* Gráfico Circular: Distribución de Activos */}
       <Card className="flex flex-col">
         <CardHeader className="items-center pb-0 p-4 sm:p-6">
@@ -75,7 +128,7 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
                     const name = payload[0].name as string;
                     const entry = allocationData.find((d) => d.name === name);
                     if (!entry) return null;
-                    
+
                     return (
                       <div className="rounded-lg border bg-background p-2 shadow-sm">
                         <div className="grid gap-2">
@@ -144,11 +197,11 @@ export const PortfolioCharts = React.memo(function PortfolioCharts({ holdings }:
                     const symbol = payload[0].payload?.symbol as string;
                     const entry = plData.find((d) => d.symbol === symbol);
                     if (!entry) return null;
-                    
+
                     const plValue = entry.plValue;
                     const plSign = plValue >= 0 ? '+' : '';
                     const isPositive = plValue >= 0;
-                    
+
                     return (
                       <div className="rounded-lg border bg-background p-2 shadow-sm">
                         <div className="grid gap-2">

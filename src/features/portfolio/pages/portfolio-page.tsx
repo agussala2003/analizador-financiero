@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { usePortfolio } from '../../../hooks/use-portfolio';
+import { usePortfolioHistory } from '../hooks/use-portfolio-history';
 import { motion } from 'framer-motion';
 import { LayoutDashboard, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,6 +26,10 @@ import { ErrorBoundary } from '../../../components/error-boundary';
 
 function PortfolioPageContent() {
   const { holdings, transactions, totalPerformance, loading, deleteAsset, portfolioData } = usePortfolio();
+
+  // Fetch historical data for portfolio analysis
+  const { metrics: historicalMetrics, portfolioHistory } = usePortfolioHistory(holdings);
+
   const { theme } = useTheme();
   const { hasAccess: canExportPdf, requiredPlan } = usePlanFeature('exportPdf');
 
@@ -114,14 +119,14 @@ function PortfolioPageContent() {
       const marketValue = h.quantity * currentPrice;
       const pl = marketValue - h.totalCost;
       const plPercent = h.totalCost > 0 ? (pl / h.totalCost) * 100 : 0;
-      
+
       // Calcular días de tenencia desde la primera compra
       const buyTransactions = transactions.filter(t => t.symbol === h.symbol && t.transaction_type === 'buy');
-      const firstPurchaseDate = buyTransactions.length > 0 
+      const firstPurchaseDate = buyTransactions.length > 0
         ? new Date(Math.min(...buyTransactions.map(t => new Date(t.purchase_date).getTime())))
         : new Date();
       const holdingDays = Math.floor((Date.now() - firstPurchaseDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       return { ...h, currentPrice, marketValue, pl, plPercent, holdingDays };
     });
   }, [holdings, portfolioData, loading, transactions]);
@@ -169,8 +174,12 @@ function PortfolioPageContent() {
           totalPerformance={totalPerformance}
           portfolioData={portfolioData}
           avgHoldingDays={avgHoldingDays}
+          historicalMetrics={historicalMetrics}
         />
-        <PortfolioCharts holdings={holdings} />
+        <PortfolioCharts
+          holdings={holdings}
+          portfolioHistory={portfolioHistory}
+        />
         <PortfolioView
           holdings={holdingsWithMetrics}
           onDeleteAsset={(symbol) => { void handleDeleteAsset(symbol); }}

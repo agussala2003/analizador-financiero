@@ -1,9 +1,11 @@
 // src/features/asset-detail/components/metrics/asset-key-metrics.tsx
 
+import { useMemo } from 'react';
 import { Card, CardContent } from '../../../../components/ui/card';
 import { KeyMetricItem } from './key-metric-item';
 import { formatLargeNumber, formatPrice } from '../../lib/asset-formatters';
 import type { AssetData } from '../../../../types/dashboard';
+import { calculatePerformanceMetrics } from '../../../../utils/performance-metrics';
 
 /**
  * Props para el componente AssetKeyMetrics.
@@ -16,14 +18,10 @@ interface AssetKeyMetricsProps {
 /**
  * Componente que muestra métricas clave del activo en un grid responsive.
  * Incluye:
- * - Market Cap
- * - Volumen
- * - Volumen Promedio
- * - Beta
- * - Rango 52 semanas
- * - Último Dividendo
+ * - Market Cap, Volumen, Vol. Promedio, Beta, Rango 52s, Dividendo
+ * - Best Year, Worst Year, Max Drawdown (Calculados on-the-fly)
  * 
- * Grid: 2 cols en móvil, 3 en tablets, 6 en desktop.
+ * Grid: 2 cols en móvil, 3 en tablets, 4 o 5 en desktop.
  * 
  * @example
  * ```tsx
@@ -31,9 +29,18 @@ interface AssetKeyMetricsProps {
  * ```
  */
 export function AssetKeyMetrics({ asset }: AssetKeyMetricsProps) {
+  const metrics = useMemo(() => {
+    return calculatePerformanceMetrics(asset.historicalRaw || []);
+  }, [asset.historicalRaw]);
+
+  const formatYearMetric = (m: { year: number; return: number } | null) => {
+    if (!m) return 'N/A';
+    return `${m.year} (${(m.return * 100).toFixed(2)}%)`;
+  };
+
   return (
     <Card>
-      <CardContent className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+      <CardContent className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3 sm:gap-4">
         <KeyMetricItem
           label="Market Cap"
           value={`$${formatLargeNumber(asset.marketCap)}`}
@@ -63,6 +70,22 @@ export function AssetKeyMetrics({ asset }: AssetKeyMetricsProps) {
               ? formatPrice(asset.lastDividend)
               : 'N/A'
           }
+        />
+        {/* Nuevas métricas calculadas */}
+        <KeyMetricItem
+          label="Mejor Año"
+          value={formatYearMetric(metrics.bestYear)}
+          className={metrics.bestYear && metrics.bestYear.return > 0 ? "text-green-500" : ""}
+        />
+        <KeyMetricItem
+          label="Peor Año"
+          value={formatYearMetric(metrics.worstYear)}
+          className={metrics.worstYear && metrics.worstYear.return < 0 ? "text-red-500" : ""}
+        />
+        <KeyMetricItem
+          label="Máx. Drawdown"
+          value={metrics.maxDrawdown !== 0 ? `${(metrics.maxDrawdown * 100).toFixed(2)}%` : 'N/A'}
+          className="text-red-500"
         />
       </CardContent>
     </Card>

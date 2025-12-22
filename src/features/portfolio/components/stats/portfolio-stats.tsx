@@ -5,6 +5,7 @@ import { Card } from "../../../../components/ui/card";
 import { Holding, PortfolioContextType, PortfolioAssetData } from '../../../../types/portfolio';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../../components/ui/tooltip';
 import { formatCurrency, formatPercent, formatNumber, calculatePortfolioMetrics, calculateDailyPlPercent, getColorClass } from '../../lib/portfolio.utils';
+import { PerformanceMetrics } from '../../../../utils/performance-metrics';
 
 const StatCard = ({ label, value, colorClass = 'text-foreground', helpText }: { label: string, value: React.ReactNode, colorClass?: string, helpText?: string }) => (
     <Card className="p-3 sm:p-4">
@@ -22,7 +23,15 @@ const StatCard = ({ label, value, colorClass = 'text-foreground', helpText }: { 
     </Card>
 );
 
-export function PortfolioStats({ holdings, totalPerformance, portfolioData, avgHoldingDays }: { holdings: Holding[], totalPerformance: PortfolioContextType['totalPerformance'], portfolioData: Record<string, PortfolioAssetData>, avgHoldingDays?: number }) {
+interface PortfolioStatsProps {
+    holdings: Holding[];
+    totalPerformance: PortfolioContextType['totalPerformance'];
+    portfolioData: Record<string, PortfolioAssetData>;
+    avgHoldingDays?: number;
+    historicalMetrics?: PerformanceMetrics; // Optional as it loads async
+}
+
+export function PortfolioStats({ holdings, totalPerformance, portfolioData, avgHoldingDays, historicalMetrics }: PortfolioStatsProps) {
 
     const metrics = useMemo(() => {
         const baseMetrics = calculatePortfolioMetrics(holdings, portfolioData);
@@ -57,6 +66,30 @@ export function PortfolioStats({ holdings, totalPerformance, portfolioData, avgH
             <StatCard label="Ratio de Sharpe Ponderado" value={formatNumber(metrics.sharpeRatio)} helpText="Mide el retorno ajustado por riesgo. Un valor más alto es mejor." />
             <StatCard label="Mejor Activo (G/P %)" value={`${metrics.bestPerformer.symbol} (${formatPercent(metrics.bestPerformer.plPercent)})`} colorClass={bestPerformerColor} />
             <StatCard label="Peor Activo (G/P %)" value={`${metrics.worstPerformer.symbol} (${formatPercent(metrics.worstPerformer.plPercent)})`} colorClass={worstPerformerColor} />
+
+            {/* --- Fila 4 (Historical Metrics) --- */}
+            {historicalMetrics && (
+                <>
+                    <StatCard
+                        label="Mejor Año (Portafolio)"
+                        value={historicalMetrics.bestYear ? `${historicalMetrics.bestYear.year} (${(historicalMetrics.bestYear.return * 100).toFixed(2)}%)` : 'N/A'}
+                        colorClass={historicalMetrics.bestYear && historicalMetrics.bestYear.return > 0 ? "text-green-500" : ""}
+                        helpText="El mejor año calendario simulado del actual portafolio (Buy & Hold)."
+                    />
+                    <StatCard
+                        label="Peor Año (Portafolio)"
+                        value={historicalMetrics.worstYear ? `${historicalMetrics.worstYear.year} (${(historicalMetrics.worstYear.return * 100).toFixed(2)}%)` : 'N/A'}
+                        colorClass={historicalMetrics.worstYear && historicalMetrics.worstYear.return < 0 ? "text-red-500" : ""}
+                        helpText="El peor año calendario simulado del actual portafolio (Buy & Hold)."
+                    />
+                    <StatCard
+                        label="Máx. Drawdown (Portafolio)"
+                        value={historicalMetrics.maxDrawdown ? `${(historicalMetrics.maxDrawdown * 100).toFixed(2)}%` : 'N/A'}
+                        colorClass="text-red-500"
+                        helpText="La máxima caída desde un pico histórico en el valor del portafolio simulado."
+                    />
+                </>
+            )}
         </div>
     );
 }

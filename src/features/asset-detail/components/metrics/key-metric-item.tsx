@@ -10,6 +10,7 @@ import React from 'react';
 interface KeyMetricItemProps {
   label: string;
   value: React.ReactNode;
+  className?: string;
 }
 
 /**
@@ -22,11 +23,11 @@ interface KeyMetricItemProps {
  * <KeyMetricItem label="Beta" value="1.25" />
  * ```
  */
-export function KeyMetricItem({ label, value }: KeyMetricItemProps) {
+export function KeyMetricItem({ label, value, className }: KeyMetricItemProps) {
   return (
     <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
-      <p className="text-sm sm:text-base font-bold text-foreground min-h-5 sm:min-h-6 flex items-center justify-center sm:justify-start">
+      <p className={`text-sm sm:text-base font-bold min-h-5 sm:min-h-6 flex items-center justify-center sm:justify-start ${className || 'text-foreground'}`}>
         {value}
       </p>
     </div>
