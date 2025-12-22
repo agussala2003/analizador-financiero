@@ -21,6 +21,7 @@ import {
   AddTransactionModal,
   SellTransactionModal,
   PortfolioSkeleton,
+  PortfolioSelector,
 } from '../components';
 import { ErrorBoundary } from '../../../components/error-boundary';
 
@@ -158,15 +159,18 @@ function PortfolioPageContent() {
               <p className="text-muted-foreground text-xs sm:text-sm">Un resumen de tus inversiones, rendimiento y distribución.</p>
             </div>
           </div>
-          <Button
-            onClick={() => { void handleExportPdf(); }}
-            disabled={exportingPdf || holdingsWithMetrics.length === 0}
-            variant="outline"
-            className="gap-2"
-          >
-            <FileDown className="h-4 w-4" />
-            {exportingPdf ? 'Exportando...' : 'Exportar a PDF'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <PortfolioSelector />
+            <Button
+              onClick={() => { void handleExportPdf(); }}
+              disabled={exportingPdf || holdingsWithMetrics.length === 0}
+              variant="outline"
+              className="gap-2"
+            >
+              <FileDown className="h-4 w-4" />
+              {exportingPdf ? 'Exportando...' : 'Exportar a PDF'}
+            </Button>
+          </div>
         </div>
 
         <PortfolioStats

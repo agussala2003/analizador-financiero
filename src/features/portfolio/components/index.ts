@@ -16,3 +16,5 @@ export { TransactionHistory } from './table/transaction-history';
 
 // Skeleton
 export { PortfolioSkeleton } from './skeleton/portfolio-skeleton';
+
+export { PortfolioSelector } from './portfolio-selector';

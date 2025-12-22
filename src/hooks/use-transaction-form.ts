@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCedearRatios } from './use-cedear-ratios';
+import { usePortfolio } from './use-portfolio'; // Importamos usePortfolio
 
 type InputType = 'shares' | 'cedears';
 
@@ -16,11 +17,13 @@ interface UseTransactionFormProps {
  * Encapsula el manejo de cantidad, precio, fecha y la conversión entre Acciones y CEDEARs.
  */
 export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransactionFormProps) => {
+  const { currentPortfolio } = usePortfolio(); // Obtenemos el portfolio actual
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const [inputType, setInputType] = useState<InputType>('shares');
-  
+  const [portfolioId, setPortfolioId] = useState<number | null>(null); // Estado para el portfolio seleccionado
+
   const { ratios: cedearRatios } = useCedearRatios();
   const ratio = ticker ? cedearRatios[ticker] : undefined;
 
@@ -37,13 +40,17 @@ export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransact
       }
       setQuantity('');
       setDate(new Date());
+      // Inicializar con el portfolio actual si existe
+      if (currentPortfolio) {
+        setPortfolioId(currentPortfolio.id);
+      }
     }
-  }, [isOpen, currentPrice, ratio, ticker]);
+  }, [isOpen, currentPrice, ratio, ticker, currentPortfolio]);
 
   // Maneja el cambio entre input de 'shares' y 'cedears', convirtiendo los valores.
   const handleTypeChange = useCallback((newType: InputType) => {
     if (newType === inputType || !ratio) return;
-    
+
     const numQuantity = parseFloat(quantity);
     const numPrice = parseFloat(price);
 
@@ -67,7 +74,7 @@ export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransact
 
     setInputType(newType);
   }, [inputType, quantity, price, ratio]);
-  
+
   const isCedears = inputType === 'cedears';
 
   return {
@@ -76,5 +83,6 @@ export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransact
     date, setDate,
     inputType, handleTypeChange,
     ratio, isCedears,
+    portfolioId, setPortfolioId, // Exponemos el estado del portfolio
   };
 };

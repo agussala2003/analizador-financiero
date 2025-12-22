@@ -11,13 +11,13 @@ import { usePlanFeature } from '../../../hooks/use-plan-feature';
 import { PageHeader } from '../../../components/ui/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 
-  // Analyst sort options for SortSelect
-  const analystSortOptions = [
-    { label: 'Más Recomendadas para Compra', value: 'buy' },
-    { label: 'Más Recomendadas para Venta', value: 'sell' },
-  ];
-import { TrendingUp, TrendingDown } from 'lucide-react';
+const analystSortOptions = [
+  { label: 'Más Recomendadas para Compra', value: 'buy' },
+  { label: 'Más Recomendadas para Venta', value: 'sell' },
+];
+import { TrendingUp, TrendingDown, Filter } from 'lucide-react';
 import type { InsightItem } from '../types/insights.types';
+import { ScreenerTab } from '../components/screener-tab';
 
 
 /**
@@ -99,7 +99,7 @@ const InsightsPage: React.FC = () => {
       />
 
       <Tabs defaultValue="valuation" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="valuation" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Valoración
@@ -107,6 +107,10 @@ const InsightsPage: React.FC = () => {
           <TabsTrigger value="analysts" className="gap-2">
             <TrendingDown className="h-4 w-4" />
             Recomendaciones
+          </TabsTrigger>
+          <TabsTrigger value="screener" className="gap-2">
+            <Filter className="h-4 w-4" />
+            Screening
           </TabsTrigger>
         </TabsList>
 
@@ -192,7 +196,11 @@ const InsightsPage: React.FC = () => {
           )}
         </TabsContent>
 
+        <TabsContent value="screener" className="space-y-4 mt-6">
+          <ScreenerTab />
+        </TabsContent>
+
       </Tabs>
     </div>
   );
-};export default InsightsPage;
+}; export default InsightsPage;

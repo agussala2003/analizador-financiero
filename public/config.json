@@ -25,8 +25,8 @@
       "marketRiskPremium": "stable/market-risk-premium",
       "dcf": "stable/custom-discounted-cash-flow",
       "rating": "stable/ratings-snapshot",
-      "revenueGeographic": "stable/revenue-geographic-segmentation", 
-      "revenueProduct": "stable/revenue-product-segmentation"    
+      "revenueGeographic": "stable/revenue-geographic-segmentation",
+      "revenueProduct": "stable/revenue-product-segmentation"
     }
   },
   "plans": {
@@ -34,7 +34,7 @@
       "basico": 5,
       "plus": 25,
       "premium": 50,
-      "administrador": 100000 
+      "administrador": 100000
     },
     "portfolioLimits": {
       "basico": 1,
@@ -43,15 +43,93 @@
       "administrador": 10000
     },
     "freeTierSymbols": [
-      "AAPL", "TSLA", "AMZN", "MSFT", "NVDA", "GOOGL", "META", "NFLX", "JPM", "V",
-      "BAC", "AMD", "PYPL", "DIS", "T", "PFE", "COST", "INTC", "KO", "TGT", "NKE",
-      "SPY", "BA", "BABA", "XOM", "WMT", "GE", "CSCO", "VZ", "JNJ", "CVX", "PLTR",
-      "SQ", "SHOP", "SBUX", "SOFI", "HOOD", "RBLX", "SNAP", "UBER", "FDX", "ABBV",
-      "ETSY", "MRNA", "LMT", "GM", "F", "RIVN", "LCID", "CCL", "DAL", "UAL", "AAL",
-      "TSM", "SONY", "ET", "NOK", "MRO", "COIN", "SIRI", "RIOT", "CPRX", "VWO",
-      "SPYG", "ROKU", "VIAC", "ATVI", "BIDU", "DOCU", "ZM", "PINS", "TLRY", "WBA",
-      "MGM", "NIO", "C", "GS", "WFC", "ADBE", "PEP", "UNH", "CARR", "FUBO", "HCA",
-      "TWTR", "BILI", "RKT"
+      "AAPL",
+      "TSLA",
+      "AMZN",
+      "MSFT",
+      "NVDA",
+      "GOOGL",
+      "META",
+      "NFLX",
+      "JPM",
+      "V",
+      "BAC",
+      "AMD",
+      "PYPL",
+      "DIS",
+      "T",
+      "PFE",
+      "COST",
+      "INTC",
+      "KO",
+      "TGT",
+      "NKE",
+      "SPY",
+      "BA",
+      "BABA",
+      "XOM",
+      "WMT",
+      "GE",
+      "CSCO",
+      "VZ",
+      "JNJ",
+      "CVX",
+      "PLTR",
+      "SQ",
+      "SHOP",
+      "SBUX",
+      "SOFI",
+      "HOOD",
+      "RBLX",
+      "SNAP",
+      "UBER",
+      "FDX",
+      "ABBV",
+      "ETSY",
+      "MRNA",
+      "LMT",
+      "GM",
+      "F",
+      "RIVN",
+      "LCID",
+      "CCL",
+      "DAL",
+      "UAL",
+      "AAL",
+      "TSM",
+      "SONY",
+      "ET",
+      "NOK",
+      "MRO",
+      "COIN",
+      "SIRI",
+      "RIOT",
+      "CPRX",
+      "VWO",
+      "SPYG",
+      "ROKU",
+      "VIAC",
+      "ATVI",
+      "BIDU",
+      "DOCU",
+      "ZM",
+      "PINS",
+      "TLRY",
+      "WBA",
+      "MGM",
+      "NIO",
+      "C",
+      "GS",
+      "WFC",
+      "ADBE",
+      "PEP",
+      "UNH",
+      "CARR",
+      "FUBO",
+      "HCA",
+      "TWTR",
+      "BILI",
+      "RKT"
     ]
   },
   "notifications": [
@@ -91,10 +169,18 @@
     "minLength": 10
   },
   "admin": {
-    "pageSizeOptions": [2, 5, 10]
+    "pageSizeOptions": [
+      2,
+      5,
+      10
+    ]
   },
-  "dividends":{
-    "pageSizeOptions": [10, 20, 50]
+  "dividends": {
+    "pageSizeOptions": [
+      10,
+      20,
+      50
+    ]
   },
   "infoPage": {
     "hero": {
@@ -154,7 +240,7 @@
     "testimonial": {
       "title": "Lo que dicen nuestros usuarios",
       "subtitle": "Historias reales de inversores que han transformado su análisis financiero con FinDash.",
-      "opinions" : [
+      "opinions": [
         {
           "name": "María López",
           "role": "Inversora Individual",
@@ -221,32 +307,110 @@
       {
         "label": "Herramientas",
         "items": [
-          { "to": "/", "label": "Inicio", "icon": "Home" },
-          { "to": "/dashboard", "label": "Dashboard", "icon": "ChartCandlestick", "requiresAuth": true },
-          { "to": "/portfolio", "label": "Portafolio", "icon": "LayoutDashboard", "requiresAuth": true },
-          { "to": "/watchlist", "label": "Watchlist", "icon": "Star", "requiresAuth": true },
-          { "to": "/insights", "label": "Insights", "icon": "TrendingUp", "requiresAuth": true },
-          { "to": "/dividends", "label": "Dividendos", "icon": "Divide", "requiresAuth": true },
-          { "to": "/risk-premium", "label": "Riesgo País", "icon": "Globe", "requiresAuth": true },
-          { "to": "/profile", "label": "Mi Perfil", "icon": "User", "requiresAuth": true },
-          { "to": "/retirement-calculator", "label": "Calculadora de Retiro", "icon": "PiggyBank", "requiresAuth": true }
+          {
+            "to": "/",
+            "label": "Inicio",
+            "icon": "Home"
+          },
+          {
+            "to": "/dashboard",
+            "label": "Dashboard",
+            "icon": "ChartCandlestick",
+            "requiresAuth": true
+          },
+          {
+            "to": "/portfolio",
+            "label": "Portafolio",
+            "icon": "LayoutDashboard",
+            "requiresAuth": true
+          },
+          {
+            "to": "/watchlist",
+            "label": "Watchlist",
+            "icon": "Star",
+            "requiresAuth": true
+          },
+          {
+            "to": "/insights",
+            "label": "Insights",
+            "icon": "TrendingUp",
+            "requiresAuth": true
+          },
+          {
+            "to": "/dividends",
+            "label": "Dividendos",
+            "icon": "Divide",
+            "requiresAuth": true
+          },
+          {
+            "to": "/risk-premium",
+            "label": "Riesgo País",
+            "icon": "Globe",
+            "requiresAuth": true
+          },
+          {
+            "to": "/profile",
+            "label": "Mi Perfil",
+            "icon": "User",
+            "requiresAuth": true
+          },
+          {
+            "to": "/retirement-calculator",
+            "label": "Calculadora de Retiro",
+            "icon": "PiggyBank",
+            "requiresAuth": true
+          }
         ]
       },
       {
         "label": "Contenido",
         "items": [
-          { "to": "/news", "label": "Noticias", "icon": "Newspaper", "requiresAuth": true },
-          { "to": "/blog", "label": "Blog", "icon": "BookCopy", "requiresAuth": true },
-          { "to": "/mis-blogs", "label": "Mis Artículos", "icon": "FileEdit", "requiresAuth": true, "requiresPermission": "can_upload_blog" },
-          { "to": "/guardados", "label": "Artículos Guardados", "icon": "Bookmark", "requiresAuth": true }
+          {
+            "to": "/news",
+            "label": "Noticias",
+            "icon": "Newspaper",
+            "requiresAuth": true
+          },
+          {
+            "to": "/blog",
+            "label": "Blog",
+            "icon": "BookCopy",
+            "requiresAuth": true
+          },
+          {
+            "to": "/mis-blogs",
+            "label": "Mis Artículos",
+            "icon": "FileEdit",
+            "requiresAuth": true,
+            "requiresPermission": "can_upload_blog"
+          },
+          {
+            "to": "/guardados",
+            "label": "Artículos Guardados",
+            "icon": "Bookmark",
+            "requiresAuth": true
+          }
         ]
       },
       {
         "label": "General",
         "items": [
-          { "to": "/plans", "label": "Planes", "icon": "Crown" },
-          { "to": "/contact", "label": "Contacto", "icon": "Mail" },
-          { "to": "/suggestions", "label": "Sugerencias", "icon": "MessageSquareHeart", "requiresAuth": true },
+          {
+            "to": "/plans",
+            "label": "Planes",
+            "icon": "Crown"
+          },
+          {
+            "to": "/contact",
+            "label": "Contacto",
+            "icon": "Mail"
+          },
+          {
+            "to": "/suggestions",
+            "label": "Sugerencias",
+            "icon": "MessageSquareHeart",
+            "requiresAuth": true
+          },
           {
             "to": "/admin",
             "label": "Administración",

@@ -12,7 +12,7 @@ import { supabase } from "../../../lib/supabase";
 
 import { Card, CardHeader } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
-import { Briefcase, ChartCandlestick, RefreshCw } from "lucide-react";
+import { Briefcase, ChartCandlestick, RefreshCw, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 import { PageHeader } from "../../../components/ui/page-header";
 import { TickerAddForm } from "../components/ticker-input/ticker-add-form";
@@ -23,36 +23,37 @@ import { AssetData } from "../../../types/dashboard";
 import { ErrorBoundary } from "../../../components/error-boundary";
 import { DataFreshnessIndicator } from "../../../components/ui/data-freshness-indicator";
 import { useCacheFreshness } from "../hooks/use-cache-freshness";
+import { PortfolioSelector } from "../../portfolio/components/portfolio-selector";
 
 function DashboardPageContent() {
     const { addTicker, removeTicker, selectedTickers } = useDashboard();
-    const { holdings, loading: portfolioLoading } = usePortfolio();
+    const { holdings, loading: portfolioLoading, currentPortfolio } = usePortfolio();
     const { user, profile } = useAuth();
     const config = useConfig();
-    const portfolioLoadedRef = useRef(false);
     const queryClient = useQueryClient();
 
-    // Referencia para trackear qué tickers vienen del portafolio (no deben contar API calls)
-    const portfolioTickersRef = useRef<Set<string>>(new Set());
+    // Referencia para trackear qué tickers han sido cargados automáticamente de este portfolio
+    const loadedPortfolioIdRef = useRef<number | null>(null);
 
-    // Cargar tickers del portfolio, actualizar la referencia y agregarlos al dashboard
+    // Cargar tickers del portfolio actual
     useEffect(() => {
-        // Ejecutar solo una vez cuando el portfolio cargue y no se haya cargado antes
-        if (!portfolioLoading && holdings.length > 0 && !portfolioLoadedRef.current) {
-            portfolioLoadedRef.current = true;
-            
-            const portfolioSymbols = holdings.map(h => h.symbol);
-            
-            // 1. Actualizar la referencia PRIMERO
-            portfolioTickersRef.current = new Set(portfolioSymbols);
-            
-            // 2. Agregar los tickers al dashboard DESPUÉS
-            // Esto causará re-renders, pero la referencia ya estará actualizada
-            portfolioSymbols.forEach(symbol => {
-                addTicker(symbol);
-            });
+        if (!portfolioLoading && currentPortfolio && holdings.length > 0) {
+            // Si cambiamos de portfolio o es la primera carga
+            if (loadedPortfolioIdRef.current !== currentPortfolio.id) {
+                loadedPortfolioIdRef.current = currentPortfolio.id;
+
+                // Limpiar tickers anteriores del dashboard si se desea (opcional, por ahora solo agregamos)
+                // Para una experiencia más limpia, podríamos querer limpiar los tickers 
+                // que venían del portfolio anterior, pero mantener los manuales es complejo sin trackear origen.
+                // Por simplicidad y UX: Agregamos los nuevos. El usuario puede borrar los que no quiera.
+
+                const portfolioSymbols = holdings.map(h => h.symbol);
+                portfolioSymbols.forEach(symbol => {
+                    addTicker(symbol);
+                });
+            }
         }
-    }, [portfolioLoading, holdings, addTicker]);
+    }, [portfolioLoading, holdings, currentPortfolio, addTicker]);
 
     // Limpiar localStorage viejo (ejecutar solo una vez)
     useEffect(() => {
@@ -71,7 +72,7 @@ function DashboardPageContent() {
             return {
                 // Query key solo con valores primitivos para evitar refetches innecesarios
                 queryKey: ['assetData', ticker, userId, profileId, useMockData] as const,
-                queryFn: () => fetchTickerData({ 
+                queryFn: () => fetchTickerData({
                     queryKey: ['assetData', ticker, config, user, profile]
                 }),
                 staleTime: 1000 * 60 * 10, // 10 minutos de caché (aumentado de 5)
@@ -94,7 +95,7 @@ function DashboardPageContent() {
     );
 
     // Detectar activos con error y removerlos automáticamente
-    const failedTickers = useMemo(() => 
+    const failedTickers = useMemo(() =>
         assetQueries
             .map((query, index) => query.isError ? selectedTickers[index] : null)
             .filter((ticker): ticker is string => ticker !== null),
@@ -121,29 +122,29 @@ function DashboardPageContent() {
     const { oldestUpdate, isLoading: isFreshnessLoading } = useCacheFreshness(selectedTickers);
 
     // Función para refrescar todos los datos
-        const handleRefresh = useCallback(() => {
+    const handleRefresh = useCallback(() => {
         if (selectedTickers.length === 0) return;
-        
+
         toast.info('Actualizando datos...', { duration: 1500 });
-        
-            // Borrar el cache de Supabase para estos tickers
-            // Esto fuerza a fetchTickerData a ir a la API sin importar la edad del cache
-            void supabase
-                .from('asset_data_cache')
-                .delete()
-                .in('symbol', selectedTickers)
-                .then(({ error }) => {
-                    if (error) {
-                        console.error('Error al limpiar cache:', error);
-                    }
-                });
-        
-            // Reset queries borra completamente el cache y hace refetch
-            // Esto garantiza que se llame a la API sin importar el estado del cache
-            void queryClient.resetQueries({ 
+
+        // Borrar el cache de Supabase para estos tickers
+        // Esto fuerza a fetchTickerData a ir a la API sin importar la edad del cache
+        void supabase
+            .from('asset_data_cache')
+            .delete()
+            .in('symbol', selectedTickers)
+            .then(({ error }) => {
+                if (error) {
+                    console.error('Error al limpiar cache:', error);
+                }
+            });
+
+        // Reset queries borra completamente el cache y hace refetch
+        // Esto garantiza que se llame a la API sin importar el estado del cache
+        void queryClient.resetQueries({
             queryKey: ['assetData'],
         });
-        
+
         // También invalidar la query de frescura para actualizar el indicador
         void queryClient.invalidateQueries({
             queryKey: ['cacheFreshness'],
@@ -156,11 +157,21 @@ function DashboardPageContent() {
 
     return (
         <div className="container-wide stack-6">
-            <PageHeader
-                icon={<ChartCandlestick className="w-8 h-8 text-primary" />}
-                title="Dashboard de Análisis"
-                description="Monitorea y analiza tus activos financieros favoritos en un solo lugar."
-            />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <PageHeader
+                    icon={<ChartCandlestick className="w-8 h-8 text-primary" />}
+                    title="Dashboard de Análisis"
+                    description="Monitorea y analiza tus activos financieros favoritos."
+                    className="mb-0 border-b-0 pb-0"
+                />
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="hidden sm:flex items-center text-sm text-muted-foreground mr-2">
+                        <Layers className="w-4 h-4 mr-1.5" />
+                        <span>Viendo:</span>
+                    </div>
+                    <PortfolioSelector />
+                </div>
+            </div>
 
             <Card className="card-static">
                 <CardHeader>
@@ -170,15 +181,15 @@ function DashboardPageContent() {
             </Card>
 
             {selectedTickers.length === 0 ? (
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }} 
-                    animate={{ opacity: 1, y: 0 }} 
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                     className="text-center py-12 sm:py-20 px-4 sm:px-6 border-2 border-dashed rounded-lg transition-smooth"
                 >
                     <Briefcase className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
                     <h2 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">Tu dashboard está vacío</h2>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Comienza añadiendo un activo desde la barra de búsqueda superior.</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Activos de "{currentPortfolio?.name}" se mostrarán automáticamente.<br />O comienza añadiendo un activo desde la barra de búsqueda.</p>
                 </motion.div>
             ) : (
                 <>
@@ -186,7 +197,7 @@ function DashboardPageContent() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                         <div className="flex items-center gap-3">
                             {oldestUpdate && !isFreshnessLoading && (
-                                <DataFreshnessIndicator 
+                                <DataFreshnessIndicator
                                     lastUpdated={oldestUpdate}
                                     label="Datos"
                                     size="md"
@@ -195,7 +206,7 @@ function DashboardPageContent() {
                                 />
                             )}
                         </div>
-                        
+
                         <Button
                             onClick={handleRefresh}
                             disabled={isLoading}

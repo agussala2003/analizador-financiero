@@ -9,6 +9,7 @@ import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import { Calendar } from "../../../../components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -22,36 +23,48 @@ import { isFutureDate, calculateFinalQuantity, calculateFinalPrice } from '../..
  * Modal para registrar una nueva transacción de compra de un activo.
  */
 export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: AddTransactionModalProps) {
-  const { addTransaction, holdings } = usePortfolio();
+  const { addTransaction, holdings, portfolios, transactions } = usePortfolio(); // Traemos portfolios y transacciones
   const [loading, setLoading] = useState(false);
-
-  // ✅ Validar límite de activos en portfolio
-  const uniqueAssets = holdings.length;
-  const { isAtLimit, upgradeMessage } = usePortfolioLimits(uniqueAssets);
 
   // ✅ Toda la lógica del formulario ahora reside en el hook
   const {
     quantity, setQuantity,
     price, setPrice,
     date, setDate,
-  handleTypeChange,
-    ratio, isCedears
+    handleTypeChange,
+    ratio, isCedears,
+    portfolioId, setPortfolioId
   } = useTransactionForm({ isOpen, ticker, currentPrice });
+
+  // ✅ Validar límite de activos EN EL PORTFOLIO SELECCIONADO
+  // Filtramos los holdings para contar los activos únicos DE ESE portfolio
+  const uniqueAssetsInTargetPortfolio = transactions
+    .filter(t => t.portfolio_id === portfolioId)
+    .map(t => t.symbol)
+    .filter((value, index, self) => self.indexOf(value) === index).length;
+
+  const { isAtLimit, upgradeMessage } = usePortfolioLimits(uniqueAssetsInTargetPortfolio);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticker) return;
-    
+
+    if (!portfolioId) {
+      toast.error("Selecciona un portafolio destino.");
+      return;
+    }
+
     const dateString = format(date, 'yyyy-MM-dd');
     if (isFutureDate(dateString)) {
       toast.error("La fecha de la transacción no puede ser futura.");
       return;
     }
 
-    // ✅ Validación: Verificar límite de activos si es un activo nuevo
-    const symbolExists = holdings.some(h => h.symbol === ticker);
-    if (!symbolExists && isAtLimit) {
-      toast.error("Límite de activos alcanzado", {
+    // ✅ Validación: Verificar límite de activos si es un activo nuevo EN ESE PORTFOLIO
+    const symbolExistsInPortfolio = transactions.some(t => t.portfolio_id === portfolioId && t.symbol === ticker);
+
+    if (!symbolExistsInPortfolio && isAtLimit) {
+      toast.error("Límite de activos alcanzado en este portafolio", {
         description: `${upgradeMessage} Actualiza tu plan para agregar más activos.`,
       });
       return;
@@ -61,7 +74,7 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
     try {
       const enteredQuantity = parseFloat(quantity);
       const enteredPrice = parseFloat(price);
-      
+
       // ✅ Validación: Cantidad debe ser positiva
       if (isNaN(enteredQuantity) || enteredQuantity <= 0) {
         toast.error("Cantidad inválida", {
@@ -97,7 +110,7 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
         setLoading(false);
         return;
       }
-      
+
       const finalQuantityInShares = calculateFinalQuantity(enteredQuantity, isCedears, ratio);
       const finalPricePerShare = calculateFinalPrice(enteredPrice, isCedears, ratio);
 
@@ -107,8 +120,9 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
         purchase_price: finalPricePerShare,
         purchase_date: dateString,
         transaction_type: 'buy',
+        portfolio_id: portfolioId, // Enviamos el ID del portfolio seleccionado
       });
-      toast.success(`Compra de ${ticker} agregada a tu portafolio.`);
+      toast.success(`Compra de ${ticker} agregada correctamente.`);
       onClose();
     } catch (error: unknown) {
       let message = 'Error desconocido';
@@ -128,7 +142,28 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
           <DialogTitle className="text-lg sm:text-xl">Agregar Compra de <span className="text-primary">{ticker}</span></DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">Completa los datos de tu operación.</DialogDescription>
         </DialogHeader>
-  <form onSubmit={e => { e.preventDefault(); void handleSubmit(e); }} className="space-y-3 sm:space-y-4 pt-4">
+        <form onSubmit={e => { e.preventDefault(); void handleSubmit(e); }} className="space-y-3 sm:space-y-4 pt-4">
+
+          {/* Portfolio Selector */}
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="portfolio" className="text-xs sm:text-sm">Portafolio Destino</Label>
+            <Select
+              value={portfolioId?.toString()}
+              onValueChange={(val) => setPortfolioId(parseInt(val))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecciona un portafolio" />
+              </SelectTrigger>
+              <SelectContent>
+                {portfolios.map(p => (
+                  <SelectItem key={p.id} value={p.id.toString()}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {ratio && (
             <div>
               <Label className="mb-2 block text-xs sm:text-sm">Tipo de Activo</Label>
@@ -142,31 +177,31 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="quantity" className="text-xs sm:text-sm">Cantidad</Label>
-              <Input 
-                id="quantity" 
-                type="number" 
-                step="any" 
+              <Input
+                id="quantity"
+                type="number"
+                step="any"
                 min="0.0001"
                 max="1000000"
-                value={quantity} 
-                onChange={(e) => setQuantity(e.target.value)} 
-                placeholder={isCedears ? 'Ej: 15' : 'Ej: 1.5'} 
-                required 
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                placeholder={isCedears ? 'Ej: 15' : 'Ej: 1.5'}
+                required
                 autoFocus
                 className="text-sm"
               />
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="price" className="text-xs sm:text-sm">Precio por Unidad (USD)</Label>
-              <Input 
-                id="price" 
-                type="number" 
-                step="any" 
+              <Input
+                id="price"
+                type="number"
+                step="any"
                 min="0.01"
                 max="1000000"
-                value={price} 
-                onChange={(e) => setPrice(e.target.value)} 
-                placeholder={isCedears ? 'Ej: 17.50' : 'Ej: 175.00'} 
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder={isCedears ? 'Ej: 17.50' : 'Ej: 175.00'}
                 required
                 className="text-sm"
               />

@@ -4,13 +4,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-auth';
 import { toast } from 'sonner';
-import { Transaction, PortfolioAssetData } from '../../../types/portfolio';
+import { Transaction, PortfolioAssetData, Portfolio } from '../../../types/portfolio';
 import { logger } from '../../../lib/logger';
 import { errorToString } from '../../../utils/type-guards';
 
 interface PortfolioQueryData {
     transactions: Transaction[];
     portfolioData: Record<string, PortfolioAssetData>;
+    portfolios: Portfolio[];
 }
 
 /**
@@ -51,7 +52,7 @@ export function usePortfolioMutations() {
         // ✅ Aquí ocurre la magia optimista
         onMutate: async (newTransactionData) => {
             const queryKey = ['portfolio', user?.id];
-            
+
             // 1. Cancelamos cualquier refetch en curso para que no sobreescriba nuestra actualización optimista.
             await queryClient.cancelQueries({ queryKey });
 
@@ -72,11 +73,12 @@ export function usePortfolioMutations() {
                 return {
                     transactions: updatedTransactions,
                     portfolioData: oldData?.portfolioData ?? {},
+                    portfolios: oldData?.portfolios ?? [],
                 };
             });
 
             toast.success(`Operación de ${newTransactionData.symbol} registrada localmente.`);
-            
+
             // 4. Devolvemos la "instantánea" para poder restaurarla en caso de error.
             return { previousPortfolio };
         },

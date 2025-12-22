@@ -1,15 +1,15 @@
 // src/utils/financial.ts
 
 export interface Indicator {
-    label: string;
-    apiFields: string[];
-    compute?: (raw: Record<string, number>) => number | null;
-    lowerIsBetter: boolean;
-    green: number;
-    yellow: number;
-    asPercent?: boolean;
-    isLargeNumber?: boolean;
-    explanation: string;
+  label: string;
+  apiFields: string[];
+  compute?: (raw: Record<string, number>) => number | null;
+  lowerIsBetter: boolean;
+  green: number;
+  yellow: number;
+  asPercent?: boolean;
+  isLargeNumber?: boolean;
+  explanation: string;
 }
 
 export type IndicatorConfig = Record<string, Indicator>;
@@ -30,6 +30,12 @@ export const indicatorConfig = {
     },
     lowerIsBetter: true, green: 15, yellow: 25,
     explanation: 'Mide cuántos años de beneficios se necesitarían para recuperar el precio de la acción. Un valor bajo sugiere que puede estar barata, pero depende mucho del sector: en tecnología un PER de 40 puede ser normal, mientras que en un banco un PER de 15 ya podría considerarse caro. Lo clave es compararlo con competidores directos.',
+  },
+  pegRatio: {
+    label: 'PEG Ratio',
+    apiFields: ['pegRatioTTM', 'pegRatio'],
+    lowerIsBetter: true, green: 1.0, yellow: 1.5,
+    explanation: 'Ratio favorito de Peter Lynch. Compara el PER con la tasa de crecimiento de la empresa. Un valor menor a 1 indica que la acción está barata en relación a su crecimiento. Entre 1 y 1.5 es un precio razonable, y mayor a 2 suele considerarse cara.',
   },
   priceToBook: {
     label: 'Price to Book',
