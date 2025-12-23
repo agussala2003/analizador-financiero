@@ -4,7 +4,8 @@ import { useMemo } from 'react';
 import { Card } from "../../../../components/ui/card";
 import { Holding, PortfolioContextType, PortfolioAssetData } from '../../../../types/portfolio';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../../components/ui/tooltip';
-import { formatCurrency, formatPercent, formatNumber, calculatePortfolioMetrics, calculateDailyPlPercent, getColorClass } from '../../lib/portfolio.utils';
+import { formatCurrency, formatPercent } from '../../../../lib/utils';
+import { formatNumber, calculatePortfolioMetrics, calculateDailyPlPercent, getColorClass } from '../../lib/portfolio.utils';
 import { PerformanceMetrics } from '../../../../utils/performance-metrics';
 
 const StatCard = ({ label, value, colorClass = 'text-foreground', helpText }: { label: string, value: React.ReactNode, colorClass?: string, helpText?: string }) => (

@@ -27,10 +27,34 @@ export function cn(...inputs: ClassValue[]): string {
  */
 export function formatDate(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('es-ES', { 
-    day: '2-digit', 
-    month: '2-digit', 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  return d.toLocaleDateString('es-ES', {
+    minute: '2-digit'
   });
 }
+
+/**
+ * Formatea un valor numérico como moneda (USD)
+ */
+export const formatCurrency = (value: number): string =>
+  `$${Number(value || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+/**
+ * Formatea un número de forma compacta (e.g. 1.2M, 5B)
+ */
+export const formatCompactNumber = (number: number): string => {
+  return Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+    style: "currency",
+    currency: "USD",
+  }).format(number);
+};
+
+/**
+ * Formatea un valor numérico como porcentaje
+ */
+export const formatPercent = (value: number): string =>
+  `${Number(value || 0).toFixed(2)}%`;

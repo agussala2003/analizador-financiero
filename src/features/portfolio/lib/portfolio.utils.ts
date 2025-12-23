@@ -3,20 +3,7 @@
 import { Holding, PortfolioAssetData } from "../../../types/portfolio";
 import { AllocationDatum, PlDatum, ChartConfigFixed, PortfolioMetrics } from "../types/portfolio.types";
 
-/**
- * Formatea un valor numérico como moneda
- */
-export const formatCurrency = (value: number): string =>
-  `$${Number(value || 0).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 
-/**
- * Formatea un valor numérico como porcentaje
- */
-export const formatPercent = (value: number): string =>
-  `${Number(value || 0).toFixed(2)}%`;
 
 /**
  * Formatea una cantidad numérica con precisión

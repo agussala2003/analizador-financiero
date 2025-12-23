@@ -84,8 +84,8 @@ const router = createBrowserRouter([
             {
                 element: <ProtectedRoute />,
                 children: [
-                    { 
-                        path: "dashboard", 
+                    {
+                        path: "dashboard",
                         element: (
                             <ErrorBoundary level="feature" featureName="Dashboard">
                                 <Suspense fallback={<DashboardSkeleton />}>
@@ -94,8 +94,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "asset/:symbol", 
+                    {
+                        path: "asset/:symbol",
                         element: (
                             <ErrorBoundary level="feature" featureName="Asset Detail">
                                 <Suspense fallback={<AssetDetailSkeleton />}>
@@ -104,8 +104,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "portfolio", 
+                    {
+                        path: "portfolio",
                         element: (
                             <ErrorBoundary level="feature" featureName="Portfolio">
                                 <Suspense fallback={<PortfolioSkeleton />}>
@@ -114,8 +114,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "watchlist", 
+                    {
+                        path: "watchlist",
                         element: (
                             <ErrorBoundary level="feature" featureName="Watchlist">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando watchlist..." />}>
@@ -124,8 +124,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "dividends", 
+                    {
+                        path: "dividends",
                         element: (
                             <ErrorBoundary level="feature" featureName="Dividends">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando dividendos..." />}>
@@ -134,8 +134,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "news", 
+                    {
+                        path: "news",
                         element: (
                             <ErrorBoundary level="feature" featureName="News">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando noticias..." />}>
@@ -144,8 +144,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "insights", 
+                    {
+                        path: "insights",
                         element: (
                             <ErrorBoundary level="feature" featureName="Insights">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando insights..." />}>
@@ -158,10 +158,10 @@ const router = createBrowserRouter([
                     { path: "risk-premium", element: <Suspense fallback={<PageSkeleton />}><RiskPremiumPage /></Suspense> },
                     { path: "suggestions", element: <Suspense fallback={<PageSkeleton />}><SuggestionsPage /></Suspense> },
                     { path: "retirement-calculator", element: <Suspense fallback={<PageSkeleton />}><RetirementCalculatorPage /></Suspense> },
-                    
+
                     // --- Rutas del Blog ---
-                    { 
-                        path: "blog", 
+                    {
+                        path: "blog",
                         element: (
                             <ErrorBoundary level="feature" featureName="Blog">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando blog..." />}>
@@ -170,8 +170,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "blog/:slug", 
+                    {
+                        path: "blog/:slug",
                         element: (
                             <ErrorBoundary level="feature" featureName="Blog Post">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando artículo..." />}>
@@ -180,8 +180,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "blog/crear", 
+                    {
+                        path: "blog/crear",
                         element: (
                             <ErrorBoundary level="feature" featureName="Create Blog">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando editor..." />}>
@@ -190,8 +190,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "blog/editar/:slug", 
+                    {
+                        path: "blog/editar/:slug",
                         element: (
                             <ErrorBoundary level="feature" featureName="Edit Blog">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando editor..." />}>
@@ -200,8 +200,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "mis-blogs", 
+                    {
+                        path: "mis-blogs",
                         element: (
                             <ErrorBoundary level="feature" featureName="My Blogs">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando tus artículos..." />}>
@@ -210,8 +210,8 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    { 
-                        path: "guardados", 
+                    {
+                        path: "guardados",
                         element: (
                             <ErrorBoundary level="feature" featureName="Bookmarked Blogs">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando artículos guardados..." />}>
@@ -220,7 +220,7 @@ const router = createBrowserRouter([
                             </ErrorBoundary>
                         )
                     },
-                    
+
                     // --- Rutas Protegidas solo para Administradores (anidadas) ---
                     {
                         element: <AdminRoute />,

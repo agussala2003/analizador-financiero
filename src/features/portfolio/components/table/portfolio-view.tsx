@@ -16,7 +16,8 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../../../components/ui/alert-dialog';
 import { PortfolioViewProps } from '../../types/portfolio.types';
 import { HoldingWithMetrics } from '../../../../types/portfolio';
-import { formatCurrency, formatPercent, formatQuantity } from '../../lib/portfolio.utils';
+import { formatCurrency, formatPercent } from '../../../../lib/utils';
+import { formatQuantity } from '../../lib/portfolio.utils';
 
 export const PortfolioView = React.memo(function PortfolioView({ holdings, onDeleteAsset, onAddMore, onSell }: PortfolioViewProps) {
   const [sorting, setSorting] = useState<SortingState>([]);

@@ -1,5 +1,5 @@
 // src/features/dashboard/pages/dashboard-page.tsx
-
+// Force refresh
 import { useEffect, useRef, useMemo, useCallback } from "react";
 import { useDashboard } from "../../../hooks/use-dashboard";
 import { usePortfolio } from "../../../hooks/use-portfolio";
@@ -214,9 +214,10 @@ function DashboardPageContent() {
                             size="sm"
                             className="gap-2"
                         >
-                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
                             <span className="hidden sm:inline">Actualizar datos</span>
                             <span className="sm:hidden">Actualizar</span>
+                            <span className="sr-only">Actualizar datos del mercado</span>
                         </Button>
                     </div>
 

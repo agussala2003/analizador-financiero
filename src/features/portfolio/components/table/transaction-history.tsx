@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../../components
 import { Transaction } from "../../../../types/portfolio";
 import { DataTable } from '../../../dividends/components';
 import { useReactTable, getCoreRowModel, getPaginationRowModel, ColumnDef } from "@tanstack/react-table";
-import { formatDate, formatCurrency, formatQuantity } from '../../lib/portfolio.utils';
+import { formatCurrency } from '../../../../lib/utils';
+import { formatDate, formatQuantity } from '../../lib/portfolio.utils';
 
 export function TransactionHistory({ transactions }: { transactions: Transaction[] }) {
     const columns = useMemo<ColumnDef<Transaction>[]>(() => [

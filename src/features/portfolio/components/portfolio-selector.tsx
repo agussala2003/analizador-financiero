@@ -140,7 +140,8 @@ export function PortfolioSelector() {
                                                 setPortfolioToDelete(portfolio.id);
                                             }}
                                         >
-                                            <Trash2 className="h-3 w-3 text-destructive" />
+                                            <Trash2 className="h-3 w-3 text-destructive" aria-hidden="true" />
+                                            <span className="sr-only">Eliminar portafolio {portfolio.name}</span>
                                         </div>
                                     </CommandItem>
                                 ))}

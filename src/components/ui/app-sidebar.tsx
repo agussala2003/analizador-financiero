@@ -60,7 +60,7 @@ SidebarHeaderContent.displayName = "SidebarHeaderContent";
 const SidebarNavigation = React.memo(({ isLoaded, config, user, profile }: { isLoaded: boolean; config: Config; user: SupabaseUser | null; profile: Profile | null }) => {
   const iconMap = {
     Home, ChartCandlestick, LayoutDashboard, Divide, Newspaper, BookCopy,
-    BookMarked, FilePenLine, FileEdit, Bookmark, MessageSquareHeart, Shield, 
+    BookMarked, FilePenLine, FileEdit, Bookmark, MessageSquareHeart, Shield,
     User, Globe, PiggyBank, Star, Crown, Mail, TrendingUp
   };
 

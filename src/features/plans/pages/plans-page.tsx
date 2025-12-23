@@ -124,7 +124,7 @@ export default function PlansPage() {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-8 sm:mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-8 pt-4 sm:mt-12">
           {plans.map((plan, index) => {
             const Icon = plan.icon;
             const isCurrentPlan = currentRole === plan.role;
@@ -140,7 +140,7 @@ export default function PlansPage() {
                   className={cn(
                     'relative h-full flex flex-col',
                     plan.highlighted &&
-                      'border-primary shadow-lg scale-105 md:scale-110'
+                    'border-primary shadow-lg scale-105 md:scale-110'
                   )}
                 >
                   {plan.highlighted && (
@@ -349,8 +349,8 @@ export default function PlansPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-wrap gap-2 justify-center">
                 {config.plans.freeTierSymbols.map((symbol) => (
-                  <Badge 
-                    key={symbol} 
+                  <Badge
+                    key={symbol}
                     variant="secondary"
                     className="text-xs sm:text-sm px-2 sm:px-3 py-1 font-mono"
                   >

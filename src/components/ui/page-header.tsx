@@ -2,11 +2,13 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { cn } from '../../lib/utils';
 
 interface PageHeaderProps {
   icon: React.ReactNode;
   title: string;
   description: string;
+  className?: string;
 }
 
 /**
@@ -19,14 +21,17 @@ interface PageHeaderProps {
  * - Usa `section-divider` para separación consistente
  * - Animación optimizada (0.3s)
  */
-export function PageHeader({ icon, title, description }: PageHeaderProps) {
+export function PageHeader({ icon, title, description, className }: PageHeaderProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b">
+      <div className={cn(
+        "flex items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b",
+        className
+      )}>
         <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
           {icon}
         </div>
