@@ -32,6 +32,12 @@ export interface FmpProxyEndpoints {
   rating: string;
   revenueGeographic: string;
   revenueProduct: string;
+  stockNews: string;
+  fmpArticles: string;
+  generalNews: string;
+  pressReleases: string;
+  forexNews: string;
+  cryptoNews: string;
 }
 
 export interface SidebarLink {

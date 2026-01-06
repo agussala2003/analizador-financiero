@@ -145,9 +145,9 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                 <div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 className="w-full sm:w-auto text-xs sm:text-sm"
                                                 disabled={!canExportPdf}
                                             >
@@ -195,8 +195,8 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                     {sortedAssets.map((asset) => (
                                         <TableRow key={asset.symbol}>
                                             <TableCell className="font-medium">
-                                                <Link 
-                                                    to={`/asset/${asset.symbol}`} 
+                                                <Link
+                                                    to={`/asset/${asset.symbol}`}
                                                     className="flex items-center gap-3 group"
                                                     onMouseEnter={() => prefetchAssetIfNotCached(asset.symbol)}
                                                     onFocus={() => prefetchAssetIfNotCached(asset.symbol)}
@@ -219,11 +219,15 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                             <TableCell className="text-center">{pctNode(asset.yearChange)}</TableCell>
                                             <TableCell className="text-center">{pctNode(asset.stdDev)}</TableCell>
                                             <TableCell className="text-center font-semibold">{formatNumber(asset.sharpeRatio)}</TableCell>
-                                            <TableCell className="text-center font-semibold">{formatCurrency(asset.lastMonthAvgPriceTarget)}</TableCell>
+                                            <TableCell className="text-center font-semibold">
+                                                {typeof asset.lastMonthAvgPriceTarget === 'number' && asset.lastMonthAvgPriceTarget > 0
+                                                    ? formatCurrency(asset.lastMonthAvgPriceTarget)
+                                                    : <span className="text-muted-foreground text-xs font-normal">N/A</span>}
+                                            </TableCell>
                                             <TableCell className="text-center">
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() => setBuyModalInfo({ isOpen: true, ticker: asset.symbol, price: asset.currentPrice })}
                                                 >
                                                     <ShoppingCart className="w-5 h-5 text-primary" />
@@ -240,8 +244,8 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                         {sortedAssets.map(asset => (
                             <Card key={asset.symbol} className="p-3">
                                 <div className="flex items-start justify-between mb-3">
-                                    <Link 
-                                        to={`/asset/${asset.symbol}`} 
+                                    <Link
+                                        to={`/asset/${asset.symbol}`}
                                         className="flex items-center gap-2 font-bold flex-1 min-w-0"
                                         onMouseEnter={() => prefetchAssetIfNotCached(asset.symbol)}
                                         onFocus={() => prefetchAssetIfNotCached(asset.symbol)}
@@ -263,11 +267,18 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Anual</span>{pctNode(asset.yearChange)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Volatilidad</span>{pctNode(asset.stdDev)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Ratio Sharpe</span><span className="font-semibold">{formatNumber(asset.sharpeRatio)}</span></div>
-                                    <div className="flex justify-between"><span className="text-muted-foreground">Precio Objetivo</span><span className="font-semibold">{formatCurrency(asset.lastMonthAvgPriceTarget)}</span></div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Precio Objetivo</span>
+                                        <span className="font-semibold">
+                                            {typeof asset.lastMonthAvgPriceTarget === 'number' && asset.lastMonthAvgPriceTarget > 0
+                                                ? formatCurrency(asset.lastMonthAvgPriceTarget)
+                                                : <span className="text-muted-foreground text-xs font-normal">N/A</span>}
+                                        </span>
+                                    </div>
                                 </div>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     className="w-full mt-2.5 text-xs"
                                     onClick={() => setBuyModalInfo({ isOpen: true, ticker: asset.symbol, price: asset.currentPrice })}
                                 >

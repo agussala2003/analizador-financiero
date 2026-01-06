@@ -12,26 +12,26 @@ const FINANCIAL_SECTIONS: {
   title: string;
   keys: string[];
 }[] = [
-  {
-    title: 'Valoración',
-    keys: [
-      'PER',
-      'priceToBook',
-      'priceToSales',
-      'pfc_ratio',
-      'evToEbitda',
-      'earningsYield',
-    ],
-  },
-  {
-    title: 'Rentabilidad',
-    keys: ['roe', 'roa', 'roic', 'operatingMargin', 'grossMargin'],
-  },
-  {
-    title: 'Salud Financiera',
-    keys: ['debtToEquity', 'currentRatio', 'netDebtToEBITDA', 'payout_ratio'],
-  },
-];
+    {
+      title: 'Valoración',
+      keys: [
+        'PER',
+        'priceToBook',
+        'priceToSales',
+        'pfc_ratio',
+        'evToEbitda',
+        'earningsYield',
+      ],
+    },
+    {
+      title: 'Rentabilidad',
+      keys: ['roe', 'roa', 'roic', 'operatingMargin', 'grossMargin'],
+    },
+    {
+      title: 'Salud Financiera',
+      keys: ['debtToEquity', 'currentRatio', 'netDebtToEBITDA', 'payout_ratio'],
+    },
+  ];
 
 /**
  * Props para el componente AssetFinancialsTab.
@@ -88,9 +88,25 @@ export function AssetFinancialsTab({ asset }: AssetFinancialsTabProps) {
     metrics: processSectionMetrics(section.keys),
   }));
 
+  // Filtrar secciones donde TODOS los valores son "N/A"
+  const validSections = sections.filter(section =>
+    section.metrics.some(metric => metric.value !== 'N/A')
+  );
+
+  if (validSections.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center border rounded-lg bg-muted/20">
+        <h3 className="text-lg font-semibold mb-2">Sin datos financieros</h3>
+        <p className="text-muted-foreground text-sm max-w-md">
+          Este activo (como índices o ciertos ETFs) no informa métricas financieras tradicionales como P/E o ROE.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {sections.map((section) => (
+      {validSections.map((section) => (
         <FinancialMetricCard key={section.title} section={section} />
       ))}
     </div>

@@ -60,6 +60,10 @@ export function RevenueSegmentationCharts({
   const hasProductData =
     asset.productRevenue && asset.productRevenue.length > 0;
 
+  if (!hasGeographicData && !hasProductData) {
+    return null;
+  }
+
   // Si no tiene acceso a ninguno de los dos, mostrar mensaje bloqueado
   if (!canViewGeographic && !canViewProduct) {
     return (

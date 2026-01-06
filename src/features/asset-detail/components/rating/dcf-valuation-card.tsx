@@ -37,6 +37,11 @@ export function DCFValuationCard({ currentPrice, dcf }: DCFValuationCardProps) {
   const dcfDifference =
     dcfValue !== null ? calculateDCFDifference(currentPrice, dcfValue) : null;
 
+  // Si no hay datos de DCF (ej. ETFs, Índices), no mostrar la tarjeta para evitar bloques vacíos
+  if (dcfValue === null) {
+    return null;
+  }
+
   return (
     <Card className="border-l-4 border-l-primary/50">
       <CardHeader>
@@ -62,11 +67,10 @@ export function DCFValuationCard({ currentPrice, dcf }: DCFValuationCardProps) {
         </div>
         {dcfDifference !== null && (
           <div
-            className={`flex items-center justify-center p-3 rounded-lg ${
-              dcfDifference >= 0
+            className={`flex items-center justify-center p-3 rounded-lg ${dcfDifference >= 0
                 ? 'bg-green-500/10 text-green-500'
                 : 'bg-red-500/10 text-red-500'
-            }`}
+              }`}
           >
             {dcfDifference >= 0 ? (
               <TrendingDown className="w-5 h-5 mr-2 rotate-180" />

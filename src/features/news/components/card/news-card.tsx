@@ -1,22 +1,18 @@
 // src/features/news/components/card/news-card.tsx
-
 import { motion } from "framer-motion";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../../../components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
-import { ExternalLink } from "lucide-react";
-import { NewsCardProps } from "../../types/news.types";
-import { formatNewsDate, getCompanyName } from "../../lib/news.utils";
+import { ExternalLink, Calendar, User } from "lucide-react";
+import type { UnifiedNewsItem } from "../../../../types/news";
 
-/**
- * Tarjeta de noticia individual con animación de entrada
- * Toda la card es clickeable para mejor UX
- */
+interface NewsCardProps {
+  news: UnifiedNewsItem;
+  index: number;
+}
+
 export const NewsCard = ({ news, index }: NewsCardProps) => {
-  const company = getCompanyName(news);
-  const formattedDate = formatNewsDate(news.publishedDate);
-
   const handleClick = () => {
-    window.open(news.newsURL, '_blank', 'noopener,noreferrer');
+    window.open(news.url, '_blank', 'noopener,noreferrer');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -26,6 +22,12 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
     }
   };
 
+  const formattedDate = new Date(news.date).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -33,55 +35,69 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
       transition={{ duration: 0.3, delay: index * 0.05 }}
       className="h-full"
     >
-      <Card 
-        className="flex flex-col h-full cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 active:scale-[0.98] group"
+      <Card
+        className="flex flex-col h-full overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] hover:border-primary/50 group"
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         tabIndex={0}
         role="link"
       >
-        <CardHeader className="p-4 sm:p-6">
-          <div className="flex items-start justify-between gap-2 sm:gap-4">
-            <CardTitle className="text-base sm:text-lg leading-tight group-hover:text-primary transition-colors flex-1">
-              {news.newsTitle}
-            </CardTitle>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <Badge variant="secondary" className="whitespace-nowrap text-xs">
-                {news.symbol}
+        {news.image && (
+          <div className="relative h-48 w-full overflow-hidden bg-muted">
+            <img
+              src={news.image}
+              alt={news.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=News';
+              }}
+            />
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="shadow-sm backdrop-blur-md bg-background/80">
+                {news.symbol || news.source}
               </Badge>
-              <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
           </div>
+        )}
+
+        <CardHeader className={`${news.image ? 'pt-4' : 'pt-6'} px-6 pb-2`}>
+          {!news.image && news.symbol && (
+            <div className="mb-2">
+              <Badge variant="outline">{news.symbol}</Badge>
+            </div>
+          )}
+          <h3 className="font-bold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            {news.title}
+          </h3>
         </CardHeader>
-        <CardContent className="flex-grow space-y-2 sm:space-y-3 text-xs sm:text-sm p-4 sm:p-6">
-          {news.newGrade && (
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px]">Calificación:</span>
-              <span className="font-medium">{news.newGrade}</span>
-            </div>
+
+        <CardContent className="flex-grow px-6 py-2">
+          {news.summary && (
+            <p className="text-sm text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: news.summary.replace(/<[^>]*>?/gm, '') }} />
           )}
-          {news.priceTarget && (
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px]">Precio Obj.:</span>
-              <span className="font-medium text-green-600 dark:text-green-500">
-                ${news.priceTarget.toLocaleString()}
-              </span>
-            </div>
-          )}
-          {news.analystName && (
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-muted-foreground min-w-[100px] sm:min-w-[120px]">Analista:</span>
-              <span className="font-medium truncate">{news.analystName}</span>
+
+          {/* Legacy support for ratings if mapped */}
+          {news.grade && (
+            <div className="mt-3 flex items-center gap-2 text-sm">
+              <span className="font-semibold">Rating:</span>
+              <Badge variant={news.grade.includes('Buy') ? 'default' : 'secondary'}>{news.grade}</Badge>
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between text-xs sm:text-sm text-muted-foreground pt-3 sm:pt-4 border-t p-4 sm:p-6">
-          <span className="flex items-center gap-1">
-            📰 {company}
-          </span>
-          <span className="flex items-center gap-1">
-            📅 {formattedDate}
-          </span>
+
+        <CardFooter className="px-6 py-4 border-t flex justify-between items-center text-xs text-muted-foreground bg-muted/5">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <User className="w-3 h-3" />
+              {news.source}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {formattedDate}
+            </span>
+          </div>
+          <ExternalLink className="w-3 h-3 group-hover:text-primary" />
         </CardFooter>
       </Card>
     </motion.div>

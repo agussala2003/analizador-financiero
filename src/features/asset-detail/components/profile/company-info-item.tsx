@@ -36,6 +36,8 @@ interface CompanyInfoItemProps {
  * ```
  */
 export function CompanyInfoItem({ icon, label, value }: CompanyInfoItemProps) {
+  if (!value || value === 'N/A' || value === 'Unknown') return null;
+
   return (
     <div className="flex items-start gap-2 sm:gap-3">
       <div className="text-primary mt-0.5 flex-shrink-0 scale-90 sm:scale-100">{icon}</div>
