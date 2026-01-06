@@ -25,7 +25,12 @@ export const useTransactionForm = ({ isOpen, ticker, currentPrice }: UseTransact
   const [portfolioId, setPortfolioId] = useState<number | null>(null); // Estado para el portfolio seleccionado
 
   const { ratios: cedearRatios } = useCedearRatios();
-  const ratio = ticker ? cedearRatios[ticker] : undefined;
+
+  // Intentamos obtener el ratio usando el ticker tal cual (ej: 'MELI')
+  // Si no lo encontramos, intentamos normalizándolo (quitando caracteres no alfanuméricos, ej: 'BRK-B' -> 'BRKB')
+  const ratio = ticker
+    ? (cedearRatios[ticker] || cedearRatios[ticker.replace(/[^a-zA-Z]/g, '')])
+    : undefined;
 
   // Resetea y establece los valores iniciales del formulario cuando el modal se abre.
   useEffect(() => {
