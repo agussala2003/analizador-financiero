@@ -1,13 +1,14 @@
 import { MarketMover } from '../types';
-
-const API_KEY = 'f4bzqz8KWseH8PQcrMyxSjyu5HDf9jAO';
-const BASE_URL = 'https://financialmodelingprep.com/stable';
+import { supabase } from '../../../lib/supabase';
 
 export const fetchGainers = async (): Promise<MarketMover[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/biggest-gainers?apikey=${API_KEY}`);
-        if (!response.ok) throw new Error('Failed to fetch gainers');
-        return await response.json();
+        const { data, error } = await supabase.functions.invoke('fmp-proxy', {
+            body: { endpointPath: 'stable/biggest-gainers' }
+        });
+
+        if (error) throw error;
+        return data as MarketMover[];
     } catch (error) {
         console.error('Error fetching gainers:', error);
         return [];
@@ -16,9 +17,12 @@ export const fetchGainers = async (): Promise<MarketMover[]> => {
 
 export const fetchLosers = async (): Promise<MarketMover[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/biggest-losers?apikey=${API_KEY}`);
-        if (!response.ok) throw new Error('Failed to fetch losers');
-        return await response.json();
+        const { data, error } = await supabase.functions.invoke('fmp-proxy', {
+            body: { endpointPath: 'stable/biggest-losers' }
+        });
+
+        if (error) throw error;
+        return data as MarketMover[];
     } catch (error) {
         console.error('Error fetching losers:', error);
         return [];
@@ -27,9 +31,12 @@ export const fetchLosers = async (): Promise<MarketMover[]> => {
 
 export const fetchActives = async (): Promise<MarketMover[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/most-actives?apikey=${API_KEY}`);
-        if (!response.ok) throw new Error('Failed to fetch actives');
-        return await response.json();
+        const { data, error } = await supabase.functions.invoke('fmp-proxy', {
+            body: { endpointPath: 'stable/most-actives' }
+        });
+
+        if (error) throw error;
+        return data as MarketMover[];
     } catch (error) {
         console.error('Error fetching actives:', error);
         return [];
