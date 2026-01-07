@@ -42,6 +42,8 @@ const AssetDetailPage = React.lazy(() => import('./features/asset-detail/pages/a
 const PortfolioPage = React.lazy(() => import('./features/portfolio/pages/portfolio-page.tsx'));
 const DividendsPage = React.lazy(() => import('./features/dividends/pages/dividends-page.tsx'));
 const NewsPage = React.lazy(() => import('./features/news/pages/news-page.tsx'));
+const EconomicCalendarPage = React.lazy(() => import('./features/economic-calendar/pages/EconomicCalendarPage.tsx'));
+const MarketMoversPage = React.lazy(() => import('./features/market-movers/pages/MarketMoversPage.tsx'));
 const ProfilePage = React.lazy(() => import('./features/profile/pages/profile-page.tsx'));
 const RiskPremiumPage = React.lazy(() => import('./features/risk-premium/pages/risk-premium-page.tsx'));
 const SuggestionsPage = React.lazy(() => import('./features/suggestions/pages/suggestion-page.tsx'));
@@ -140,6 +142,26 @@ const router = createBrowserRouter([
                             <ErrorBoundary level="feature" featureName="News">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando noticias..." />}>
                                     <NewsPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    {
+                        path: "economic-calendar",
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Economic Calendar">
+                                <Suspense fallback={<SuspenseFallback type="page" message="Loading economic calendar..." />}>
+                                    <EconomicCalendarPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    {
+                        path: "market-movers",
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Market Movers">
+                                <Suspense fallback={<SuspenseFallback type="page" message="Loading market data..." />}>
+                                    <MarketMoversPage />
                                 </Suspense>
                             </ErrorBoundary>
                         )

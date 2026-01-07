@@ -378,6 +378,18 @@
             "requiresAuth": true
           },
           {
+            "to": "/economic-calendar",
+            "label": "Calendario Económico",
+            "icon": "Calendar",
+            "requiresAuth": true
+          },
+          {
+            "to": "/market-movers",
+            "label": "Movimientos del Mercado",
+            "icon": "TrendingUp",
+            "requiresAuth": true
+          },
+          {
             "to": "/blog",
             "label": "Blog",
             "icon": "BookCopy",
