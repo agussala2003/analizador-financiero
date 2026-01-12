@@ -18,6 +18,7 @@
       "quote": "stable/quote",
       "historical": "stable/historical-price-eod/full",
       "priceTarget": "stable/price-target-summary",
+      "priceTargetConsensus": "stable/price-target-consensus",
       "newsPriceTarget": "stable/price-target-latest-news",
       "newsGrades": "stable/grades-latest-news",
       "stockGrades": "stable/grades",
@@ -32,7 +33,17 @@
       "generalNews": "stable/news/general-latest",
       "pressReleases": "stable/news/press-releases",
       "forexNews": "stable/news/forex",
-      "cryptoNews": "stable/news/crypto"
+      "cryptoNews": "stable/news/crypto",
+      "availableIndustries": "stable/available-industries",
+      "availableSectors": "stable/available-sectors",
+      "historicalIndustryPerformance": "stable/historical-industry-performance",
+      "historicalSectorPerformance": "stable/historical-sector-performance",
+      "gradesConsensus": "stable/grades-consensus",
+      "analystEstimates": "stable/analyst-estimates",
+      "ratios": "stable/ratios",
+      "keyMetricsYear": "stable/key-metrics",
+      "leveredDiscountedCashFlow": "stable/levered-discounted-cash-flow",
+      "stockPriceChange": "stable/stock-price-change"
     }
   },
   "plans": {
@@ -165,7 +176,7 @@
       "premium": 100,
       "administrador": 1000
     },
-    "updatedWithinHours": 48
+    "updatedWithinHours": 168
   },
   "news": {
     "pageSize": 6,
@@ -331,6 +342,12 @@
             "requiresAuth": true
           },
           {
+            "to": "/market-movers",
+            "label": "Movimientos del Mercado",
+            "icon": "TrendingUp",
+            "requiresAuth": true
+          },
+          {
             "to": "/watchlist",
             "label": "Watchlist",
             "icon": "Star",
@@ -343,6 +360,12 @@
             "requiresAuth": true
           },
           {
+            "to": "/economic-calendar",
+            "label": "Calendario Económico",
+            "icon": "Calendar",
+            "requiresAuth": true
+          },
+          {
             "to": "/dividends",
             "label": "Dividendos",
             "icon": "Divide",
@@ -352,12 +375,6 @@
             "to": "/risk-premium",
             "label": "Riesgo País",
             "icon": "Globe",
-            "requiresAuth": true
-          },
-          {
-            "to": "/profile",
-            "label": "Mi Perfil",
-            "icon": "User",
             "requiresAuth": true
           },
           {
@@ -375,18 +392,6 @@
             "to": "/news",
             "label": "Noticias",
             "icon": "Newspaper",
-            "requiresAuth": true
-          },
-          {
-            "to": "/economic-calendar",
-            "label": "Calendario Económico",
-            "icon": "Calendar",
-            "requiresAuth": true
-          },
-          {
-            "to": "/market-movers",
-            "label": "Movimientos del Mercado",
-            "icon": "TrendingUp",
             "requiresAuth": true
           },
           {
@@ -413,6 +418,12 @@
       {
         "label": "General",
         "items": [
+          {
+            "to": "/profile",
+            "label": "Mi Perfil",
+            "icon": "User",
+            "requiresAuth": true
+          },
           {
             "to": "/plans",
             "label": "Planes",

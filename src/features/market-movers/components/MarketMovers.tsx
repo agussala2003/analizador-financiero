@@ -1,18 +1,32 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { fetchGainers, fetchLosers, fetchActives } from '../services/market-movers-service';
-import { MarketMover } from '../types';
+import type { MarketMover } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
 import PaginationDemo from '../../../components/ui/pagination-demo';
 import { Tabs, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 import { Loader2, TrendingUp, TrendingDown, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
 
 type TabType = 'gainers' | 'losers' | 'actives';
-type SortConfig = { key: keyof MarketMover | null; direction: 'asc' | 'desc' };
+interface SortConfig { key: keyof MarketMover | null; direction: 'asc' | 'desc' }
 
-export const MarketMovers = () => {
+/**
+ * Market Movers component displays the biggest gainers, losers, and most active stocks.
+ * 
+ * @remarks
+ * - Fetches data from Supabase Edge Function proxy
+ * - Supports sorting by any column
+ * - Implements pagination with 10 items per page
+ * - Uses React.memo for performance optimization
+ * 
+ * @example
+ * ```tsx
+ * <MarketMovers />
+ * ```
+ */
+export const MarketMovers = React.memo(function MarketMovers() {
     const [activeTab, setActiveTab] = useState<TabType>('gainers');
     const [data, setData] = useState<MarketMover[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,37 +55,41 @@ export const MarketMovers = () => {
                 setData(result);
                 setCurrentPage(1);
                 setSortConfig({ key: null, direction: 'asc' }); // Reset sort on tab change
-            } catch (err) {
+            } catch {
                 setError('Error al cargar datos del mercado.');
             } finally {
                 setLoading(false);
             }
         };
-        loadData();
+        void loadData();
     }, [activeTab]);
 
-    const handleSort = (key: keyof MarketMover) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key, direction });
-    };
+    const handleSort = useCallback((key: keyof MarketMover) => {
+        setSortConfig(prev => {
+            const direction = prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc';
+            return { key, direction };
+        });
+    }, []);
 
-    const sortedData = [...data].sort((a, b) => {
-        if (!sortConfig.key) return 0;
+    const sortedData = useMemo(() => {
+        if (!sortConfig.key) return data;
+        
+        return [...data].sort((a, b) => {
+            const aValue = a[sortConfig.key!];
+            const bValue = b[sortConfig.key!];
 
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-
-        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-    });
+            if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [data, sortConfig]);
 
     const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentItems = sortedData.slice(startIndex, startIndex + itemsPerPage);
+    
+    const currentItems = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedData.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedData, currentPage]);
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
     const formatPercentage = (val: number) => `${val > 0 ? '+' : ''}${val.toFixed(2)}%`;
@@ -136,7 +154,7 @@ export const MarketMovers = () => {
                 <CardDescription>Visualiza los mayores ganadores, perdedores y las acciones más activas del día.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Tabs defaultValue="gainers" value={activeTab} onValueChange={(val) => setActiveTab(val as TabType)} className="w-full">
+                <Tabs defaultValue="gainers" value={activeTab} onValueChange={(val: string) => setActiveTab(val as TabType)} className="w-full">
                     <TabsList className="grid w-full grid-cols-3 mb-4">
                         <TabsTrigger value="gainers" className="flex gap-2"><TrendingUp className="w-4 h-4 text-green-500" /> Ganadores</TabsTrigger>
                         <TabsTrigger value="losers" className="flex gap-2"><TrendingDown className="w-4 h-4 text-red-500" /> Perdedores</TabsTrigger>
@@ -163,4 +181,4 @@ export const MarketMovers = () => {
             </CardContent>
         </Card>
     );
-};
+});

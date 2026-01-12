@@ -1,4 +1,4 @@
-// src/components/dashboard/selected-tickers-list.tsx
+// src/features/dashboard/components/ticker-input/selected-tickers-list.tsx
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '../../../../components/ui/button';
@@ -15,27 +15,27 @@ export function SelectedTickersList({ tickers, onRemoveTicker }: SelectedTickers
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t">
-      <AnimatePresence>
+    <div className="flex flex-wrap items-center gap-2 pt-4 mt-4 border-t">
+      <AnimatePresence mode='popLayout'>
         {tickers.map((ticker) => (
           <motion.div
             key={ticker}
             layout
-            initial={{ opacity: 0, scale: 0.5 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.5 }}
-            transition={{ duration: 0.2 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
           >
-            <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full bg-secondary text-secondary-foreground">
+            <div className="flex items-center gap-1.5 pl-3 pr-1.5 py-1 text-sm font-medium rounded-full bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors">
               <span>{ticker}</span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-4 h-4 sm:w-5 sm:h-5 rounded-full"
+                className="w-5 h-5 rounded-full hover:bg-black/10 dark:hover:bg-white/10"
                 onClick={() => onRemoveTicker(ticker)}
                 aria-label={`Quitar ${ticker}`}
               >
-                <XIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                <XIcon className="w-3 h-3" />
               </Button>
             </div>
           </motion.div>

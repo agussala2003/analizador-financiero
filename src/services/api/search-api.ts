@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import type { Config } from '../../types/config';
 
 /**
- * Resultado de búsqueda de FMP API
+ * Resultado de búsqueda unificado
  */
 export interface SearchResult {
   symbol: string;
@@ -13,7 +13,7 @@ export interface SearchResult {
   currency: string;
   stockExchange: string;
   exchangeShortName: string;
-  isAvailable?: boolean; // ✅ Indica si el activo tiene datos en la BD
+  isAvailable?: boolean;
 }
 
 interface FmpSearchResponse {
@@ -25,43 +25,7 @@ interface FmpSearchResponse {
 }
 
 /**
- * Busca activos directamente en la caché de Supabase
- */
-async function searchInCache(query: string): Promise<SearchResult[]> {
-  try {
-    const upperQuery = query.toUpperCase();
-    const { data, error } = await supabase
-      .from('asset_data_cache')
-      .select('symbol, data')
-      .ilike('symbol', `%${upperQuery}%`)
-      .limit(10);
-
-    if (error || !data || data.length === 0) return [];
-
-    return data.map((item) => {
-      const assetData = item.data as {
-        symbol?: string;
-        companyName?: string;
-        exchangeFullName?: string;
-        currency?: string;
-      };
-
-      return {
-        symbol: String(item.symbol),
-        name: assetData.companyName ?? String(item.symbol),
-        currency: assetData.currency ?? 'USD',
-        stockExchange: assetData.exchangeFullName ?? 'N/A',
-        exchangeShortName: assetData.exchangeFullName ?? 'N/A',
-        isAvailable: true // Siempre true porque viene de la caché
-      };
-    });
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Busca empresas por nombre en FMP
+ * Busca activos usando la API de FMP (vía Proxy Supabase Edge Function)
  */
 async function searchByNameInFmp(query: string, limit = 50): Promise<SearchResult[]> {
   try {
@@ -73,7 +37,7 @@ async function searchByNameInFmp(query: string, limit = 50): Promise<SearchResul
 
     // Filtrar que el exchange sea NYSE o NASDAQ
     const results = Array.isArray(data) ? data : [data];
-    const filteredResults = results.filter((item: FmpSearchResponse) => item.exchange === 'NYSE' || item.exchange === 'NASDAQ');
+    const filteredResults = results.filter((item: FmpSearchResponse) => item.exchange === 'NYSE' || item.exchange === 'NASDAQ' || item.exchange === 'AMEX');
 
     // Filtrar resultados "basura" o internos de FMP (ej: "stock_grades_...")
     return filteredResults
@@ -92,40 +56,21 @@ async function searchByNameInFmp(query: string, limit = 50): Promise<SearchResul
   }
 }
 
+
 /**
- * Busca activos (stocks) usando Cache + FMP Search API (Name)
+ * Busca activos (stocks) usando exclusivamente la API de FMP
  */
 export async function searchAssets(
   query: string,
   _config: Config,
-  limit = 10
+  limit = 50
 ): Promise<SearchResult[]> {
   if (!query || query.trim().length < 1) return [];
 
   try {
-    // Ejecutar búsquedas en paralelo (Caché + API) para asegurar resultados completos
-    // No detenemos la búsqueda si hay caché, porque queremos ver sugerencias nuevas de la API
-    const [cacheResults, apiResults] = await Promise.all([
-      searchInCache(query),
-      searchByNameInFmp(query, limit)
-    ]);
-
-    // Fusionar y deduplicar: Prioridad CACHÉ
-    const seen = new Set(cacheResults.map(r => r.symbol));
-    const merged = [...cacheResults];
-
-    for (const res of apiResults) {
-      if (!seen.has(res.symbol)) {
-        seen.add(res.symbol);
-        merged.push(res);
-      }
-    }
-
-    return merged
-      .filter(r => !r.symbol.includes('_'))
-      .slice(0, limit);
-  } catch (error) {
-    void logger.error('SEARCH_ASSETS_FAILED', `Error buscando activos: ${error instanceof Error ? error.message : String(error)}`);
+    return await searchByNameInFmp(query, limit);
+  } catch (err) {
+    console.error("Search assets error:", err);
     return [];
   }
 }

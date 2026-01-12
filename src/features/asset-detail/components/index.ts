@@ -22,10 +22,8 @@ export { RevenueSegmentationCharts } from './profile/revenue-segmentation-charts
 
 // Financials tab
 export { AssetFinancialsTab } from './financials/asset-financials-tab';
-export { FinancialMetricCard } from './financials/financial-metric-card';
 
 // Rating components
-export { DCFCard } from './rating/dcf-card';
 export { DCFValuationCard } from './rating/dcf-valuation-card';
 export { RatingScorecard } from './rating/rating-scorecard';
 export { RatingStars } from './rating/rating-stars';

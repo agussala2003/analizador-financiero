@@ -11,17 +11,17 @@ export interface InsightItem {
   currentPrice: number;
   dcf?: number;
   priceTarget?: number;
-  analystScore?: number; // rating.overallScore o puntaje agregado
-  // Para listas de analistas basadas en calificaciones
+  // Para listas de analistas basadas en gradesConsensus
   buyCount?: number;
   holdCount?: number;
   sellCount?: number;
+  strongBuyCount?: number;
+  strongSellCount?: number;
+  consensus?: string;
   buyRatio?: number; // 0..1
   sellRatio?: number; // 0..1
-  mispricingPct?: number; // (dcf - price)/dcf * 100
+  mispricingPct?: number; // (dcf - price)/price * 100
   targetUpsidePct?: number; // (priceTarget - price)/price * 100
-  roic?: number; // Return on Invested Capital (%)
-  pe?: number; // Price to Earnings
 }
 
 /**
@@ -30,27 +30,12 @@ export interface InsightItem {
 export interface InsightsData {
   undervalued: InsightItem[];
   overvalued: InsightItem[];
-  highRoicLowPe: InsightItem[];
   analystBuys: InsightItem[];
   analystSells: InsightItem[];
-  analystFirms?: {
-    topBuyers: AnalystFirmStat[];
-    topSellers: AnalystFirmStat[];
-  };
 }
 
 export interface AssetDataCacheRow {
   symbol: string;
   data: AssetData;
   last_updated_at: string;
-}
-
-export interface AnalystFirmStat {
-  firm: string;
-  buy: number;
-  hold: number;
-  sell: number;
-  total: number;
-  buyRatio: number; // buy / total
-  sellRatio: number; // sell / total
 }

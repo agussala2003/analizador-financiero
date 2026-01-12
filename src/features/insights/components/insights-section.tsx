@@ -24,21 +24,13 @@ const formatPercentage = (value?: number | null, decimals?: number): string => {
   }
   return `${value.toFixed(decimals)}%`;
 };
-
-const formatNumber = (value?: number | null, decimals?: number): string => {
-  // Retorna '-' si el valor no es un número válido y finito
-  if (typeof value !== 'number' || !isFinite(value)) {
-    return '-';
-  }
-  return value.toFixed(decimals);
-};
 // ------------------------------
 
 export interface InsightsSectionProps {
   title: string;
   subtitle?: string;
   items: InsightItem[];
-  kind: 'undervalued' | 'overvalued' | 'analystBuy' | 'analystSell' | 'highRoicLowPe';
+  kind: 'undervalued' | 'overvalued' | 'analystBuy' | 'analystSell';
 }
 
 /**
@@ -61,13 +53,6 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ title, subtitl
           { key: 'price', label: 'Precio Actual', tooltip: 'Precio de mercado en tiempo real', align: 'center' },
           { key: 'dcf', label: 'Valor Intrínseco', tooltip: 'DCF: Valor calculado mediante flujo de caja descontado', align: 'center' },
           { key: 'metric', label: 'Sobreprecio', tooltip: 'Porcentaje de sobreprecio respecto al valor intrínseco', align: 'center' },
-        ];
-      case 'highRoicLowPe':
-        return [
-          { key: 'asset', label: 'Activo', tooltip: null },
-          { key: 'price', label: 'Precio Actual', tooltip: 'Precio de mercado en tiempo real', align: 'center' },
-          { key: 'roic', label: 'ROIC', tooltip: 'Return on Invested Capital (%)', align: 'center' }, // Columna específica para ROIC
-          { key: 'pe', label: 'PER', tooltip: 'Price to Earnings Ratio', align: 'center' },           // Columna específica para PER
         ];
       case 'analystBuy':
       case 'analystSell':
@@ -134,22 +119,17 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ title, subtitl
                         {/* Columna 2: Precio Actual */}
                         <TableCell className="text-center font-semibold tabular-nums">{formatCurrency(it.currentPrice)}</TableCell>
 
-                        {/* Columna 3: Variable (DCF, Target, ROIC) */}
+                        {/* Columna 3: Variable (DCF, Target) */}
                         <TableCell className="text-center tabular-nums">
                           {kind === 'undervalued' || kind === 'overvalued'
-                            ? formatCurrency(it.dcf) // Sin '!'
-                            : kind === 'highRoicLowPe'
-                            ? formatPercentage(it.roic, 1) // Sin '!', el formateador maneja undefined
-                            : formatCurrency(it.priceTarget) /* analystBuy/Sell, Sin '!' */
+                            ? formatCurrency(it.dcf)
+                            : formatCurrency(it.priceTarget) /* analystBuy/Sell */
                           }
                         </TableCell>
 
-                        {/* Columna 4: Variable (Metric, PER, Recomendaciones) */}
+                        {/* Columna 4: Variable (Metric, Recomendaciones) */}
                         <TableCell className="text-center font-bold tabular-nums">
-                          {kind === 'highRoicLowPe'
-                            ? formatNumber(it.pe, 1) // Sin '!', el formateador maneja undefined
-                            : renderAnalystMetric(kind, it) // Llama a la función para las otras métricas
-                          }
+                          {renderAnalystMetric(kind, it)}
                         </TableCell>
                       </TableRow>
                     ))
@@ -187,8 +167,7 @@ function renderAnalystMetric(kind: InsightsSectionProps['kind'], it: InsightItem
           </span>
         );
       }
-      // Formatea analystScore usando formatNumber
-      return formatNumber(it.analystScore, 1);
+      return '-';
   }
 
   // Si no es ninguno de los anteriores

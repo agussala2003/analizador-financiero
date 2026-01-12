@@ -1,17 +1,36 @@
-// src/features/watchlist/components/watchlist-toggle-button.tsx
-
+import React, { useCallback } from 'react';
 import { Button } from '../../../components/ui/button';
-import { Star } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 import { useIsInWatchlist, useWatchlistMutations } from '../../../hooks/use-watchlist';
-import { Loader2 } from 'lucide-react';
 
+/**
+ * Props for WatchlistToggleButton component.
+ * @property symbol - Stock ticker symbol to add/remove from watchlist
+ * @property variant - Button visual style variant
+ * @property size - Button size variant
+ */
 interface WatchlistToggleButtonProps {
   symbol: string;
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
-export function WatchlistToggleButton({ 
+/**
+ * Toggle button for adding/removing assets from user's watchlist.
+ * 
+ * @remarks
+ * - Shows filled star when asset is in watchlist
+ * - Displays loading spinner during mutation
+ * - Prevents event propagation to parent elements
+ * - Memoized for performance optimization
+ * 
+ * @example
+ * ```tsx
+ * <WatchlistToggleButton symbol="AAPL" variant="outline" size="sm" />
+ * ```
+ */
+
+export const WatchlistToggleButton = React.memo(function WatchlistToggleButton({ 
   symbol, 
   variant = 'outline',
   size = 'default' 
@@ -19,10 +38,10 @@ export function WatchlistToggleButton({
   const isInWatchlist = useIsInWatchlist(symbol);
   const { toggleWatchlist } = useWatchlistMutations();
 
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevenir navegación si está en un card clickeable
+  const handleToggle = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
     void toggleWatchlist.mutate(symbol);
-  };
+  }, [symbol, toggleWatchlist]);
 
   return (
     <Button
@@ -44,4 +63,4 @@ export function WatchlistToggleButton({
       )}
     </Button>
   );
-}
+});

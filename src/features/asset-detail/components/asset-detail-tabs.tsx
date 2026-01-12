@@ -80,11 +80,11 @@ export function AssetDetailTabs({ asset }: AssetDetailTabsProps) {
         </TabsContent>
 
         <TabsContent value="news" className="mt-4 sm:mt-6">
-          <AssetNewsTab symbol={asset.symbol} />
+          <AssetNewsTab symbol={asset.profile.symbol} />
         </TabsContent>
 
         <TabsContent value="ratings" className="mt-4 sm:mt-6">
-          <AssetGradesTab symbol={asset.symbol} />
+          <AssetGradesTab asset={asset} />
         </TabsContent>
       </motion.div>
     </Tabs>

@@ -8,87 +8,79 @@ import {
   Globe,
   UserCircle,
   Users,
+  FileText
 } from 'lucide-react';
 import { CompanyInfoItem } from './company-info-item';
 import { RevenueSegmentationCharts } from './revenue-segmentation-charts';
 import { formatLargeNumber } from '../../lib/asset-formatters';
 import type { AssetData } from '../../../../types/dashboard';
 
-/**
- * Props para el componente AssetProfileTab.
- * @property asset - Datos completos del activo
- */
 interface AssetProfileTabProps {
   asset: AssetData;
 }
 
-/**
- * Tab de perfil del activo que muestra información general de la compañía.
- * Incluye descripción, información corporativa y segmentación de ingresos.
- * 
- * Renderiza:
- * - Descripción de la empresa
- * - Sector, industria, CEO, empleados, país, website
- * - Gráficos de segmentación de ingresos (geográfica y por producto)
- * 
- * @example
- * ```tsx
- * <AssetProfileTab asset={assetData} />
- * ```
- */
 export function AssetProfileTab({ asset }: AssetProfileTabProps) {
+  // Acceso directo al perfil del activo
+  const { profile } = asset;
+
+  if (!profile) return null;
+
   return (
-    <>
+    <div className="space-y-6">
+      {/* Información General */}
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-lg sm:text-xl">Acerca de {asset.companyName}</CardTitle>
+        <CardHeader className="p-4 sm:p-6 pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <FileText className="w-5 h-5 text-primary" />
+            Perfil Corporativo
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-          <p className="text-sm sm:text-base leading-relaxed text-muted-foreground">
-            {asset.description}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
+        <CardContent className="p-4 sm:p-6 space-y-6">
+          <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+            {profile.description || "No hay descripción disponible."}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t">
             <CompanyInfoItem
-              icon={<Briefcase className="w-5 h-5" />}
+              icon={<Building className="w-4 h-4" />}
               label="Sector"
-              value={asset.sector ?? 'N/A'}
+              value={profile.sector ?? 'N/A'}
             />
             <CompanyInfoItem
-              icon={<Building className="w-5 h-5" />}
+              icon={<Briefcase className="w-4 h-4" />}
               label="Industria"
-              value={asset.industry ?? 'N/A'}
+              value={profile.industry ?? 'N/A'}
             />
             <CompanyInfoItem
-              icon={<UserCircle className="w-5 h-5" />}
+              icon={<UserCircle className="w-4 h-4" />}
               label="CEO"
-              value={asset.ceo ?? 'N/A'}
+              value={profile.ceo ?? 'N/A'}
             />
             <CompanyInfoItem
-              icon={<Users className="w-5 h-5" />}
+              icon={<Users className="w-4 h-4" />}
               label="Empleados"
               value={
-                typeof asset.employees === 'number'
-                  ? formatLargeNumber(asset.employees)
-                  : 'N/A'
+                // Intentamos buscar fullTimeEmployees o employees
+                formatLargeNumber((profile as unknown as {fullTimeEmployees?: number; employees?: number}).fullTimeEmployees ?? (profile as unknown as {fullTimeEmployees?: number; employees?: number}).employees)
               }
             />
             <CompanyInfoItem
-              icon={<Globe className="w-5 h-5" />}
+              icon={<Globe className="w-4 h-4" />}
               label="País"
-              value={asset.country ?? 'N/A'}
+              value={profile.country ?? 'N/A'}
             />
             <CompanyInfoItem
-              icon={<ExternalLink className="w-5 h-5" />}
+              icon={<ExternalLink className="w-4 h-4" />}
               label="Sitio Web"
               value={
-                asset.website ? (
+                profile.website ? (
                   <a
-                    href={asset.website}
+                    href={profile.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline truncate block max-w-full"
                   >
-                    {asset.website.replace(/^https?:\/\//, '')}
+                    {profile.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                   </a>
                 ) : (
                   'N/A'
@@ -98,7 +90,9 @@ export function AssetProfileTab({ asset }: AssetProfileTabProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Gráficos de Segmentación (Ingresos) */}
       <RevenueSegmentationCharts asset={asset} />
-    </>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 // src/features/portfolio/components/modals/add-transaction-modal.tsx
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { usePortfolio } from '../../../../hooks/use-portfolio';
 import { usePortfolioLimits } from '../../../../hooks/use-portfolio-limits';
 import { Button } from "../../../../components/ui/button";
@@ -16,14 +16,14 @@ import { es } from "date-fns/locale";
 import { cn } from "../../../../lib/utils";
 import { toast } from "sonner";
 import { useTransactionForm } from '../../../../hooks/use-transaction-form';
-import { AddTransactionModalProps } from '../../types/portfolio.types';
+import { AddTransactionModalProps } from '../../../../types/portfolio';
 import { isFutureDate, calculateFinalQuantity, calculateFinalPrice } from '../../lib/portfolio.utils';
 
 /**
  * Modal para registrar una nueva transacción de compra de un activo.
  */
 export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: AddTransactionModalProps) {
-  const { addTransaction, holdings, portfolios, transactions } = usePortfolio(); // Traemos portfolios y transacciones
+  const { addTransaction, portfolios, transactions } = usePortfolio(); // Traemos portfolios y transacciones
   const [loading, setLoading] = useState(false);
 
   // ✅ Toda la lógica del formulario ahora reside en el hook
@@ -38,10 +38,13 @@ export function AddTransactionModal({ isOpen, onClose, ticker, currentPrice }: A
 
   // ✅ Validar límite de activos EN EL PORTFOLIO SELECCIONADO
   // Filtramos los holdings para contar los activos únicos DE ESE portfolio
-  const uniqueAssetsInTargetPortfolio = transactions
-    .filter(t => t.portfolio_id === portfolioId)
-    .map(t => t.symbol)
-    .filter((value, index, self) => self.indexOf(value) === index).length;
+  // Memoized para performance
+  const uniqueAssetsInTargetPortfolio = useMemo(() => {
+    return transactions
+      .filter(t => t.portfolio_id === portfolioId)
+      .map(t => t.symbol)
+      .filter((value, index, self) => self.indexOf(value) === index).length;
+  }, [transactions, portfolioId]);
 
   const { isAtLimit, upgradeMessage } = usePortfolioLimits(uniqueAssetsInTargetPortfolio);
 

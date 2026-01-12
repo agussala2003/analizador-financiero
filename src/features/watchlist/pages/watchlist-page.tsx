@@ -1,20 +1,51 @@
-// src/features/watchlist/pages/watchlist-page.tsx
-
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWatchlist } from '../../../hooks/use-watchlist';
 import { usePrefetchAsset } from '../../../hooks/use-prefetch-asset';
 import { usePlanLimits } from '../../../hooks/use-plan-limits';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
-import { Star, TrendingUp, Crown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../../../components/ui/skeleton';
+import { Star, TrendingUp, Crown } from 'lucide-react';
 
+/**
+ * Watchlist page displays user's favorite assets for quick tracking.
+ * 
+ * @remarks
+ * - Enforces plan-based limits on watchlist size
+ * - Shows upgrade prompt when limit is reached
+ * - Implements prefetching on hover for better UX
+ * - Displays loading skeletons during data fetch
+ * 
+ * @example
+ * This page is rendered at route `/watchlist`
+ */
 export default function WatchlistPage() {
   const { data: watchlist = [], isLoading, error } = useWatchlist();
   const navigate = useNavigate();
   const { prefetchAssetIfNotCached } = usePrefetchAsset();
   const { limit, isAtLimit } = usePlanLimits('watchlist', watchlist.length);
+
+  const handleNavigateToAsset = useCallback((symbol: string) => {
+    void navigate(`/asset/${symbol}`);
+  }, [navigate]);
+
+  const handleNavigateToDashboard = useCallback(() => {
+    void navigate('/dashboard');
+  }, [navigate]);
+
+  const handleNavigateToPlans = useCallback(() => {
+    void navigate('/plans');
+  }, [navigate]);
+
+  const formatDate = useCallback((date: string) => {
+    return new Date(date).toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  }, []);
 
   if (isLoading) {
     return (
@@ -80,7 +111,7 @@ export default function WatchlistPage() {
                 Agrega assets a tu watchlist para seguir su rendimiento de forma rápida.
                 Haz clic en la estrella ⭐ en la página de detalles de cualquier asset.
               </p>
-              <Button size="sm" onClick={() => void navigate('/dashboard')}>
+              <Button size="sm" onClick={handleNavigateToDashboard}>
                 Explorar Assets
               </Button>
             </div>
@@ -117,13 +148,13 @@ export default function WatchlistPage() {
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           {isAtLimit && (
-            <Button size="sm" variant="default" onClick={() => void navigate('/plans')} className="gap-1.5 sm:gap-2 flex-1 sm:flex-initial text-xs sm:text-sm">
+            <Button size="sm" variant="default" onClick={handleNavigateToPlans} className="gap-1.5 sm:gap-2 flex-1 sm:flex-initial text-xs sm:text-sm">
               <Crown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Actualizar Plan</span>
               <span className="sm:hidden">Upgrade</span>
             </Button>
           )}
-          <Button size="sm" variant="outline" onClick={() => void navigate('/dashboard')} className="flex-1 sm:flex-initial text-xs sm:text-sm">
+          <Button size="sm" variant="outline" onClick={handleNavigateToDashboard} className="flex-1 sm:flex-initial text-xs sm:text-sm">
             Explorar Más
           </Button>
         </div>
@@ -135,7 +166,7 @@ export default function WatchlistPage() {
           <Card 
             key={item.id}
             className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
-            onClick={() => void navigate(`/asset/${item.symbol}`)}
+            onClick={() => handleNavigateToAsset(item.symbol)}
             onMouseEnter={() => prefetchAssetIfNotCached(item.symbol)}
             onFocus={() => prefetchAssetIfNotCached(item.symbol)}
             tabIndex={0}
@@ -145,11 +176,7 @@ export default function WatchlistPage() {
                 <div>
                   <CardTitle className="text-lg sm:text-xl">{item.symbol}</CardTitle>
                   <CardDescription className="mt-1 text-xs sm:text-sm">
-                    Agregado el {new Date(item.added_at).toLocaleDateString('es-ES', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    Agregado el {formatDate(item.added_at)}
                   </CardDescription>
                 </div>
                 <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />

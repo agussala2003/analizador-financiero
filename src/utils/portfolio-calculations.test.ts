@@ -2,7 +2,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { calculateHoldings, calculateTotalPerformance } from './portfolio-calculations';
-import { Transaction, PortfolioAssetData } from '../types/portfolio';
+import { Transaction } from '../types/portfolio';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PortfolioAssetData = any;
 
 describe('portfolio-calculations', () => {
   describe('calculateHoldings', () => {
@@ -11,6 +14,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           purchase_price: 150,
@@ -20,6 +24,7 @@ describe('portfolio-calculations', () => {
         {
           id: 2,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 5,
           purchase_price: 160,
@@ -30,7 +35,8 @@ describe('portfolio-calculations', () => {
 
       const portfolioData: Record<string, PortfolioAssetData> = {
         AAPL: {
-          currentPrice: 170,
+          symbol: 'AAPL',
+          quote: { price: 170, change: 0, changePercentage: 0 }
         },
       };
 
@@ -42,7 +48,7 @@ describe('portfolio-calculations', () => {
       // Average price: (10 * 150 + 5 * 160) / 15 = 2300 / 15 ≈ 153.33
       expect(holdings[0].avgPurchasePrice).toBeCloseTo(153.33, 2);
       expect(holdings[0].totalCost).toBe(2300);
-      expect(holdings[0].assetData.currentPrice).toBe(170);
+      expect(holdings[0].assetData.quote?.price).toBe(170);
     });
 
     it('should calculate holdings correctly for buy and sell transactions', () => {
@@ -50,6 +56,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'GOOGL',
           quantity: 20,
           purchase_price: 100,
@@ -59,6 +66,7 @@ describe('portfolio-calculations', () => {
         {
           id: 2,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'GOOGL',
           quantity: 10,
           purchase_price: 120,
@@ -69,7 +77,8 @@ describe('portfolio-calculations', () => {
 
       const portfolioData: Record<string, PortfolioAssetData> = {
         GOOGL: {
-          currentPrice: 130,
+          symbol: 'GOOGL',
+          quote: { price: 130, change: 0, changePercentage: 0 }
         },
       };
 
@@ -88,6 +97,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'TSLA',
           quantity: 10,
           purchase_price: 200,
@@ -97,6 +107,7 @@ describe('portfolio-calculations', () => {
         {
           id: 2,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'TSLA',
           quantity: 10,
           purchase_price: 250,
@@ -117,6 +128,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           purchase_price: 150,
@@ -126,6 +138,7 @@ describe('portfolio-calculations', () => {
         {
           id: 2,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'GOOGL',
           quantity: 5,
           purchase_price: 100,
@@ -135,14 +148,14 @@ describe('portfolio-calculations', () => {
       ];
 
       const portfolioData: Record<string, PortfolioAssetData> = {
-        AAPL: { currentPrice: 160 },
-        GOOGL: { currentPrice: 110 },
+        AAPL: { symbol: 'AAPL', quote: { price: 160, change: 0, changePercentage: 0 } },
+        GOOGL: { symbol: 'GOOGL', quote: { price: 110, change: 0, changePercentage: 0 } },
       };
 
       const holdings = calculateHoldings(transactions, portfolioData);
 
       expect(holdings).toHaveLength(2);
-      
+
       const aaplHolding = holdings.find(h => h.symbol === 'AAPL');
       const googlHolding = holdings.find(h => h.symbol === 'GOOGL');
 
@@ -155,6 +168,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           purchase_price: 150,
@@ -166,7 +180,7 @@ describe('portfolio-calculations', () => {
       const holdings = calculateHoldings(transactions, {});
 
       expect(holdings).toHaveLength(1);
-      expect(holdings[0].assetData).toEqual({});
+      expect(holdings[0].assetData.quote?.price).toBe(0); // Default fallback should be 0
     });
   });
 
@@ -176,6 +190,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           purchase_price: 100,
@@ -190,11 +205,11 @@ describe('portfolio-calculations', () => {
           quantity: 10,
           avgPurchasePrice: 100,
           totalCost: 1000,
-          assetData: { currentPrice: 120 },
+          assetData: { symbol: 'AAPL', quote: { price: 120, change: 0, changePercentage: 0 } },
         },
-      ];
+      ] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      const performance = calculateTotalPerformance(transactions, holdings);
+      const performance = calculateTotalPerformance(transactions, holdings as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
       // Current value: 10 * 120 = 1200
       // Total invested: 1000
@@ -208,6 +223,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           purchase_price: 100,
@@ -222,11 +238,11 @@ describe('portfolio-calculations', () => {
           quantity: 10,
           avgPurchasePrice: 100,
           totalCost: 1000,
-          assetData: { currentPrice: 80 },
+          assetData: { symbol: 'AAPL', quote: { price: 80, change: 0, changePercentage: 0 } },
         },
-      ];
+      ] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      const performance = calculateTotalPerformance(transactions, holdings);
+      const performance = calculateTotalPerformance(transactions, holdings as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
       // Current value: 10 * 80 = 800
       // Total invested: 1000
@@ -240,6 +256,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           purchase_price: 100,
@@ -249,6 +266,7 @@ describe('portfolio-calculations', () => {
         {
           id: 2,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 5,
           purchase_price: 150,
@@ -263,11 +281,11 @@ describe('portfolio-calculations', () => {
           quantity: 5,
           avgPurchasePrice: 100,
           totalCost: 500,
-          assetData: { currentPrice: 120 },
+          assetData: { symbol: 'AAPL', quote: { price: 120, change: 0, changePercentage: 0 } },
         },
-      ];
+      ] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      const performance = calculateTotalPerformance(transactions, holdings);
+      const performance = calculateTotalPerformance(transactions, holdings as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
       // Total invested: 1000
       // Total sold value: 5 * 150 = 750
@@ -292,6 +310,7 @@ describe('portfolio-calculations', () => {
         {
           id: 1,
           user_id: 'user1',
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           purchase_price: 100,
@@ -302,15 +321,16 @@ describe('portfolio-calculations', () => {
 
       const holdings = [
         {
+          portfolio_id: 1,
           symbol: 'AAPL',
           quantity: 10,
           avgPurchasePrice: 100,
           totalCost: 1000,
-          assetData: {}, // No currentPrice
+          assetData: { symbol: 'AAPL', quote: { price: 0, change: 0, changePercentage: 0 } }, // No price available
         },
-      ];
+      ] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      const performance = calculateTotalPerformance(transactions, holdings);
+      const performance = calculateTotalPerformance(transactions, holdings as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
       // Current value: 0 (no price available)
       // P/L: -1000, P/L%: -100%

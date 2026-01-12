@@ -23,6 +23,7 @@ export interface FmpProxyEndpoints {
   quote: string;
   historical: string;
   priceTarget: string;
+  priceTargetConsensus: string;
   newsPriceTarget: string;
   newsGrades: string;
   stockGrades: string;
@@ -38,6 +39,12 @@ export interface FmpProxyEndpoints {
   pressReleases: string;
   forexNews: string;
   cryptoNews: string;
+  gradesConsensus: string;
+  analystEstimates: string;
+  ratios: string;
+  keyMetricsYear: string;
+  leveredDiscountedCashFlow: string;
+  stockPriceChange: string;
 }
 
 export interface SidebarLink {

@@ -1,6 +1,13 @@
-import { MarketMovers } from '../components/MarketMovers';
+import { MarketMovers } from '../components';
 import { TrendingUp } from 'lucide-react';
 
+/**
+ * Market Movers page displays the biggest gainers, losers, and most active stocks.
+ * 
+ * @remarks
+ * This is an orchestrator component that composes the page layout and the MarketMovers component.
+ * Follows the feature-sliced design pattern with minimal business logic.
+ */
 export default function MarketMoversPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">

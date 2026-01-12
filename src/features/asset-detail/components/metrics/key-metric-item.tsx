@@ -1,33 +1,42 @@
 // src/features/asset-detail/components/metrics/key-metric-item.tsx
 
 import React from 'react';
+import { HelpCircle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../../../../components/ui/tooltip';
 
-/**
- * Props para el componente KeyMetricItem.
- * @property label - Etiqueta descriptiva de la métrica
- * @property value - Valor a mostrar (puede ser string o número formateado)
- */
 interface KeyMetricItemProps {
   label: string;
   value: React.ReactNode;
+  tooltip?: string;
   className?: string;
 }
 
-/**
- * Componente individual para mostrar una métrica clave.
- * Layout responsive: centrado en móvil, alineado a la izquierda en desktop.
- * 
- * @example
- * ```tsx
- * <KeyMetricItem label="Market Cap" value="$2.5T" />
- * <KeyMetricItem label="Beta" value="1.25" />
- * ```
- */
-export function KeyMetricItem({ label, value, className }: KeyMetricItemProps) {
+export function KeyMetricItem({ label, value, tooltip, className }: KeyMetricItemProps) {
   return (
     <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-      <p className="text-xs text-muted-foreground font-medium">{label}</p>
-      <p className={`text-sm sm:text-base font-bold min-h-5 sm:min-h-6 flex items-center justify-center sm:justify-start ${className || 'text-foreground'}`}>
+      <div className="flex items-center gap-1.5 mb-1">
+        <p className="text-xs text-muted-foreground font-medium">{label}</p>
+
+        {tooltip && (
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="w-3 h-3 text-muted-foreground/50 hover:text-primary cursor-help transition-colors" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[220px] text-xs leading-snug">
+                <p>{tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+
+      <p className={`text-sm sm:text-base font-bold min-h-[1.5rem] flex items-center justify-center sm:justify-start ${className ?? 'text-foreground'}`}>
         {value}
       </p>
     </div>

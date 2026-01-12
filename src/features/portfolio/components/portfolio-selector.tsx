@@ -1,7 +1,8 @@
+// src/features/portfolio/components/portfolio-selector.tsx
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { usePortfolio } from '../../../hooks/use-portfolio';
-import { Check, ChevronsUpDown, Plus, Trash2 } from 'lucide-react';
+import { Check, ChevronsUpDown, Plus, Trash2, LayoutGrid } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { Button } from '../../../components/ui/button';
 import {
@@ -41,7 +42,7 @@ import {
 } from "../../../components/ui/alert-dialog";
 import { UpgradeModal } from '../../../components/shared/upgrade-modal';
 
-export function PortfolioSelector() {
+export const PortfolioSelector = React.memo(function PortfolioSelector() {
     const { portfolios, currentPortfolio, selectPortfolio, createPortfolio, deletePortfolio } = usePortfolio();
     const [open, setOpen] = useState(false);
     const [showNewPortfolioDialog, setShowNewPortfolioDialog] = useState(false);
@@ -64,9 +65,8 @@ export function PortfolioSelector() {
             setShowNewPortfolioDialog(false);
             setOpen(false);
             toast.success('Portafolio creado exitosamente');
-        } catch (error) {
+        } catch {
             toast.error('Error al crear el portafolio');
-            console.error(error);
         } finally {
             setIsCreating(false);
         }
@@ -86,6 +86,7 @@ export function PortfolioSelector() {
             await deletePortfolio(portfolioToDelete);
             toast.success('Portafolio eliminado');
         } catch (error) {
+            console.error('Error deleting portfolio:', error);
             toast.error('Error al eliminar portafolio');
         } finally {
             setPortfolioToDelete(null);
@@ -102,7 +103,16 @@ export function PortfolioSelector() {
                         aria-expanded={open}
                         className="w-[250px] justify-between"
                     >
-                        {currentPortfolio?.name ?? "Seleccionar portafolio..."}
+                        <div className="flex items-center gap-2 truncate">
+                            {currentPortfolio ? (
+                                <span>{currentPortfolio.name}</span>
+                            ) : (
+                                <>
+                                    <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+                                    <span>Todas las Inversiones</span>
+                                </>
+                            )}
+                        </div>
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
@@ -111,6 +121,26 @@ export function PortfolioSelector() {
                         <CommandInput placeholder="Buscar portafolio..." />
                         <CommandList>
                             <CommandEmpty>No se encontraron portafolios.</CommandEmpty>
+                            <CommandGroup>
+                                <CommandItem
+                                    value="Todas las Inversiones"
+                                    onSelect={() => {
+                                        selectPortfolio(null);
+                                        setOpen(false);
+                                    }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4",
+                                            currentPortfolio === null ? "opacity-100" : "opacity-0"
+                                        )}
+                                    />
+                                    <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+                                    Todas las Inversiones
+                                </CommandItem>
+                            </CommandGroup>
+                            <CommandSeparator />
                             <CommandGroup heading="Mis Portafolios">
                                 {portfolios.map((portfolio) => (
                                     <CommandItem
@@ -131,7 +161,6 @@ export function PortfolioSelector() {
                                             />
                                             {portfolio.name}
                                         </div>
-                                        {/* Delete option - prevent deleting the default/last one if needed, or allow all but ensure logic handles it */}
                                         <div
                                             role="button"
                                             className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded transition-opacity"
@@ -183,7 +212,7 @@ export function PortfolioSelector() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setShowNewPortfolioDialog(false)}>Cancelar</Button>
-                        <Button onClick={handleCreate} disabled={!newPortfolioName.trim() || isCreating || isAtLimit}>
+                        <Button onClick={() => void handleCreate()} disabled={!newPortfolioName.trim() || isCreating || isAtLimit}>
                             {isCreating ? 'Creando...' : 'Crear Portafolio'}
                         </Button>
                     </DialogFooter>
@@ -200,7 +229,7 @@ export function PortfolioSelector() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                        <AlertDialogAction onClick={() => void handleDelete()} className="bg-destructive hover:bg-destructive/90">
                             Eliminar
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -215,4 +244,4 @@ export function PortfolioSelector() {
             />
         </div>
     );
-}
+});

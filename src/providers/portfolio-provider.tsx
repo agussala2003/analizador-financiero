@@ -1,8 +1,9 @@
 // src/providers/portfolio-provider.tsx
 
-import React, { createContext, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Transaction, PortfolioContextType, PortfolioAssetData, Holding, Portfolio } from '../types/portfolio';
+import { Transaction, PortfolioContextType, Holding, Portfolio } from '../types/portfolio';
+import { AssetData } from '../types/dashboard';
 import { useAuth } from '../hooks/use-auth';
 import { calculateHoldings, calculateTotalPerformance } from '../utils/portfolio-calculations';
 import { LoadingScreen } from '../components/ui/loading-screen';
@@ -20,7 +21,7 @@ export const PortfolioContext = createContext<PortfolioContextType | undefined>(
 // Define return type for fetch to include portfolios
 interface FetchPortfolioResult {
     transactions: Transaction[];
-    portfolioData: Record<string, PortfolioAssetData>;
+    portfolioData: Record<string, AssetData>;
     portfolios: Portfolio[];
 }
 
@@ -54,16 +55,18 @@ const fetchPortfolioData = async (userId: string | undefined): Promise<FetchPort
 
     const transactions = (transResult.data || []) as Transaction[];
     const symbols = [...new Set(transactions.map((t: Transaction) => t.symbol))];
-    let portfolioData: Record<string, PortfolioAssetData> = {};
+    let portfolioData: Record<string, AssetData> = {};
 
-    // 3. Fetch Asset Data
+    // 3. Fetch Asset Data - Usar estructura completa de AssetData
     if (symbols.length > 0) {
         try {
             const assetResult = await supabase.functions.invoke('get-asset-data', {
                 body: { symbols },
             });
             if (assetResult.error) throw assetResult.error;
-            portfolioData = (assetResult.data as Record<string, PortfolioAssetData>) ?? {};
+            
+            // Usar directamente la estructura completa de AssetData sin mapeo limitado
+            portfolioData = (assetResult.data as Record<string, AssetData>) ?? {};
         } catch (error) {
             void logger.error('PORTFOLIO_FETCH_ERROR', 'Error al traer datos de activos', { error: errorToString(error) });
             portfolioData = {};
@@ -93,27 +96,24 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     const allTransactions = useMemo(() => data?.transactions ?? [], [data?.transactions]);
     const portfolioData = useMemo(() => data?.portfolioData ?? {}, [data?.portfolioData]);
 
-    // Initialize current portfolio if needed
-    useEffect(() => {
-        if (!isLoading && portfolios.length > 0 && currentPortfolioId === null) {
-            setCurrentPortfolioId(portfolios[0].id);
-        }
-    }, [isLoading, portfolios, currentPortfolioId]);
+    // Initialize current portfolio - REMOVED auto-select to default to "All" (null)
+    // useEffect(() => { ... }, []); 
 
     // Derived state based on current selection
     const currentPortfolio = useMemo(() =>
-        portfolios.find(p => p.id === currentPortfolioId) || null,
+        portfolios.find(p => p.id === currentPortfolioId) ?? null,
         [portfolios, currentPortfolioId]);
 
     const transactions = useMemo(() =>
-        allTransactions.filter(t => t.portfolio_id === currentPortfolioId),
+        currentPortfolioId === null
+            ? allTransactions
+            : allTransactions.filter(t => t.portfolio_id === currentPortfolioId),
         [allTransactions, currentPortfolioId]);
 
     const holdings: Holding[] = useMemo(() => calculateHoldings(transactions, portfolioData), [transactions, portfolioData]);
     const totalPerformance = useMemo(() => calculateTotalPerformance(transactions, holdings), [transactions, holdings]);
-
     // Actions
-    const selectPortfolio = (portfolioId: number) => {
+    const selectPortfolio = (portfolioId: number | null) => {
         setCurrentPortfolioId(portfolioId);
     };
 
@@ -136,11 +136,6 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
     const deletePortfolio = async (portfolioId: number) => {
         if (!user) return;
-
-        // Optimistic update handled by invalidation for now due to complexity of cascading deletes if not handled by DB
-        // Assuming DB has cascade delete or we delete transactions first. 
-        // For safety, let's rely on DB cascade if set, otherwise we might need a stored procedure or explicit deletes.
-        // Given existing structure, let's try direct delete.
 
         const { error } = await supabase
             .from('portfolios')
@@ -165,6 +160,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         // Ensure we have a target portfolio
         const targetPortfolioId = transaction.portfolio_id ?? currentPortfolioId;
 
+        // If still null (All Portfolios view and no specific portfolio passed), error
         if (!targetPortfolioId) {
             toast.error("No se ha seleccionado ningún portafolio.");
             return Promise.resolve(null);
@@ -179,30 +175,43 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteAsset = async (symbol: string) => {
-        if (!user || !currentPortfolioId) {
-            toast.error("Debes iniciar sesión y seleccionar un portfolio.");
+        if (!user) {
+            toast.error("Debes iniciar sesión.");
             return;
         }
 
         const toastId = toast.loading(`Eliminando ${symbol}...`);
         try {
-            const result = await supabase
+            // Find transactions to delete
+            let transactionsToDelete = [];
+
+            if (currentPortfolioId) {
+                transactionsToDelete = allTransactions
+                    .filter(t => t.portfolio_id === currentPortfolioId && t.symbol === symbol);
+            } else {
+                // Delete from ALL portfolios
+                transactionsToDelete = allTransactions
+                    .filter(t => t.symbol === symbol);
+            }
+
+            if (transactionsToDelete.length === 0) {
+                toast.dismiss(toastId);
+                return;
+            }
+
+            const idsToDelete = transactionsToDelete.map(t => t.id);
+
+            const { error } = await supabase
                 .from('transactions')
                 .delete()
-                .eq('user_id', user.id)
-                .eq('portfolio_id', currentPortfolioId)
-                .eq('symbol', symbol);
+                .in('id', idsToDelete);
 
-            if (result.error) throw result.error;
+            if (error) throw error;
 
-            toast.success(`Activo ${symbol} y su historial eliminados.`, { id: toastId });
-            void logger.info('PORTFOLIO_ASSET_DELETE_SUCCESS', `Asset ${symbol} deleted for user ${user.id} in portfolio ${currentPortfolioId}.`);
-
-            await queryClient.invalidateQueries({ queryKey: ['portfolio', user?.id] });
-
-        } catch (err: unknown) {
-            toast.error('No se pudo eliminar el activo.', { id: toastId, description: errorToString(err) });
-            void logger.error('PORTFOLIO_ASSET_DELETE_FAILED', `Failed to delete ${symbol}`, { error: errorToString(err) });
+            await queryClient.invalidateQueries({ queryKey: ['portfolio', user.id] });
+            toast.success(`${symbol} eliminado correctamente`, { id: toastId });
+        } catch {
+            toast.error('Error al eliminar el activo', { id: toastId });
         }
     };
 
@@ -218,10 +227,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         selectPortfolio,
         createPortfolio,
         deletePortfolio,
-        addTransaction: (transaction) => {
-            addTransaction(transaction);
-            return Promise.resolve(null);
-        },
+        addTransaction,
         deleteAsset,
         refreshPortfolio: async () => {
             await refetch();

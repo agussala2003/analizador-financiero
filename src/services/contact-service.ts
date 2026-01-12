@@ -261,7 +261,7 @@ class ContactService {
     archived: number;
   } | null> {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const { data, error } = await supabase.rpc('get_contact_messages_stats');
 
       if (error) {

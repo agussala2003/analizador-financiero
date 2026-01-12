@@ -2,9 +2,20 @@
 
 import { useEffect, useState, memo } from 'react';
 import { ArrowDown, ArrowUp, TrendingUp, BookOpen, Lightbulb } from 'lucide-react';
-import { getActiveTickers, ActiveTicker } from '../../services/data/market/get-active-tickers';
+import { fetchGainers, fetchLosers, fetchActives } from '../../features/market-movers/services/market-movers-service';
+import type { MarketMover } from '../../features/market-movers/types';
+// Lista de símbolos populares para priorizar en la visualización
+const KNOWN_SYMBOLS = [
+    "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "BRK-B", "LLY", "AVGO", "TSM", "NVO", "V",
+    "JPM", "WMT", "XOM", "MA", "UNH", "PG", "JNJ", "COST", "HD", "MRK", "ABBV", "CVX", "CRM", "BAC",
+    "AMD", "NFLX", "PEP", "KO", "DIS", "ADBE", "MCD", "CSCO", "TM", "ASML", "ORCL", "NKE", "WFC",
+    "QCOM", "ACN", "IBM", "GE", "VZ", "CAT", "INTC", "UBER", "ABNB", "PYPL", "INTU", "AMGN", "TXN",
+    "SONY", "PFE", "BA", "SBUX", "HON", "AMAT", "NOW", "GS", "MS", "RTX", "BKNG", "T", "C", "BLK",
+    "DE", "MELI", "SHOP", "SPOT", "F", "GM", "AXP", "UPS", "PM", "PLTR", "COIN", "BABA", "PDD",
+    "SHEL", "SPY", "QQQ", "DIA", "GLD", "VOO", "SMH"
+];
 
-// Tips educativos para mostrar cuando no hay activos
+// Tips educativos para mostrar cuando no hay activos o cargando
 const educationalTips = [
     { icon: TrendingUp, text: "La diversificación reduce el riesgo: no pongas todos los huevos en la misma canasta." },
     { icon: BookOpen, text: "El interés compuesto es la octava maravilla del mundo - Albert Einstein." },
@@ -18,9 +29,9 @@ const educationalTips = [
     { icon: TrendingUp, text: "Los dividendos reinvertidos representan aproximadamente el 40% del retorno histórico del mercado." },
 ];
 
-// Componente para un solo item del ticker. Es memorizado para evitar re-renders innecesarios.
-const TickerItem = memo(({ asset }: { asset: Omit<ActiveTicker, 'last_updated_at'> }) => {
-    const isPositive = asset.data.dayChange >= 0;
+// Componente para un solo item del ticker.
+const TickerItem = memo(({ asset }: { asset: MarketMover }) => {
+    const isPositive = asset.changesPercentage >= 0;
     const colorClass = isPositive ? "text-green-500" : "text-red-500";
     const Icon = isPositive ? ArrowUp : ArrowDown;
 
@@ -29,7 +40,7 @@ const TickerItem = memo(({ asset }: { asset: Omit<ActiveTicker, 'last_updated_at
             <span className="font-bold text-foreground">{asset.symbol}</span>
             <div className={`flex items-center ml-2 font-medium ${colorClass}`}>
                 <Icon className="w-4 h-4 mr-1" />
-                <span>{asset.data.dayChange.toFixed(2)}%</span>
+                <span>{Math.abs(asset.changesPercentage).toFixed(2)}%</span>
             </div>
         </div>
     );
@@ -38,20 +49,55 @@ TickerItem.displayName = 'TickerItem';
 
 /**
  * Barra superior que muestra un carrusel infinito con el rendimiento diario de activos.
- * Obtiene los datos de los activos actualizados en el día actual desde el servicio `getActiveTickers`.
- * Si no hay activos, muestra tips educativos sobre inversiones.
+ * Prioriza activos conocidos y complementa con los mayores movimientos del mercado.
  */
 export default function ActivesBar() {
-    const [activeAssets, setActiveAssets] = useState<Omit<ActiveTicker, 'last_updated_at'>[]>([]);
+    const [activeAssets, setActiveAssets] = useState<MarketMover[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
     useEffect(() => {
         const loadAssets = async () => {
             setLoading(true);
-            const data = await getActiveTickers();
-            setActiveAssets(data);
-            setLoading(false);
+            try {
+                // 1. Cargar datos de múltiples fuentes en paralelo
+                const [gainers, losers, actives] = await Promise.all([
+                    fetchGainers(),
+                    fetchLosers(),
+                    fetchActives()
+                ]);
+
+                // 2. Unificar y eliminar duplicados
+                const allAssets = [...gainers, ...losers, ...actives];
+                const uniqueMap = new Map<string, MarketMover>();
+
+                allAssets.forEach(asset => {
+                    if (!uniqueMap.has(asset.symbol)) {
+                        uniqueMap.set(asset.symbol, asset);
+                    }
+                });
+
+                const uniqueAssets = Array.from(uniqueMap.values());
+
+                // 3. Estrategia de Priorización
+                // A. Encontrar los símbolos "famosos" en los resultados
+                const knownAssets = uniqueAssets.filter(a => KNOWN_SYMBOLS.includes(a.symbol));
+
+                // B. Tomar el resto de activos
+                const otherAssets = uniqueAssets.filter(a => !KNOWN_SYMBOLS.includes(a.symbol));
+
+                // C. Ordenar los "otros" por volatilidad absoluta (para mostrar cosas interesantes)
+                otherAssets.sort((a, b) => Math.abs(b.changesPercentage) - Math.abs(a.changesPercentage));
+
+                // 4. Construir lista final: Conocidos primero + Top 20 del resto para rellenar
+                const finalAssets = [...knownAssets, ...otherAssets.slice(0, 25)];
+
+                setActiveAssets(finalAssets);
+            } catch (error) {
+                console.error("Error loading market actives:", error);
+            } finally {
+                setLoading(false);
+            }
         };
         void loadAssets();
     }, []);
@@ -68,10 +114,10 @@ export default function ActivesBar() {
 
     // Renderiza un placeholder si está cargando
     if (loading) {
-        return <div className="w-full h-10 border-b border-border" aria-hidden="true" />;
+        return <div className="w-full h-10 border-b border-border bg-background/80 backdrop-blur-sm" aria-hidden="true" />;
     }
 
-    // Si no hay activos, mostrar tips educativos
+    // Si no hay activos (fallback), mostrar tips educativos
     if (activeAssets.length === 0) {
         const currentTip = educationalTips[currentTipIndex];
         const TipIcon = currentTip.icon;
@@ -84,9 +130,9 @@ export default function ActivesBar() {
                         {currentTip.text}
                     </span>
                 </div>
-                {/* Indicador de progreso (opcional) */}
+                {/* Indicador de progreso */}
                 <div className="absolute bottom-0 left-0 h-0.5 bg-primary/20 w-full">
-                    <div 
+                    <div
                         className="h-full bg-primary transition-all duration-[8000ms] ease-linear"
                         style={{ width: '100%' }}
                         key={currentTipIndex}
@@ -96,12 +142,12 @@ export default function ActivesBar() {
         );
     }
 
-    // Para un bucle perfecto, el número de items debe ser suficientemente grande
-    const items = activeAssets.length > 10 ? activeAssets : [...activeAssets, ...activeAssets];
+    // Para un bucle perfecto, duplicamos los items si son pocos
+    const items = activeAssets.length > 15 ? activeAssets : [...activeAssets, ...activeAssets];
 
     return (
         <div className="relative w-full h-10 overflow-hidden border-b bg-background/80 backdrop-blur-sm border-border">
-            <div className="absolute top-0 left-0 flex items-center h-full animate-scroll-infinite">
+            <div className="absolute top-0 left-0 flex items-center h-full animate-scroll-infinite hover:pause-animation">
                 {/* Renderizamos el contenido duplicado para el efecto de bucle infinito */}
                 {items.map((asset, index) => (
                     <TickerItem key={`${asset.symbol}-${index}`} asset={asset} />

@@ -10,7 +10,7 @@
  * Los tipos any son intencionales para mantener los ejemplos simples.
  */
 
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+ 
 /* eslint-disable @typescript-eslint/require-await */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

@@ -18,8 +18,8 @@ export function ScreenerTab() {
     const [lynchCategory, setLynchCategory] = useState<string>('all');
 
     // Custom Ranges
-    const [maxPe, setMaxPe] = useState<number>(1000);
-    const [maxPeg, setMaxPeg] = useState<number>(50);
+    const [maxPe, setMaxPe] = useState<number>(100);
+    const [maxPeg, setMaxPeg] = useState<number>(5);
     const [minYield, setMinYield] = useState<number>(0);
 
     // Derived Sectors
@@ -45,9 +45,9 @@ export function ScreenerTab() {
             if (sector !== 'all' && asset.sector !== sector) return false;
 
             // 3. Quantitative Filters
-            const pe = asset.data.PER;
-            const peg = asset.data.pegRatio;
-            const divYield = asset.data.dividendYield;
+            const pe = asset.PER;
+            const peg = asset.pegRatio;
+            const divYield = asset.dividendYield;
 
             // Handle missing data by allowing it to pass (lenient filtering)
             // Only filter OUT if the value exists AND exceeds the limit
@@ -65,7 +65,7 @@ export function ScreenerTab() {
                     // High growth (>20%), Low PEG (<1)
                     // If PEG is missing, treat as high (fail)
                     const p = typeof peg === 'number' ? peg : 999;
-                    if (p >= 1 || (typeof asset.data.roe === 'number' && asset.data.roe < 0.15)) return false;
+                    if (p >= 1 || (typeof asset.roe === 'number' && asset.roe < 0.15)) return false;
                 }
                 if (lynchCategory === 'stalwart') {
                     // Moderate growth, mod PE
@@ -80,7 +80,7 @@ export function ScreenerTab() {
                 }
                 if (lynchCategory === 'assetPlay') {
                     // Price < Book
-                    const pb = asset.data.priceToBook;
+                    const pb = asset.priceToBook;
                     if (typeof pb !== 'number' || pb > 1) return false;
                 }
             }
@@ -160,7 +160,7 @@ export function ScreenerTab() {
                             <Input
                                 type="range"
                                 min={5}
-                                max={1000}
+                                max={100}
                                 step={1}
                                 value={maxPe}
                                 onChange={e => setMaxPe(Number(e.target.value))}
@@ -168,12 +168,12 @@ export function ScreenerTab() {
                         </div>
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <Label>Máx PEG Ratio: {maxPeg}</Label>
+                                <Label>Máx PEG Ratio: {maxPeg.toFixed(1)}</Label>
                             </div>
                             <Input
                                 type="range"
                                 min={0.1}
-                                max={50}
+                                max={5}
                                 step={0.1}
                                 value={maxPeg}
                                 onChange={e => setMaxPeg(Number(e.target.value))}
@@ -201,8 +201,8 @@ export function ScreenerTab() {
                                 setSector('all');
                                 setLynchCategory('all');
                                 setSearchTerm('');
-                                setMaxPe(1000);
-                                setMaxPeg(50);
+                                setMaxPe(100);
+                                setMaxPeg(5);
                                 setMinYield(0);
                             }}
                             className="gap-2"
@@ -227,22 +227,20 @@ export function ScreenerTab() {
                             <TableHead className="text-right">P/E</TableHead>
                             <TableHead className="text-right">PEG</TableHead>
                             <TableHead className="text-right">Div. Yield</TableHead>
-                            <TableHead className="text-right">Rent. (YTD)</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredAssets.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                                     No se encontraron activos con estos criterios.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             filteredAssets.slice(0, 50).map(asset => {
-                                const pe = typeof asset.data.PER === 'number' ? asset.data.PER.toFixed(2) : '-';
-                                const peg = typeof asset.data.pegRatio === 'number' ? asset.data.pegRatio.toFixed(2) : '-';
-                                const div = typeof asset.data.dividendYield === 'number' ? (asset.data.dividendYield * 100).toFixed(2) + '%' : '-';
-                                const ytd = typeof asset.ytdChange === 'number' ? asset.ytdChange.toFixed(2) + '%' : '-';
+                                const pe = typeof asset.PER === 'number' ? asset.PER.toFixed(2) : '-';
+                                const peg = typeof asset.pegRatio === 'number' ? asset.pegRatio.toFixed(2) : '-';
+                                const div = typeof asset.dividendYield === 'number' ? (asset.dividendYield * 100).toFixed(2) + '%' : '-';
 
                                 return (
                                     <TableRow key={asset.symbol}>
@@ -255,9 +253,6 @@ export function ScreenerTab() {
                                         <TableCell className="text-right">{pe}</TableCell>
                                         <TableCell className="text-right font-mono text-xs">{peg}</TableCell>
                                         <TableCell className="text-right text-green-600">{div}</TableCell>
-                                        <TableCell className={`text-right ${String(ytd).startsWith('-') ? 'text-red-500' : 'text-green-500'}`}>
-                                            {ytd}
-                                        </TableCell>
                                     </TableRow>
                                 );
                             })

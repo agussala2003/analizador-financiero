@@ -18,7 +18,7 @@ export type IndicatorConfig = Record<string, Indicator>;
  * Configuración central para todos los indicadores financieros de la aplicación.
  * Define cómo se obtienen, calculan, evalúan y explican.
  */
-export const indicatorConfig = {
+export const indicatorConfig: IndicatorConfig = {
   // ——— Valoración
   PER: {
     label: 'PER',
@@ -239,32 +239,85 @@ export const indicatorConfig = {
   },
   sma50: {
     label: 'SMA 50',
-    apiFields: [],
+    apiFields: ['priceAvg50'],
     lowerIsBetter: false, green: 0, yellow: 0,
     explanation: 'Es el precio promedio de los últimos 50 días. Ayuda a identificar la tendencia de corto plazo: si el precio está por encima, suele indicar tendencia alcista; por debajo, bajista.',
   },
   sma200: {
     label: 'SMA 200',
-    apiFields: [],
+    apiFields: ['priceAvg200'],
     lowerIsBetter: false, green: 0, yellow: 0,
     explanation: 'Es el precio promedio de los últimos 200 días. Marca la tendencia de largo plazo y es de las medias más seguidas. Cotizar por encima de ella es visto como señal de fortaleza a largo plazo.',
   },
   smaSignal: {
     label: 'Señal SMA 50/200',
-    apiFields: [],
+    apiFields: ['priceAvg50', 'priceAvg200'],
+    compute: (raw: Record<string, number>) => {
+      const sma50 = Number(raw.priceAvg50);
+      const sma200 = Number(raw.priceAvg200);
+      return (sma50 && sma200 && sma50 > sma200) ? 1 : 0;
+    },
     lowerIsBetter: false, green: 1, yellow: 0,
     explanation: 'Si la media de 50 días está por encima de la de 200, es una señal alcista (Cruce Dorado). Si está por debajo, se considera bajista (Cruce de la Muerte).',
   },
-  dist52wHigh: {
-    label: 'Dist. a Máx 52w (%)',
-    apiFields: [],
-    lowerIsBetter: true, green: 10, yellow: 25, asPercent: true,
-    explanation: 'Mide la distancia entre el precio actual y el máximo de los últimos 12 meses. Estar cerca del máximo suele ser señal de fortaleza, aunque también puede actuar como resistencia.',
+
+  // ——— Datos por Acción (Per Share)
+  eps: {
+    label: 'EPS (Beneficio/Acción)',
+    apiFields: ['netIncomePerShare', 'eps'],
+    lowerIsBetter: false, green: 0, yellow: 0,
+    explanation: 'Earnings Per Share. Es el beneficio neto dividido por el número de acciones. Indica cuánto dinero gana la empresa por cada acción que posees. Fundamental para calcular el PER.',
   },
-  dist52wLow: {
-    label: 'Dist. a Mín 52w (%)',
-    apiFields: [],
-    lowerIsBetter: false, green: 50, yellow: 25, asPercent: true,
-    explanation: 'Mide cuánto subió el precio desde el mínimo de los últimos 12 meses. Un valor alto refleja recuperación y posible cambio de tendencia tras una caída fuerte.',
+  revenuePerShare: {
+    label: 'Ventas por Acción',
+    apiFields: ['revenuePerShare'],
+    lowerIsBetter: false, green: 0, yellow: 0,
+    explanation: 'Muestra cuántos dólares de ventas corresponden a cada acción. Útil para ver si el crecimiento de las ventas es real o se diluye por la emisión de nuevas acciones.',
   },
+  cashPerShare: {
+    label: 'Efectivo por Acción',
+    apiFields: ['cashPerShare'],
+    lowerIsBetter: false, green: 0, yellow: 0,
+    explanation: 'La cantidad de dinero en efectivo y equivalentes que respalda cada acción. Un valor alto da seguridad financiera y opciones para invertir o capear crisis.',
+  },
+  bookValuePerShare: {
+    label: 'Valor Libro por Acción',
+    apiFields: ['bookValuePerShare'],
+    lowerIsBetter: false, green: 0, yellow: 0,
+    explanation: 'El valor contable de la empresa dividido por sus acciones. Si la empresa liquidara todos sus activos y pagara todas sus deudas, esto es teóricamente lo que recibiría cada accionista.',
+  },
+  fcfPerShare: {
+    label: 'FCF por Acción',
+    apiFields: ['freeCashFlowPerShare'],
+    lowerIsBetter: false, green: 0, yellow: 0,
+    explanation: 'Flujo de Caja Libre por acción. Muestra cuánto efectivo real genera la empresa para cada accionista después de mantener sus operaciones. Es clave para pagar dividendos sostenibles.',
+  },
+
+  // ——— Eficiencia
+  assetTurnover: {
+    label: 'Rotación de Activos',
+    apiFields: ['assetTurnover'],
+    lowerIsBetter: false, green: 1, yellow: 0.5,
+    explanation: 'Mide cuántos dólares de ventas genera la empresa por cada dólar que tiene en activos. Un ratio alto indica que la empresa es muy eficiente usando sus recursos para vender. Varía mucho por industria (retail alto, software bajo).',
+  },
+  inventoryTurnover: {
+    label: 'Rotación Inventario',
+    apiFields: ['inventoryTurnover'],
+    lowerIsBetter: false, green: 6, yellow: 4,
+    explanation: 'Indica cuántas veces al año la empresa vende y repone su inventario completo. Un número alto es bueno (venden rápido), uno bajo puede indicar exceso de stock o productos obsoletos.',
+  },
+  receivablesTurnover: {
+    label: 'Rotación Ctas/Cobrar',
+    apiFields: ['receivablesTurnover'],
+    lowerIsBetter: false, green: 8, yellow: 6,
+    explanation: 'Mide la eficiencia con la que la empresa cobra a sus clientes. Un ratio alto significa que cobran rápido, lo cual es vital para el flujo de caja.',
+  },
+
+  // ——— Solvencia Extra
+  interestCoverage: {
+    label: 'Cobertura de Intereses',
+    apiFields: ['interestCoverageRatio', 'interestCoverage'],
+    lowerIsBetter: false, green: 5, yellow: 3,
+    explanation: 'Indica la facilidad con la que la empresa puede pagar los intereses de su deuda con sus ganancias operativas. Un ratio menor a 1.5 es peligroso; idealmente buscamos > 3 o 5.',
+  }
 };

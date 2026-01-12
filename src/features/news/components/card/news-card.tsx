@@ -55,7 +55,7 @@ export const NewsCard = ({ news, index }: NewsCardProps) => {
             />
             <div className="absolute top-2 right-2">
               <Badge variant="secondary" className="shadow-sm backdrop-blur-md bg-background/80">
-                {news.symbol || news.source}
+                {news.symbol ?? news.source}
               </Badge>
             </div>
           </div>

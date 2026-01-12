@@ -1,9 +1,12 @@
+// src/features/dashboard/components/analysis/price-analysis-table.tsx
+
 import React, { useMemo, useState } from "react";
 import { AssetData } from "../../../../types/dashboard";
 import { Button } from "../../../../components/ui/button";
 import { ArrowDown, ArrowUp, Download, BarChart2, ShoppingCart } from "lucide-react";
 import { exportToPdf } from "../../../../utils/export-pdf";
 import { indicatorConfig } from "../../../../utils/financial";
+import { computeSharpe, computeStdDevPct } from "../../../../utils/financial-formulas";
 import { useTheme } from "../../../../components/ui/theme-provider";
 import { Link } from "react-router-dom";
 import { AddTransactionModal } from "../../../portfolio/components";
@@ -13,15 +16,28 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../../components/ui/tooltip";
 import { usePrefetchAsset } from "../../../../hooks/use-prefetch-asset";
 import { usePlanFeature } from "../../../../hooks/use-plan-feature";
-import { useAssetFreshness } from "../../hooks/use-asset-freshness";
-import { AssetFreshnessBadge } from "../../../../components/ui/asset-freshness-badge";
 
-// --- Props del Componente ---
+// --- Tipos Auxiliares ---
+interface PreparedAssetRow {
+    symbol: string;
+    companyName: string;
+    image: string;
+    currentPrice: number;
+    dayChange: number;
+    monthChange: number | 'N/A';
+    yearChange: number | 'N/A';
+    stdDev: number | 'N/A';
+    sharpeRatio: number | 'N/A';
+    lastMonthAvgPriceTarget: number;
+    targetConsensus: number | null;
+    original: AssetData;
+}
+
 interface PriceAnalysisTableProps {
     assets: AssetData[];
 }
 
-// --- Funciones de Formato ---
+// --- Helpers de Formato ---
 const formatCurrency = (v: number | 'N/A') => (typeof v === "number" && v !== 0 ? `$${v.toFixed(2)}` : "-");
 const formatNumber = (v: number | 'N/A') => (typeof v === "number" && v !== 0 ? v.toFixed(2) : "-");
 const pctNode = (v: number | 'N/A') => {
@@ -46,13 +62,12 @@ const SortableTableHeader = ({
 }: {
     children: React.ReactNode;
     align?: 'left' | 'right' | 'center';
-    sortKey: keyof AssetData | 'symbol';
+    sortKey: keyof PreparedAssetRow;
     currentSort: { key: string; dir: 'asc' | 'desc' };
     onSort: (key: string) => void;
 }) => {
     const isActive = currentSort.key === sortKey;
     const Icon = currentSort.dir === 'asc' ? ArrowUp : ArrowDown;
-
     return (
         <TableHead className={`text-${align} w-[150px]`}>
             <Button variant="ghost" onClick={() => onSort(sortKey)} className={`w-full justify-${sortKey === 'symbol' ? 'start' : 'center'} h-8`}>
@@ -68,28 +83,61 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
     const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: "symbol", dir: "asc" });
     const { theme } = useTheme();
     const [buyModalInfo, setBuyModalInfo] = useState({ isOpen: false, ticker: null as string | null, price: null as number | null });
+
+    // Hooks de Optimización y UX
     const { prefetchAssetIfNotCached } = usePrefetchAsset();
     const { hasAccess: canExportPdf, upgradeMessage } = usePlanFeature('exportPdf');
 
-    // Hook para obtener frescura de datos por activo
-    const symbols = useMemo(() => assets.map(a => a.symbol), [assets]);
-    const { freshnessMap } = useAssetFreshness(symbols);
+    // Preparación de datos y cálculos al vuelo
+    const preparedAssets = useMemo((): PreparedAssetRow[] => {
+        return assets.map(asset => {
+            const history = asset.historicalReturns || [];
+            const latestPrice = asset.quote?.price || 0;
 
+            // 1. Calcular Retornos Diarios (Index 0 = Antiguo -> Index N = Nuevo)
+            const returns: number[] = [];
+            for (let i = 1; i < history.length; i++) {
+                const prev = history[i - 1].close;
+                const curr = history[i].close;
+                if (prev > 0) returns.push(curr / prev - 1);
+            }
+
+            // 2. Calcular Métricas de Riesgo
+            const sharpeRatio = computeSharpe(returns) ?? 'N/A';
+            const stdDev = computeStdDevPct(returns.slice(-30)) ?? 'N/A';
+
+            return {
+                symbol: asset.profile.symbol,
+                companyName: asset.profile.companyName,
+                image: asset.profile.image,
+                currentPrice: latestPrice,
+                dayChange: asset.quote?.changePercentage || 0,
+                monthChange: asset.stockPriceChange["1M"] || 0,
+                yearChange: asset.stockPriceChange["1Y"] || 0,
+                stdDev,
+                sharpeRatio,
+                lastMonthAvgPriceTarget: asset.priceTarget?.lastMonthAvgPriceTarget || 0,
+                targetConsensus: asset.priceTargetConsensus?.targetConsensus || null,
+                original: asset
+            };
+        });
+    }, [assets]);
+
+    // Lógica de Ordenamiento
     const sortedAssets = useMemo(() => {
-        return [...assets].sort((a, b) => {
-            const valA = a[sort.key as keyof AssetData] ?? (sort.dir === 'asc' ? Infinity : -Infinity);
-            const valB = b[sort.key as keyof AssetData] ?? (sort.dir === 'asc' ? Infinity : -Infinity);
+        return [...preparedAssets].sort((a, b) => {
+            const valA = a[sort.key as keyof PreparedAssetRow] ?? (sort.dir === 'asc' ? Infinity : -Infinity);
+            const valB = b[sort.key as keyof PreparedAssetRow] ?? (sort.dir === 'asc' ? Infinity : -Infinity);
 
             if (sort.key === 'symbol') {
                 return sort.dir === 'asc' ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol);
             }
-
             if (typeof valA === 'number' && typeof valB === 'number') {
                 return sort.dir === 'asc' ? valA - valB : valB - valA;
             }
             return 0;
         });
-    }, [assets, sort]);
+    }, [preparedAssets, sort]);
 
     const handleSort = (key: string) => {
         setSort(prev => ({
@@ -109,20 +157,27 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
             typeof asset.yearChange === 'number' ? `${asset.yearChange.toFixed(2)}%` : 'N/A',
             typeof asset.stdDev === 'number' ? `${asset.stdDev.toFixed(2)}%` : 'N/A',
             formatNumber(asset.sharpeRatio),
-            formatCurrency(asset.lastMonthAvgPriceTarget)
+            formatCurrency(asset.targetConsensus!)
         ]);
+
+        const assetsForExport = sortedAssets.map(p => ({
+            ...p.original,
+            symbol: p.symbol,
+            currentPrice: p.currentPrice,
+            dayChange: p.dayChange,
+            monthChange: p.monthChange,
+            yearChange: p.yearChange,
+            stdDev: p.stdDev,
+            sharpeRatio: p.sharpeRatio
+        })) as unknown as AssetData[];
 
         void exportToPdf({
             title,
-            subtitle: "Análisis de rendimiento y riesgo de los activos seleccionados.",
-            sections: [{
-                title: 'Tabla de Precios',
-                head,
-                body
-            }],
-            assets,
-            theme: theme, // Usa el tema actual del sistema
-            indicatorConfig: indicatorConfig, // Se pasa la configuración
+            subtitle: "Análisis de rendimiento y riesgo.",
+            sections: [{ title: 'Tabla de Precios', head, body }],
+            assets: assetsForExport,
+            theme,
+            indicatorConfig,
         });
     };
 
@@ -145,34 +200,22 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                 <div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-full sm:w-auto text-xs sm:text-sm"
-                                                disabled={!canExportPdf}
-                                            >
-                                                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-                                                Exportar
+                                            <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm" disabled={!canExportPdf}>
+                                                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" /> Exportar
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
-                                        <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
                                             <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
                             </TooltipTrigger>
-                            {!canExportPdf && (
-                                <TooltipContent>
-                                    <p className="text-xs">{upgradeMessage}</p>
-                                </TooltipContent>
-                            )}
+                            {!canExportPdf && <TooltipContent><p className="text-xs">{upgradeMessage}</p></TooltipContent>}
                         </Tooltip>
                     </div>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6">
-                    {/* --- Vista de Tabla para Escritorio --- */}
+                    {/* --- VISTA ESCRITORIO --- */}
                     <div className="hidden sm:block">
                         <div className="border rounded-lg overflow-hidden">
                             <Table>
@@ -186,9 +229,7 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                         <SortableTableHeader sortKey="stdDev" currentSort={sort} onSort={handleSort} align="center">Volatilidad</SortableTableHeader>
                                         <SortableTableHeader sortKey="sharpeRatio" currentSort={sort} onSort={handleSort} align="center">Ratio Sharpe</SortableTableHeader>
                                         <SortableTableHeader sortKey="lastMonthAvgPriceTarget" currentSort={sort} onSort={handleSort} align="center">Precio Objetivo</SortableTableHeader>
-                                        <TableHead className="text-center w-[100px]">
-                                            Comprar
-                                        </TableHead>
+                                        <TableHead className="text-center w-[100px]">Comprar</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -208,7 +249,6 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                                                 <div className="font-bold group-hover:text-primary transition-colors">{asset.symbol}</div>
                                                                 <div className="caption text-muted-foreground truncate max-w-[180px]">{asset.companyName}</div>
                                                             </div>
-                                                            <AssetFreshnessBadge lastUpdated={freshnessMap.get(asset.symbol) ?? null} size="xs" />
                                                         </div>
                                                     </div>
                                                 </Link>
@@ -220,16 +260,12 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                             <TableCell className="text-center">{pctNode(asset.stdDev)}</TableCell>
                                             <TableCell className="text-center font-semibold">{formatNumber(asset.sharpeRatio)}</TableCell>
                                             <TableCell className="text-center font-semibold">
-                                                {typeof asset.lastMonthAvgPriceTarget === 'number' && asset.lastMonthAvgPriceTarget > 0
-                                                    ? formatCurrency(asset.lastMonthAvgPriceTarget)
+                                                {typeof asset.targetConsensus === 'number' && asset.targetConsensus > 0
+                                                    ? formatCurrency(asset.targetConsensus)
                                                     : <span className="text-muted-foreground text-xs font-normal">N/A</span>}
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => setBuyModalInfo({ isOpen: true, ticker: asset.symbol, price: asset.currentPrice })}
-                                                >
+                                                <Button variant="ghost" size="icon" onClick={() => setBuyModalInfo({ isOpen: true, ticker: asset.symbol, price: asset.currentPrice })}>
                                                     <ShoppingCart className="w-5 h-5 text-primary" />
                                                 </Button>
                                             </TableCell>
@@ -239,7 +275,8 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                             </Table>
                         </div>
                     </div>
-                    {/* --- Vista de Tarjetas para Móvil --- */}
+
+                    {/* --- VISTA MÓVIL --- */}
                     <div className="sm:hidden grid grid-cols-1 gap-3">
                         {sortedAssets.map(asset => (
                             <Card key={asset.symbol} className="p-3">
@@ -250,11 +287,10 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                         onMouseEnter={() => prefetchAssetIfNotCached(asset.symbol)}
                                         onFocus={() => prefetchAssetIfNotCached(asset.symbol)}
                                     >
-                                        <img src={asset.image} alt={asset.companyName} className="w-7 h-7 rounded-full bg-muted object-contain border flex-shrink-0" />
+                                        <img src={asset.image} className="w-7 h-7 rounded-full bg-muted object-contain border flex-shrink-0" />
                                         <div className="min-w-0 flex-1">
                                             <div className="text-sm flex items-center gap-1.5">
                                                 {asset.symbol}
-                                                <AssetFreshnessBadge lastUpdated={freshnessMap.get(asset.symbol) ?? null} size="xs" />
                                             </div>
                                             <div className="text-xs text-muted-foreground font-normal truncate">{asset.companyName}</div>
                                         </div>
@@ -265,25 +301,18 @@ export const PriceAnalysisTable = React.memo(function PriceAnalysisTable({ asset
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Diaria</span>{pctNode(asset.dayChange)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Mensual</span>{pctNode(asset.monthChange)}</div>
                                     <div className="flex justify-between"><span className="text-muted-foreground">Var. Anual</span>{pctNode(asset.yearChange)}</div>
-                                    <div className="flex justify-between"><span className="text-muted-foreground">Volatilidad</span>{pctNode(asset.stdDev)}</div>
-                                    <div className="flex justify-between"><span className="text-muted-foreground">Ratio Sharpe</span><span className="font-semibold">{formatNumber(asset.sharpeRatio)}</span></div>
+                                    <div className="flex justify-between"><span className="text-muted-foreground">Ratio Sharpe</span>{formatNumber(asset.sharpeRatio)}</div>
                                     <div className="flex justify-between">
                                         <span className="text-muted-foreground">Precio Objetivo</span>
                                         <span className="font-semibold">
-                                            {typeof asset.lastMonthAvgPriceTarget === 'number' && asset.lastMonthAvgPriceTarget > 0
-                                                ? formatCurrency(asset.lastMonthAvgPriceTarget)
+                                            {typeof asset.targetConsensus === 'number' && asset.targetConsensus > 0
+                                                ? formatCurrency(asset.targetConsensus)
                                                 : <span className="text-muted-foreground text-xs font-normal">N/A</span>}
                                         </span>
                                     </div>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full mt-2.5 text-xs"
-                                    onClick={() => setBuyModalInfo({ isOpen: true, ticker: asset.symbol, price: asset.currentPrice })}
-                                >
-                                    <ShoppingCart className="w-3.5 h-3.5 mr-1.5" />
-                                    Comprar
+                                <Button variant="outline" size="sm" className="w-full mt-2.5" onClick={() => setBuyModalInfo({ isOpen: true, ticker: asset.symbol, price: asset.currentPrice })}>
+                                    <ShoppingCart className="w-3.5 h-3.5 mr-1.5" /> Comprar
                                 </Button>
                             </Card>
                         ))}

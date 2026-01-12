@@ -4,21 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "../..
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../../components/ui/card";
 import { PieChart as PieChartIcon, Globe } from "lucide-react";
 import { Skeleton } from "../../../../components/ui/skeleton";
-
-interface AllocationData {
-    name: string;
-    value: number;
-    percentage: number;
-    [key: string]: string | number;
-}
-
-interface AllocationChartProps {
-    data: AllocationData[];
-    title: string;
-    description?: string;
-    type: 'sector' | 'country';
-    isLoading?: boolean;
-}
+import type { AllocationChartProps } from "../../types/portfolio.types";
 
 const COLORS = [
     'var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)',
@@ -112,9 +98,7 @@ export function AllocationChart({ data, title, description, type, isLoading }: A
                                 verticalAlign="middle"
                                 align="right"
                                 wrapperStyle={{ fontSize: '12px' }}
-                                formatter={(value: any, _entry: any, index: number) => {
-                                    // Hacky way to access payload percentage if not directly passed, 
-                                    // usually entry.payload has the data item.
+                                formatter={(value: string, _entry: unknown, index: number) => {
                                     const percent = chartData[index]?.percentage.toFixed(1) + '%';
                                     return <span className="text-foreground ml-1">{value} ({percent})</span>;
                                 }}

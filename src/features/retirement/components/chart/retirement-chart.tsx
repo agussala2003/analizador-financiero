@@ -62,11 +62,11 @@ export function RetirementChart({ chartData }: RetirementChartProps) {
             content={({ active, payload }) => {
               if (!active || !payload || payload.length === 0) return null;
               
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+               
               const year = payload[0].payload.year as number;
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+               
               const ahorro = payload[0].payload["Solo Ahorro"] as number;
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+               
               const inversion = payload[0].payload.Invirtiendo as number;
               const diferencia = inversion - ahorro;
               

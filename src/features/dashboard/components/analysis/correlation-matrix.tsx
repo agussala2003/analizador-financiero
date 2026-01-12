@@ -1,3 +1,5 @@
+// src/features/dashboard/components/analysis/correlation-matrix.tsx
+
 import React, { useMemo } from "react";
 import { AssetData } from "../../../../types/dashboard";
 import { correlation } from "../../../../utils/math";
@@ -17,42 +19,85 @@ interface CorrelationMatrixProps {
     assets: AssetData[];
 }
 
+// --- Helper: Convertir Historial OHLCV a Retornos Diarios alineados ---
+function alignAndCalculateReturns(
+    historyA: { date: string; close: number }[],
+    historyB: { date: string; close: number }[]
+): { returnsA: number[], returnsB: number[] } | null {
+    if (!historyA || !historyB || historyA.length < 2 || historyB.length < 2) return null;
+
+    // Crear mapas para acceso rápido por fecha (YYYY-MM-DD)
+    const mapA = new Map(historyA.map(h => [h.date.split('T')[0], h.close]));
+    const mapB = new Map(historyB.map(h => [h.date.split('T')[0], h.close]));
+
+    // Encontrar fechas comunes
+    const commonDates = historyA
+        .map(h => h.date.split('T')[0])
+        .filter(date => mapB.has(date))
+        .sort(); // Orden ascendente
+
+    if (commonDates.length < 2) return null;
+
+    const returnsA: number[] = [];
+    const returnsB: number[] = [];
+
+    // Calcular retornos solo en fechas comunes
+    for (let i = 1; i < commonDates.length; i++) {
+        const datePrev = commonDates[i - 1];
+        const dateCurr = commonDates[i];
+
+        const closeAPrev = mapA.get(datePrev)!;
+        const closeACurr = mapA.get(dateCurr)!;
+
+        const closeBPrev = mapB.get(datePrev)!;
+        const closeBCurr = mapB.get(dateCurr)!;
+
+        if (closeAPrev > 0 && closeBPrev > 0) {
+            returnsA.push((closeACurr - closeAPrev) / closeAPrev);
+            returnsB.push((closeBCurr - closeBPrev) / closeBPrev);
+        }
+    }
+
+    return { returnsA, returnsB };
+}
+
 // --- Lógica de Estilo para Celdas ---
 const getCellStyle = (value: number | null): React.CSSProperties => {
-  if (typeof value !== "number" || !isFinite(value)) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        return {
+            backgroundColor: "hsl(var(--muted))",
+            color: "hsl(var(--muted-foreground))",
+        };
+    }
+
+    // Clampear el valor entre 0 y 1
+    const v = Math.min(1, Math.max(0, value));
+
+    // Rojo (0, 100%, 50%) -> Amarillo (60, 100%, 50%) -> Verde (120, 100%, 40%)
+    let hue: number;
+    if (v <= 0.5) {
+        // De rojo (0) a amarillo (60)
+        hue = 0 + (v / 0.5) * 60;
+    } else {
+        // De amarillo (60) a verde (120)
+        hue = 60 + ((v - 0.5) / 0.5) * 60;
+    }
+
+    const saturation = 90;
+    const lightness = 55; // Un poco más claro para ser legible con texto oscuro
+
     return {
-      backgroundColor: "hsl(var(--muted))",
-      color: "hsl(var(--muted-foreground))",
+        backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+        color: `hsl(${hue}, 100%, 15%)`, // Texto oscuro para contraste
+        fontWeight: 'bold'
     };
-  }
-
-  // Clampear el valor entre 0 y 1
-  const v = Math.min(1, Math.max(0, value));
-
-  // Rojo (0, 100%, 50%) -> Amarillo (60, 100%, 50%) -> Verde (120, 100%, 40%)
-  let hue: number;
-  if (v <= 0.5) {
-    // De rojo (0) a amarillo (60)
-    hue = 0 + (v / 0.5) * 60;
-  } else {
-    // De amarillo (60) a verde (120)
-    hue = 60 + ((v - 0.5) / 0.5) * 60;
-  }
-
-  const saturation = 90;
-  const lightness = 55;
-
-  return {
-    backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-    color: `hsl(${hue}, 100%, 15%)`,
-  };
 };
 
 // --- Componente Principal ---
 export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets }: CorrelationMatrixProps) {
     const { theme } = useTheme();
     const { hasAccess: canExportPdf, upgradeMessage } = usePlanFeature('exportPdf');
-    
+
     const correlationMatrix = useMemo(() => {
         const matrix: (number | null)[][] = [];
         if (assets.length < 2) return [];
@@ -62,14 +107,21 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
             for (let j = 0; j < assets.length; j++) {
                 if (i === j) {
                     matrix[i][j] = 1;
-                } else {
-                    const returnsA = assets[i].historicalReturns;
-                    const returnsB = assets[j].historicalReturns;
-                    if (returnsA?.length > 1 && returnsB?.length > 1) {
-                        matrix[i][j] = correlation(returnsA, returnsB);
+                } else if (j > i) {
+                    // Calcular solo el triángulo superior y espejar para optimizar
+                    const aligned = alignAndCalculateReturns(
+                        assets[i].historicalReturns,
+                        assets[j].historicalReturns
+                    );
+
+                    if (aligned && aligned.returnsA.length > 10) { // Mínimo 10 puntos en común
+                        matrix[i][j] = correlation(aligned.returnsA, aligned.returnsB);
                     } else {
                         matrix[i][j] = null;
                     }
+                } else {
+                    // Espejar triángulo inferior
+                    matrix[i][j] = matrix[j][i];
                 }
             }
         }
@@ -79,13 +131,11 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
     const handlePdfExport = () => {
         const title = "Matriz de Correlación";
         const subtitle = "Análisis de correlación entre los retornos históricos de los activos seleccionados.";
-        
-        // Crear cabecera con los símbolos de los activos
-        const head = [['Activo', ...assets.map(asset => asset.symbol)]];
-        
-        // Crear cuerpo de la matriz
+
+        const head = [['Activo', ...assets.map(asset => asset.profile.symbol)]];
+
         const body = assets.map((rowAsset, i) => [
-            rowAsset.symbol,
+            rowAsset.profile.symbol,
             ...assets.map((_, j) => {
                 const value = correlationMatrix[i]?.[j];
                 return typeof value === 'number' ? value.toFixed(2) : 'N/A';
@@ -99,7 +149,7 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
                 title: 'Matriz de Correlación',
                 head,
                 body,
-                isCorrelation: true // Flag para aplicar colores de correlación
+                isCorrelation: true
             }],
             assets,
             theme,
@@ -121,25 +171,25 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
 
     return (
         <Card>
-                <CardHeader className="p-4 sm:p-6">
+            <CardHeader className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                    <GitCompareArrows className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                    <div>
-                        <CardTitle className="text-lg sm:text-xl">Matriz de Correlación</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">
-                            Cómo se mueven los precios de tus activos entre sí (1: juntos, -1: opuestos).
-                        </CardDescription>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <GitCompareArrows className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                        <div>
+                            <CardTitle className="text-lg sm:text-xl">Matriz de Correlación</CardTitle>
+                            <CardDescription className="text-xs sm:text-sm">
+                                Cómo se mueven los precios entre sí (1: juntos, -1: opuestos).
+                            </CardDescription>
+                        </div>
                     </div>
-                </div>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
                                             className="w-full sm:w-auto text-xs sm:text-sm"
                                             disabled={!canExportPdf}
                                         >
@@ -148,8 +198,6 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
-                                        <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
                                         <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -168,32 +216,35 @@ export const CorrelationMatrix = React.memo(function CorrelationMatrix({ assets 
                     <Table className="min-w-full">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="sticky left-0 z-10 bg-muted/50 font-semibold">Activo</TableHead>
+                                <TableHead className="sticky left-0 z-10 bg-muted/50 font-semibold w-[100px]">Activo</TableHead>
                                 {assets.map(asset => (
-                                    <TableHead key={asset.symbol} className="text-center font-semibold">{asset.symbol}</TableHead>
+                                    <TableHead key={asset.profile.symbol} className="text-center font-semibold min-w-[80px]">{asset.profile.symbol}</TableHead>
                                 ))}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {assets.map((rowAsset, i) => (
-                                <TableRow key={rowAsset.symbol}>
-                                    <TableHead className="font-bold sticky left-0 z-10 bg-background">{rowAsset.symbol}</TableHead>
+                                <TableRow key={rowAsset.profile.symbol}>
+                                    <TableHead className="font-bold sticky left-0 z-10 bg-background">{rowAsset.profile.symbol}</TableHead>
                                     {assets.map((colAsset, j) => {
                                         const value = correlationMatrix[i]?.[j];
                                         return (
-                                            <TableCell key={colAsset.symbol} className="text-center font-bold p-1">
+                                            <TableCell key={colAsset.profile.symbol} className="text-center p-1">
                                                 <TooltipProvider delayDuration={0}>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <div
-                                                                className="w-full h-10 flex items-center justify-center rounded-md text-sm"
+                                                                className="w-full h-10 flex items-center justify-center rounded-md text-sm transition-colors hover:opacity-80 cursor-default"
                                                                 style={getCellStyle(value)}
                                                             >
-                                                                {typeof value === 'number' ? value.toFixed(2) : 'N/A'}
+                                                                {typeof value === 'number' ? value.toFixed(2) : '-'}
                                                             </div>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Correlación: {rowAsset.symbol} y {colAsset.symbol}</p>
+                                                            <p className="font-semibold mb-1">Correlación: {value?.toFixed(3) ?? 'N/A'}</p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {rowAsset.profile.symbol} vs {colAsset.profile.symbol}
+                                                            </p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>

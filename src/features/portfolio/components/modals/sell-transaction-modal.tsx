@@ -1,14 +1,15 @@
 // src/features/portfolio/components/modals/sell-transaction-modal.tsx
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { usePortfolio } from '../../../../hooks/use-portfolio';
 import { Button } from "../../../../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../../../../components/ui/dialog";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select";
 import { toast } from "sonner";
 import { useTransactionForm } from '../../../../hooks/use-transaction-form';
-import { SellTransactionModalProps } from '../../types/portfolio.types';
+import { SellTransactionModalProps } from '../../../../types/portfolio';
 import { calculateFinalQuantity, calculateFinalPrice } from '../../lib/portfolio.utils';
 
 import { Calendar } from "../../../../components/ui/calendar";
@@ -17,13 +18,12 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "../../../../lib/utils";
-import { useEffect } from 'react';
 
 /**
  * Modal para registrar una transacción de venta de un activo existente en el portafolio.
  */
 export function SellTransactionModal({ isOpen, onClose, holding }: SellTransactionModalProps) {
-  const { addTransaction } = usePortfolio();
+  const { addTransaction, portfolios, transactions, currentPortfolio } = usePortfolio();
   const [loading, setLoading] = useState(false);
 
   // ✅ Reutilizamos el hook para manejar el estado del formulario
@@ -33,26 +33,60 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
     date, setDate,
     handleTypeChange,
     ratio, isCedears,
-  } = useTransactionForm({ 
-    isOpen, 
+    portfolioId, setPortfolioId
+  } = useTransactionForm({
+    isOpen,
     ticker: holding?.symbol ?? null,
     currentPrice: holding?.currentPrice ?? null
   });
 
-  const maxShares = holding?.quantity ?? 0;
-  const maxCedears = ratio ? maxShares * ratio : 0;
+  // Efecto para pre-seleccionar el portfolio actual si existe
+  useEffect(() => {
+    if (isOpen && currentPortfolio) {
+      setPortfolioId(currentPortfolio.id);
+    } else if (isOpen && portfolios.length > 0 && !portfolioId) {
+      // Si estamos en "Todos", pre-seleccionar el primero que tenga este activo?
+      // Por simplicidad, seleccionamos el primero si no hay uno seleccionado.
+      // Mejor lógica: Buscar en qué portfolios existe este activo.
+      const candidate = transactions.find(t => t.symbol === holding?.symbol && (t.transaction_type === 'buy' || t.transaction_type === 'sell'));
+      if (candidate) {
+        setPortfolioId(candidate.portfolio_id);
+      } else {
+        setPortfolioId(portfolios[0]?.id);
+      }
+    }
+  }, [isOpen, currentPortfolio, portfolios, transactions, holding, portfolioId, setPortfolioId]);
+
+  // Calcular la cantidad disponible EN EL PORTFOLIO SELECCIONADO
+  const availableShares = useMemo(() => {
+    if (!holding || !portfolioId) return 0;
+    const relevantTransactions = transactions.filter(t => t.symbol === holding.symbol && t.portfolio_id === portfolioId);
+
+    let shares = 0;
+    for (const t of relevantTransactions) {
+      if (t.transaction_type === 'buy') shares += t.quantity;
+      if (t.transaction_type === 'sell') shares -= t.quantity;
+    }
+    return Math.max(0, shares); // Evitar negativos por error de datos
+  }, [holding, portfolioId, transactions]);
+
+  const maxCedears = ratio ? availableShares * ratio : 0;
 
   // Autocompletar cantidad máxima cuando se abre el modal
   useEffect(() => {
     if (isOpen && holding) {
-      const maxQuantity = isCedears ? maxCedears : maxShares;
+      const maxQuantity = isCedears ? maxCedears : availableShares;
       setQuantity(maxQuantity.toString());
     }
-  }, [isOpen, holding, isCedears, maxShares, maxCedears, setQuantity]);
+  }, [isOpen, holding, isCedears, availableShares, maxCedears, setQuantity]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!holding) return;
+    if (!portfolioId) {
+      toast.error("Selecciona un portafolio de origen.");
+      return;
+    }
 
     const dateString = format(date, 'yyyy-MM-dd');
 
@@ -81,12 +115,12 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
 
       const finalQuantityInShares = calculateFinalQuantity(enteredQuantity, isCedears, ratio);
 
-      // ✅ Validación: No puede vender más de lo que posee
-      if (finalQuantityInShares > maxShares + 1e-9) {
-        const maxAvailable = isCedears ? maxCedears.toFixed(2) : maxShares.toFixed(4);
+      // ✅ Validación: No puede vender más de lo que posee en ese portfolio
+      if (finalQuantityInShares > availableShares + 1e-9) {
+        const maxAvailableDisplay = isCedears ? maxCedears.toFixed(2) : availableShares.toFixed(4);
         const unit = isCedears ? 'CEDEARs' : 'acciones';
-        toast.error("Cantidad excede lo disponible", {
-          description: `Solo puedes vender hasta ${maxAvailable} ${unit}.`,
+        toast.error("Cantidad excede lo disponible en este portafolio", {
+          description: `Solo puedes vender hasta ${maxAvailableDisplay} ${unit} en el portafolio seleccionado.`,
         });
         setLoading(false);
         return;
@@ -100,7 +134,7 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
         setLoading(false);
         return;
       }
-      
+
       const finalPricePerShare = calculateFinalPrice(enteredPrice, isCedears, ratio);
 
       await addTransaction({
@@ -109,6 +143,7 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
         purchase_price: finalPricePerShare,
         purchase_date: dateString,
         transaction_type: 'sell',
+        portfolio_id: portfolioId, // AHORA SÍ INCLUIDO
       });
       toast.success(`Venta de ${holding.symbol} registrada.`);
       onClose();
@@ -122,17 +157,40 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
       setLoading(false);
     }
   };
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Vender <span className="text-primary">{holding?.symbol}</span></DialogTitle>
           <DialogDescription>
-            Posees {maxShares.toFixed(4)} acciones {ratio ? `(~${maxCedears.toFixed(2)} CEDEARs)` : ''}.
+            {portfolioId ? (
+              <>Disponible: {availableShares.toFixed(4)} acciones {ratio ? `(~${maxCedears.toFixed(2)} CEDEARs)` : ''}</>
+            ) : "Selecciona un portafolio para ver disponibilidad"}
           </DialogDescription>
         </DialogHeader>
-  <form onSubmit={e => { e.preventDefault(); void handleSubmit(e); }} className="space-y-4 pt-4">
+        <form onSubmit={e => { e.preventDefault(); void handleSubmit(e); }} className="space-y-4 pt-4">
+
+          {/* Portfolio Selector */}
+          <div className="space-y-2">
+            <Label htmlFor="portfolio-sell">Portafolio Origen</Label>
+            <Select
+              value={portfolioId?.toString()}
+              onValueChange={(val) => setPortfolioId(parseInt(val))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecciona un portafolio" />
+              </SelectTrigger>
+              <SelectContent>
+                {portfolios.map(p => (
+                  <SelectItem key={p.id} value={p.id.toString()}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {ratio && (
             <div>
               <Label className="mb-2 block">Vender como</Label>
@@ -145,31 +203,31 @@ export function SellTransactionModal({ isOpen, onClose, holding }: SellTransacti
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="quantity-sell">Cantidad a Vender</Label>
-              <Input 
-                id="quantity-sell" 
-                type="number" 
-                step="any" 
+              <Input
+                id="quantity-sell"
+                type="number"
+                step="any"
                 min="0.0001"
-                max={isCedears ? maxCedears : maxShares} 
-                value={quantity} 
-                onChange={(e) => setQuantity(e.target.value)} 
-                required 
+                max={isCedears ? maxCedears : availableShares}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                required
               />
               <p className="text-xs text-muted-foreground">
-                Máximo: {isCedears ? maxCedears.toFixed(2) : maxShares.toFixed(4)} {isCedears ? 'CEDEARs' : 'acciones'}
+                Máximo: {isCedears ? maxCedears.toFixed(2) : availableShares.toFixed(4)} {isCedears ? 'CEDEARs' : 'acciones'}
               </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="price-sell">Precio de Venta (USD)</Label>
-              <Input 
-                id="price-sell" 
-                type="number" 
-                step="any" 
+              <Input
+                id="price-sell"
+                type="number"
+                step="any"
                 min="0.01"
                 max="1000000"
-                value={price} 
-                onChange={(e) => setPrice(e.target.value)} 
-                required 
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
               />
             </div>
           </div>

@@ -1,21 +1,17 @@
+// src/features/portfolio/hooks/use-portfolio-history.ts
 
 import { useQueries } from '@tanstack/react-query';
 import { useAuth } from '../../../hooks/use-auth';
 import { useConfig } from '../../../hooks/use-config';
 import { fetchTickerData } from '../../../services/api/asset-api';
 import { Holding } from '../../../types/portfolio';
-import { HistoricalHolding } from '../../../types/dashboard';
+import { AssetHistorical } from '../../../types/dashboard';
 import { calculatePerformanceMetrics, PerformanceMetrics } from '../../../utils/performance-metrics';
 import { useMemo } from 'react';
 
 /**
- * Hook to fetch historical data for all holdings in the portfolio and calculate aggregate metrics.
- * 
- * Strategy:
- * 1. Fetch full data (including history) for every asset in the portfolio.
- * 2. Calculate "Buy and Hold" portfolio value history:
- *    PortfolioValue(t) = Sum(Quantity_i * Price_i(t))
- * 3. Calculate metrics on this aggregate series.
+ * Hook para obtener datos históricos agregados del portafolio.
+ * Calcula el valor histórico del portafolio basado en la estrategia "Buy and Hold" con las tenencias actuales.
  */
 export function usePortfolioHistory(holdings: Holding[]) {
     const { user, profile } = useAuth();
@@ -25,12 +21,12 @@ export function usePortfolioHistory(holdings: Holding[]) {
     const profileId = profile?.id ?? null;
     const useMockData = config?.useMockData ?? false;
 
-    // 1. Fetch data for all holdings in parallel using useQueries
+    // 1. Obtener datos completos para cada activo en paralelo
     const queries = useQueries({
         queries: holdings.map((holding) => ({
             queryKey: ['assetData', holding.symbol, userId, profileId, useMockData] as const,
             queryFn: () => fetchTickerData({ queryKey: ['assetData', holding.symbol, config, user, profile] }),
-            staleTime: 1000 * 60 * 5, // 5 min
+            staleTime: 1000 * 60 * 60, // 1 hora (historial no cambia tanto)
             enabled: !!holding.symbol,
         })),
     });
@@ -38,85 +34,89 @@ export function usePortfolioHistory(holdings: Holding[]) {
     const isLoading = queries.some((q) => q.isLoading);
     const isError = queries.some((q) => q.isError);
 
-    // 2. Aggregate history
+    // 2. Agregar historial
     const portfolioHistory = useMemo(() => {
         if (isLoading || isError || holdings.length === 0) return [];
 
-        // Map symbol -> history array
-        const histories: Record<string, HistoricalHolding[]> = {};
+        // Mapa: Símbolo -> Map<Fecha, ClosePrice>
+        const historyMap: Record<string, Map<string, number>> = {};
+        const availableDatesPerAsset: Record<string, string[]> = {};
+
+        // Validar que todos los queries tengan datos
+        const allDataLoaded = queries.every(q => q.data?.historicalReturns?.length);
+        if (!allDataLoaded) return [];
+
+        let latestStartDate = 0; // Timestamp de la fecha más RECIENTE de inicio (el "maximo de los minimos")
+        let driverSymbol = '';
 
         queries.forEach((q, index) => {
-            const symbol = holdings[index].symbol;
-            if (q.data?.historicalRaw) {
-                histories[symbol] = q.data.historicalRaw;
-            }
-        });
+            const holding = holdings[index];
+            const rawHistory = q.data?.historicalReturns ?? [];
 
-        if (Object.keys(histories).length === 0) return [];
+            // 1. Ordenar DESC (Más reciente a más antiguo) para consistencia
+            // FMP suele devolver DESC.
+            const sortedHistory = [...rawHistory].sort((a, b) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
 
-        // Find common time period (Max of start dates)
-        let maxStart = 0;
+            if (sortedHistory.length > 0) {
+                // Crear Map para lookup rápido O(1)
+                const priceMap = new Map<string, number>();
+                const dates: string[] = [];
 
-        // Determine the latest start date among all assets (common period)
-        const symbolsWithData = Object.keys(histories);
+                sortedHistory.forEach(h => {
+                    priceMap.set(h.date, h.close);
+                    dates.push(h.date);
+                });
 
-        // Find the symbol with the latest start date (shortest history)
-        let driverSymbol = symbolsWithData[0];
+                historyMap[holding.symbol] = priceMap;
+                availableDatesPerAsset[holding.symbol] = dates;
 
-        symbolsWithData.forEach(sym => {
-            const hist = histories[sym];
-            if (hist.length > 0) {
-                const start = new Date(hist[0].date).getTime();
-                if (start > maxStart) {
-                    maxStart = start;
-                    driverSymbol = sym;
+                // El último elemento es el más antiguo (porque ordenamos DESC)
+                const oldestDateStr = sortedHistory[sortedHistory.length - 1].date;
+                const oldestDateTimestamp = new Date(oldestDateStr).getTime();
+
+                // Buscamos el activo que tiene menos historia (su fecha de inicio es más grande)
+                if (oldestDateTimestamp > latestStartDate) {
+                    latestStartDate = oldestDateTimestamp;
+                    driverSymbol = holding.symbol;
                 }
             }
         });
 
-        if (!histories[driverSymbol]) return [];
+        if (!driverSymbol || !availableDatesPerAsset[driverSymbol]) return [];
 
-        // Use the driver symbol's dates as the master timeline
-        const relevantDates = histories[driverSymbol]
-            .filter(d => new Date(d.date).getTime() >= maxStart)
-            .map(d => d.date);
+        // Usamos las fechas del driverSymbol (el de historia más corta) como eje maestro.
+        // Filtramos solo las fechas >= latestStartDate para estar seguros (aunque por definición deberían serlo).
+        // Y como sortedHistory está DESC, el result también será DESC.
+        const masterTimeline = availableDatesPerAsset[driverSymbol]
+            .filter(date => new Date(date).getTime() >= latestStartDate);
 
-        const aggregated: HistoricalHolding[] = [];
+        const aggregated: AssetHistorical[] = [];
 
-        for (const date of relevantDates) {
-            // Calculate portfolio value for this date
+        // Iterar fechas
+        for (const date of masterTimeline) {
             let totalValue = 0;
-            let incomplete = false;
+            let isValidPoint = true;
 
             for (const h of holdings) {
-                const hist = histories[h.symbol];
-                // If asset not in history map (e.g. failed fetch), skip or handle
-                if (!hist) {
-                    // Skip this asset's contribution or mark incomplete?
-                    // If we skip, the total value drops artificially.
-                    // Assuming we have history for all fetched assets.
-                    // If query failed, we probably returned early or don't have it in histories.
-                    // If holding is in holdings but not in histories, it failed.
-                    continue;
-                }
+                const price = historyMap[h.symbol]?.get(date);
 
-                // Find price at this date
-                const dayData = hist.find(d => d.date === date);
-
-                if (!dayData) {
-                    incomplete = true;
+                if (price === undefined) {
+                    // Si falta dato, invalidamos el punto.
+                    // (Podríamos implementar interpolación o usar dato anterior aquí, pero Buy&Hold estricto requiere precio conocido)
+                    isValidPoint = false;
                     break;
                 }
-
-                totalValue += h.quantity * dayData.close;
+                totalValue += h.quantity * price;
             }
 
-            if (!incomplete) {
+            if (isValidPoint) {
                 aggregated.push({
                     symbol: 'PORTFOLIO',
                     date: date,
                     close: totalValue,
-                    open: totalValue, // Approximation
+                    open: totalValue, // Aproximación
                     high: totalValue,
                     low: totalValue,
                     volume: 0,
@@ -127,11 +127,14 @@ export function usePortfolioHistory(holdings: Holding[]) {
             }
         }
 
-        return aggregated;
+        // Retornar ordenado ASC (Antiguo a Reciente) para los gráficos
+        const sortedAggregated = aggregated.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    }, [queries, holdings]);
+        return sortedAggregated;
 
-    // 3. Calculate metrics on portfolioHistory
+    }, [queries, holdings, isLoading, isError]);
+
+    // 3. Calcular métricas sobre la serie agregada
     const metrics: PerformanceMetrics = useMemo(() => {
         return calculatePerformanceMetrics(portfolioHistory);
     }, [portfolioHistory]);

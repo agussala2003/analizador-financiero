@@ -67,8 +67,8 @@ export default function AssetDetailPage() {
 
       {/* Valuation & Rating Cards */}
       <div className="grid-cards-2">
-        <DCFValuationCard currentPrice={asset.currentPrice} dcf={asset.dcf} />
-        <RatingScorecard rating={asset.rating} />
+        <DCFValuationCard asset={asset} />
+        <RatingScorecard asset={asset} />
       </div>
 
       {/* Tabs */}

@@ -4,13 +4,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-auth';
 import { toast } from 'sonner';
-import { Transaction, PortfolioAssetData, Portfolio } from '../../../types/portfolio';
+import { Transaction, Portfolio } from '../../../types/portfolio';
+import { AssetData } from '../../../types/dashboard';
 import { logger } from '../../../lib/logger';
 import { errorToString } from '../../../utils/type-guards';
 
 interface PortfolioQueryData {
     transactions: Transaction[];
-    portfolioData: Record<string, PortfolioAssetData>;
+    portfolioData: Record<string, AssetData>;
     portfolios: Portfolio[];
 }
 

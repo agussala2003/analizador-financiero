@@ -3,33 +3,27 @@
 import { supabase } from '../../lib/supabase';
 import { logger } from '../../lib/logger';
 import { processAssetData } from '../data/asset-processor';
-import type { AssetData, RawApiData } from '../../types/dashboard';
+import type { AssetData } from '../../types/dashboard';
 import type { Config } from '../../types/config';
 import type { Profile } from '../../types/auth';
 import type { User } from '@supabase/supabase-js';
 import { hasApiCallsAvailable, incrementApiCallCounter } from './apiLimiter';
 import { toast } from 'sonner';
 
-// Tipos auxiliares que estaban en tu provider
-type FmpArray<T = Record<string, unknown>> = T[];
-type HistoricalDataResponse = Parameters<typeof processAssetData>[1];
-type RevenueApiResponse = Parameters<typeof processAssetData>[2];
-
 /**
- * Busca los datos completos de un activo desde la API (vía proxy),
- * los procesa y los cachea en Supabase.
- * 
- * LÓGICA DE CACHÉ SIMPLIFICADA:
- * - Cache < 1h: Devuelve inmediatamente (fresco) SIN llamar a la API
- * - Cache > 1h: SIEMPRE intenta actualizar desde la API
- *   - Si API disponible: Fetch y actualiza
- *   - Si API no disponible o falla: Fallback al cache antiguo
- * - forceRefresh = true: Ignora cache y SIEMPRE actualiza (para botón manual)
- * 
- * @param queryKey - Objeto de React Query que contiene el ticker y otros datos.
- * @param forceRefresh - Si es true, ignora el cache y fuerza actualización desde API
- * @returns {Promise<AssetData>} - Los datos del activo procesados.
+ * Helper para crear promesas de request con timeout.
  */
+function makeRequest(path: string, ticker: string, extraParams = '') {
+    return Promise.race([
+        supabase.functions.invoke('fmp-proxy', {
+            body: { endpointPath: `${path}?symbol=${ticker}${extraParams}` }
+        }),
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Request timeout - el servidor tardó demasiado en responder')), 20000)
+        )
+    ]);
+}
+
 export async function fetchTickerData({
     queryKey,
     forceRefresh = false,
@@ -46,101 +40,135 @@ export async function fetchTickerData({
         .eq('symbol', ticker)
         .single();
 
-    // Definir umbral de frescura: 1 hora
-    const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
+    const oneHourAgo = new Date(Date.now() - 1 * 60 * 1000); // 1 minuto de frescura
 
-    // 2. ✅ Cache fresco (< 1 hora) - Devolver inmediatamente SIN llamar a la API
-    // EXCEPCIÓN: Si forceRefresh = true, continuar a actualizar
     if (!forceRefresh && cached && new Date(cached.last_updated_at as string) > oneHourAgo) {
         return cached.data as AssetData;
     }
 
-        // Si llegamos aquí con forceRefresh, informar al usuario
-        if (forceRefresh && cached && new Date(cached.last_updated_at as string) > oneHourAgo) {
-            toast.info(`Forzando actualización de ${ticker}...`, { duration: 2000 });
-        }
+    if (forceRefresh && cached && new Date(cached.last_updated_at as string) > oneHourAgo) {
+        toast.info(`Forzando actualización de ${ticker}...`, { duration: 2000 });
+    }
 
-        // 3. ✅ Cache > 1 hora (o forceRefresh) - SIEMPRE intentar actualizar desde la API
-    
-    // 3.1. Verificar disponibilidad de API antes de intentar fetch
+    // 2. Verificar límites de API
     const hasApiAvailable = await hasApiCallsAvailable(user, profile, config);
 
     if (!hasApiAvailable) {
-        // Sin API disponible - Usar cache como fallback (si existe)
         if (cached?.data) {
             const cacheDate = new Date(cached.last_updated_at as string);
             const hoursOld = Math.floor((Date.now() - cacheDate.getTime()) / (1000 * 60 * 60));
             toast.warning(`Límite de API alcanzado. Usando datos de hace ${hoursOld}h.`);
             return cached.data as AssetData;
         }
-        
-        // Sin cache disponible - Error
-        toast.error('Límite de API alcanzado y sin datos en caché.', {
-            description: 'Actualiza tu plan para obtener más acceso.'
-        });
+        toast.error('Límite de API alcanzado y sin datos en caché.');
         throw new Error('Límite de API alcanzado sin datos en caché disponibles.');
     }
 
-    // 3.2. ✅ API disponible - Intentar fetch
-
+    // 3. Preparar endpoints
     const { fmpProxyEndpoints } = config.api;
-    const endpoints = [
-        fmpProxyEndpoints.profile, fmpProxyEndpoints.keyMetrics, fmpProxyEndpoints.quote,
-        fmpProxyEndpoints.historical, fmpProxyEndpoints.priceTarget, fmpProxyEndpoints.dcf,
-        fmpProxyEndpoints.rating, fmpProxyEndpoints.revenueGeographic, fmpProxyEndpoints.revenueProduct,
+
+    // Endpoints estándar (sin parámetros extra)
+    // Nota: Asegúrate de que las claves existan en tu config.ts, si no usa strings fallback
+    const endpointsGroup1 = [
+        fmpProxyEndpoints.profile,              // 0
+        fmpProxyEndpoints.keyMetrics,           // 1
+        fmpProxyEndpoints.quote,                // 2
+        fmpProxyEndpoints.historical,           // 3
+        fmpProxyEndpoints.priceTarget,          // 4
+        fmpProxyEndpoints.dcf,                  // 5
+        fmpProxyEndpoints.rating,               // 6
+        fmpProxyEndpoints.revenueGeographic,    // 7
+        fmpProxyEndpoints.revenueProduct,       // 8
+        fmpProxyEndpoints.priceTargetConsensus, // 9
+        fmpProxyEndpoints.gradesConsensus || 'grade', // 10
+    ];
+
+    // Endpoints grupo 2 (después de estimates)
+    const endpointsGroup2 = [
+        fmpProxyEndpoints.ratios, // 12
+        fmpProxyEndpoints.keyMetricsYear, // 13 (asumiendo anual)
+        fmpProxyEndpoints.leveredDiscountedCashFlow, // 14
+        fmpProxyEndpoints.stockPriceChange // 15
     ];
 
     try {
-        // Crear promesas con timeout de 15 segundos
-        const promises = endpoints.map(path =>
-            Promise.race([
-                supabase.functions.invoke('fmp-proxy', { body: { endpointPath: `${path}?symbol=${ticker}` } }),
-                new Promise<never>((_, reject) => 
-                    setTimeout(() => reject(new Error('Request timeout - el servidor tardó demasiado en responder')), 15000)
-                )
-            ])
-        );
+        // Construimos el array de promesas en el orden exacto que espera el destructuring
+        const promises = [
+            ...endpointsGroup1.map(path => makeRequest(path, ticker)),
+
+            // 11. Analyst Estimates (Con parámetros personalizados)
+            makeRequest(
+                fmpProxyEndpoints.analystEstimates || 'analyst-estimates',
+                ticker,
+                '&period=annual&limit=10'
+            ),
+
+            ...endpointsGroup2.map(path => makeRequest(path, ticker))
+        ];
+
         const results = await Promise.all(promises);
 
-        // Verificar errores con type guard
+        // Verificar errores
         for (const result of results) {
             if (result && typeof result === 'object' && 'error' in result && result.error) {
+                console.error(`Error fetching endpoint for ${ticker}:`, result.error);
                 throw result.error;
             }
         }
 
-        const [profileRes, keyMetricsRes, quoteRes, historicalRes, priceTargetRes, dcfRes, ratingRes, geoRes, prodRes] = results.map(r => 
-            (r && typeof r === 'object' && 'data' in r) ? r.data as unknown : undefined
-        );
+        // Extraer datos (mapeando a undefined si falló algo específico pero no lanzó error)
+        const allData = results.map(r => (r && typeof r === 'object' && 'data' in r) ? r.data : undefined);
 
-        if (!Array.isArray(profileRes) || profileRes.length === 0) {
-            throw new Error(`El símbolo "${ticker}" no fue encontrado. Verifica que sea correcto.`);
-        }
+        const [
+            profileRes,             // 0
+            keyMetricsRes,          // 1
+            quoteRes,               // 2
+            historicalRes,          // 3
+            priceTargetRes,         // 4
+            dcfRes,                 // 5
+            ratingRes,              // 6
+            geoRes,                 // 7
+            prodRes,                // 8
+            consensusRes,           // 9
+            gradesConsensusRes,     // 10
+            analystEstimatesRes,    // 11 (Ahora está en la posición correcta)
+            ratiosRes,              // 12
+            keyMetricsYearRes,      // 13
+            leveredDiscountedCashFlowRes, // 14
+            stockPriceChangeRes     // 15
+        ] = allData;
 
-        const raw: RawApiData = {
-            ...(Array.isArray(profileRes) ? (profileRes as FmpArray)[0] : {}),
-            ...(Array.isArray(keyMetricsRes) ? (keyMetricsRes as FmpArray)[0] : {}),
-            ...(Array.isArray(quoteRes) ? (quoteRes as FmpArray)[0] : {}),
-            ...(Array.isArray(priceTargetRes) ? (priceTargetRes as FmpArray)[0] : {}),
-            ...(Array.isArray(dcfRes) ? (dcfRes as FmpArray)[0] : {}),
-        } as RawApiData;
-
+        // Procesar datos
+        // Nota: Asegúrate de que tu función processAssetData en asset-processor.ts 
+        // acepte todos estos argumentos.
         const processed = processAssetData(
-            raw,
-            historicalRes as HistoricalDataResponse,
-            {
-                geo: Array.isArray(geoRes) ? geoRes : [],
-                prod: Array.isArray(prodRes) ? prodRes : []
-            } as RevenueApiResponse,
-            (Array.isArray(ratingRes) ? ratingRes : []) as unknown[]
+            ticker,
+            profileRes,
+            keyMetricsRes,
+            quoteRes,
+            historicalRes,
+            priceTargetRes,
+            dcfRes,
+            ratingRes,
+            geoRes,
+            prodRes,
+            consensusRes,
+            // Nuevos argumentos
+            gradesConsensusRes,
+            analystEstimatesRes,
+            ratiosRes,
+            keyMetricsYearRes,
+            leveredDiscountedCashFlowRes,
+            stockPriceChangeRes
         );
+        console.log(processed);
 
-        // ✅ SOLO AHORA incrementar contador (fetch exitoso)
+        // Incrementar contador
         if (user?.id) {
             await incrementApiCallCounter(user.id);
         }
 
-        // Actualizar cache con datos frescos
+        // Actualizar caché
         await supabase.from('asset_data_cache').upsert({
             symbol: ticker,
             data: processed,
@@ -152,8 +180,7 @@ export async function fetchTickerData({
     } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : 'Error al consultar datos del activo.';
         void logger.error('API_FETCH_FAILED', `Failed to fetch data for ${ticker}`, { ticker, errorMessage: msg });
-        
-        // 3.3. ✅ Fetch falló - Fallback a cache si existe
+
         if (cached?.data) {
             const cacheDate = new Date(cached.last_updated_at as string);
             const hoursOld = Math.floor((Date.now() - cacheDate.getTime()) / (1000 * 60 * 60));
@@ -161,7 +188,6 @@ export async function fetchTickerData({
             return cached.data as AssetData;
         }
 
-        // Sin cache disponible - Propagar error
         toast.error(`Error al cargar ${ticker}`, { description: msg });
         throw new Error(msg);
     }

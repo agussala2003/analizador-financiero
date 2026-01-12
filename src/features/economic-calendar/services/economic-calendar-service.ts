@@ -5,12 +5,12 @@ export const fetchEconomicCalendar = async (): Promise<EconomicEvent[]> => {
     try {
         const endpointPath = `stable/economic-calendar`;
 
-        const { data, error } = await supabase.functions.invoke('fmp-proxy', {
+        const { data, error } = await supabase.functions.invoke<EconomicEvent[]>('fmp-proxy', {
             body: { endpointPath }
         });
 
         if (error) throw error;
-        return data as EconomicEvent[];
+        return data!;
 
     } catch (error) {
         console.error('Failed to fetch economic calendar', error);

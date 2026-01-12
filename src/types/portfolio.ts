@@ -1,5 +1,7 @@
 // src/types/portfolio.ts
 
+import { AssetData } from './dashboard';
+
 /**
  * Representa una única transacción de compra o venta.
  */
@@ -25,25 +27,15 @@ export interface Portfolio {
 }
 
 /**
- * Datos de mercado relevantes para un activo dentro del portafolio.
- * Es un subconjunto de `AssetData` para optimizar las cargas.
- */
-export interface PortfolioAssetData {
-    currentPrice?: number;
-    dayChange?: number;
-    beta?: number;
-    sharpeRatio?: number;
-}
-
-/**
  * Representa una posición consolidada (tenencia) de un activo en el portafolio.
+ * Usa la estructura completa de AssetData del dashboard para máxima compatibilidad.
  */
 export interface Holding {
     symbol: string;
     quantity: number;
     totalCost: number;
     avgPurchasePrice: number;
-    assetData: PortfolioAssetData;
+    assetData: AssetData;
 }
 
 /**
@@ -70,15 +62,80 @@ export interface PortfolioContextType {
         pl: number;
         percent: number;
     };
-    portfolioData: Record<string, PortfolioAssetData>;
+    portfolioData: Record<string, AssetData>;
     loading: boolean;
     error: string | null;
 
     // Actions
-    selectPortfolio: (portfolioId: number) => void;
+    selectPortfolio: (portfolioId: number | null) => void;
     createPortfolio: (name: string) => Promise<Portfolio>;
     deletePortfolio: (portfolioId: number) => Promise<void>;
     addTransaction: (transaction: Omit<Transaction, 'id' | 'user_id'>) => Promise<Transaction[] | null>;
     deleteAsset: (symbol: string) => Promise<void>;
     refreshPortfolio: () => Promise<void>;
+}
+
+export interface AddTransactionModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    ticker: string | null;
+    currentPrice: number | null;
+}
+
+export interface SellTransactionModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    holding: HoldingWithMetrics | null;
+}
+
+export interface AddModalInfo {
+    isOpen: boolean;
+    ticker: string | null;
+    price: number | null;
+}
+
+export interface PortfolioViewProps {
+    holdings: HoldingWithMetrics[];
+    onDeleteAsset: (symbol: string) => void;
+    onAddMore: (ticker: string, price: number) => void;
+    onSell: (holding: HoldingWithMetrics) => void;
+}
+
+export interface AllocationDatum {
+    name: string;
+    value: number;
+    percentage: number;
+    [key: string]: string | number;
+}
+
+export interface PlDatum {
+    symbol: string;
+    pl: number;
+    plValue: number;
+}
+
+export type ChartConfigFixed = Record<
+    string,
+    { label?: React.ReactNode; color?: string; icon?: React.ComponentType }
+>;
+
+/**
+ * Métricas calculadas del portfolio
+ * Actualizado: Eliminado Sharpe, Agregado Best/Worst USD
+ */
+export interface PortfolioMetrics {
+    totalInvested: number;
+    currentValue: number;
+    currentPL: number;
+    currentPLPercent: number;
+    dailyPL: number;
+    bestPerformer: { symbol: string; plPercent: number };
+    worstPerformer: { symbol: string; plPercent: number };
+    // Nuevas métricas nominales
+    bestPerformerUsd: { symbol: string; plValue: number };
+    worstPerformerUsd: { symbol: string; plValue: number };
+
+    positionsCount: number;
+    portfolioBeta: number | "N/A";
+    avgHoldingDays: number;
 }

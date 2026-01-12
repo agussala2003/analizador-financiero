@@ -1,3 +1,5 @@
+// src/features/dashboard/components/analysis/fundamentals-table.tsx
+
 import React, { useMemo, useState } from "react";
 import { AssetData } from "../../../../types/dashboard";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../../components/ui/accordion";
@@ -20,35 +22,90 @@ interface FundamentalsTableProps {
 
 // --- Estructura para las Secciones ---
 const indicatorSections = [
-  {
-    id: "valuation",
-    title: "Métricas de Valoración",
-    subtitle: "Ratios para medir la valoración relativa de la empresa.",
-    keys: ["PER", "priceToBook", "priceToSales", "pfc_ratio", "evToEbitda", "evToSales", "earningsYield", "grahamNumber", "marketCap"],
-  },
-  {
-    id: "profitability",
-    title: "Rentabilidad y Márgenes",
-    subtitle: "Eficiencia de la empresa para generar beneficios.",
-    keys: ["grossMargin", "operatingMargin", "roe", "roa", "roic", "rdToRevenue"],
-  },
-  {
-    id: "financialHealth",
-    title: "Salud Financiera y Liquidez",
-    subtitle: "Niveles de deuda y capacidad de pago a corto plazo.",
-    keys: ["debtToEquity", "netDebtToEBITDA", "debt_to_assets", "currentRatio", "cashConversionCycle", "dso", "dio", "incomeQualityTTM"],
-  },
-  {
-    id: "technical",
-    title: "Indicadores Técnicos y de Mercado",
-    subtitle: "Volatilidad, momentum y sentimiento del mercado.",
-    keys: ["beta", "relativeVolume", "rsi14", "sma50", "sma200", "smaSignal", "dist52wHigh", "dist52wLow"],
-  },
+    {
+        id: "valuation",
+        title: "Métricas de Valoración",
+        subtitle: "Ratios para medir la valoración relativa de la empresa.",
+        keys: ["PER", "pegRatio", "priceToBook", "priceToSales", "pfc_ratio", "evToEbitda", "evToSales", "earningsYield", "grahamNumber", "marketCap"],
+    },
+    {
+        id: "profitability",
+        title: "Rentabilidad y Márgenes",
+        subtitle: "Eficiencia de la empresa para generar beneficios.",
+        keys: ["grossMargin", "operatingMargin", "roe", "roa", "roic", "rdToRevenue"],
+    },
+    {
+        id: "financialHealth",
+        title: "Salud Financiera y Liquidez",
+        subtitle: "Niveles de deuda y capacidad de pago a corto plazo.",
+        keys: ["debtToEquity", "netDebtToEBITDA", "debt_to_assets", "currentRatio", "cashConversionCycle", "dso", "dio", "incomeQualityTTM"],
+    },
+    {
+        id: "dividends",
+        title: "Dividendos y Flujos",
+        subtitle: "Retorno al accionista.",
+        keys: ["dividendYield", "payout_ratio", "fcfYield", "dividendPerShare"],
+    },
+    {
+        id: "technical",
+        title: "Indicadores Técnicos y de Mercado",
+        subtitle: "Volatilidad, momentum y sentimiento del mercado.",
+        keys: ["beta", "relativeVolume", "rsi14", "sma50", "sma200", "smaSignal"],
+    },
 ];
 
+// --- Helper: Resolver valor del indicador desde la estructura compleja de AssetData ---
+function resolveIndicatorValue(asset: AssetData, key: string): number | null {
+    const config = indicatorConfig[key];
+    if (!config) return null;
+
+    let value: number | null = null;
+
+    // 1. Buscar valor directo en los campos API definidos
+    // Prioridad de búsqueda: KeyMetrics (TTM) -> Quote (Tiempo real) -> Profile (Estático) -> Rating
+    const sources = [asset.keyMetrics, asset.quote, asset.profile, asset.rating];
+
+    for (const field of config.apiFields) {
+        for (const source of sources) {
+            if (source && typeof source === 'object' && field in source) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const val = (source as any)[field];
+                if (typeof val === 'number' && Number.isFinite(val)) {
+                    value = val;
+                    break;
+                }
+            }
+        }
+        if (value !== null) break;
+    }
+
+    // 2. Si no se encuentra y hay función de cálculo (compute), intentar calcular
+    if (value === null && config.compute) {
+        // Construimos un objeto 'raw' plano combinando las fuentes principales
+        // Esto permite que las fórmulas como (yearHigh - price) / yearHigh funcionen
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rawContext: any = {
+            ...(asset.profile as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+            ...(asset.quote as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+            ...(asset.keyMetrics as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+        };
+        const computed = config.compute(rawContext);
+        if (computed !== null && Number.isFinite(computed)) {
+            value = computed;
+        }
+    }
+
+    // 3. Aplicar transformación de porcentaje si es necesario
+    if (value !== null && config.asPercent) {
+        value = value * 100; // Convertir 0.15 a 15.0
+    }
+
+    return value;
+}
+
 // --- Funciones de Formato y Estilo ---
-const formatValue = (config: Indicator, value: number | 'N/A') => {
-    if (typeof value !== 'number') return "N/A";
+const formatValue = (config: Indicator, value: number | null) => {
+    if (value === null || value === undefined) return "N/A";
     if (config.isLargeNumber) {
         if (Math.abs(value) >= 1e12) return `${(value / 1e12).toFixed(2)}T`;
         if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
@@ -58,8 +115,8 @@ const formatValue = (config: Indicator, value: number | 'N/A') => {
     return value.toFixed(2);
 };
 
-const getTrafficLightClass = (config: Indicator, value: number | 'N/A'): string => {
-    if (typeof value !== 'number') return "text-muted-foreground";
+const getTrafficLightClass = (config: Indicator, value: number | null): string => {
+    if (value === null || value === undefined) return "text-muted-foreground";
     const { green, yellow, lowerIsBetter } = config;
     if (lowerIsBetter) {
         if (value <= green) return 'text-green-600 dark:text-green-400';
@@ -79,53 +136,69 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
     const { theme } = useTheme();
     const { hasAccess: canExportPdf, upgradeMessage } = usePlanFeature('exportPdf');
 
+    // Pre-calcular todos los valores para evitar trabajo en render
+    const tableData = useMemo(() => {
+        return assets.map(asset => {
+            const values: Record<string, number | null> = {};
+            indicatorSections.forEach(section => {
+                section.keys.forEach(key => {
+                    values[key] = resolveIndicatorValue(asset, key);
+                });
+            });
+            return {
+                symbol: asset.profile.symbol,
+                values
+            };
+        });
+    }, [assets]);
+
+    // Filtrar filas/indicadores basados en hideNA y disponibilidad de datos
     const visibleKeysBySection = useMemo(() => {
         const visible: Record<string, string[]> = {};
         indicatorSections.forEach(section => {
-            visible[section.id] = section.keys.filter(key => 
-                !hideNA || assets.some(asset => typeof asset.data?.[key] === 'number')
+            visible[section.id] = section.keys.filter(key =>
+                !hideNA || tableData.some(item => item.values[key] !== null)
             );
         });
         return visible;
-    }, [assets, hideNA]);
+    }, [tableData, hideNA]);
 
     const handlePdfExport = () => {
         const title = "Indicadores Fundamentales";
         const subtitle = "Comparativa detallada de los indicadores clave de los activos seleccionados.";
-        
+
         // Crear secciones para cada categoría de indicadores
         const sections = indicatorSections
             .filter(section => visibleKeysBySection[section.id].length > 0)
             .map(section => {
                 // Crear cabecera de la tabla
-                const head = [['Indicador', ...assets.map(asset => asset.symbol)]];
-                
+                const head = [['Indicador', ...assets.map(asset => asset.profile.symbol)]];
+
                 // Crear cuerpo de la tabla con los indicadores de esta sección
                 const body = visibleKeysBySection[section.id]
                     .map(key => {
-                        const config = indicatorConfig[key as keyof typeof indicatorConfig];
+                        const config = indicatorConfig[key];
                         if (!config) return null;
-                        
+
                         return [
                             config.label,
-                            ...assets.map(asset => {
-                                const rawValue = asset.data?.[key];
+                            ...tableData.map(item => {
+                                const rawValue = item.values[key];
                                 const formattedValue = formatValue(config, rawValue);
-                                // Store both raw and formatted values for PDF export
+                                // Estructura para el exportador PDF
                                 return {
                                     content: formattedValue,
-                                    rawValue: rawValue
+                                    rawValue: rawValue ?? 0 // Fallback numérico para ordenamiento si fuera necesario
                                 };
                             })
                         ];
                     })
                     .filter(row => row !== null);
-                
-                // Crear array con las claves de métricas para aplicar colores de semáforo
-                const metricKeys = visibleKeysBySection[section.id].filter(key => 
-                    indicatorConfig[key as keyof typeof indicatorConfig]
+
+                const metricKeys = visibleKeysBySection[section.id].filter(key =>
+                    indicatorConfig[key]
                 );
-                
+
                 return {
                     title: `${section.title} - ${section.subtitle}`,
                     head,
@@ -150,12 +223,12 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
         <Card>
             <CardHeader className="p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                     <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                         <div>
+                        <div>
                             <CardTitle className="text-lg sm:text-xl">Indicadores Fundamentales</CardTitle>
                             <CardDescription className="text-xs sm:text-sm">Comparativa detallada de los indicadores clave.</CardDescription>
-                         </div>
+                        </div>
                     </div>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                         <div className="flex items-center space-x-2">
@@ -167,9 +240,9 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                                 <div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 className="w-full sm:w-auto text-xs sm:text-sm"
                                                 disabled={!canExportPdf}
                                             >
@@ -178,8 +251,6 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            {/* <DropdownMenuItem>Exportar a CSV</DropdownMenuItem>
-                                            <DropdownMenuItem>Exportar a Excel</DropdownMenuItem> */}
                                             <DropdownMenuItem onClick={handlePdfExport}>Exportar a PDF</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -208,12 +279,12 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                                             <TableHeader className="bg-muted/50">
                                                 <TableRow>
                                                     <TableHead className="w-[150px] sm:w-[200px] font-semibold text-xs sm:text-sm">Indicador</TableHead>
-                                                    {assets.map(asset => <TableHead key={asset.symbol} className="text-center font-semibold text-xs sm:text-sm">{asset.symbol}</TableHead>)}
+                                                    {assets.map(asset => <TableHead key={asset.profile.symbol} className="text-center font-semibold text-xs sm:text-sm">{asset.profile.symbol}</TableHead>)}
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {visibleKeysBySection[section.id].map(key => {
-                                                    const config = indicatorConfig[key as keyof typeof indicatorConfig];
+                                                    const config = indicatorConfig[key];
                                                     if (!config) return null;
 
                                                     return (
@@ -233,9 +304,9 @@ export const FundamentalsTable = React.memo(function FundamentalsTable({ assets 
                                                                     </TooltipProvider>
                                                                 </div>
                                                             </TableCell>
-                                                            {assets.map(asset => (
-                                                                <TableCell key={asset.symbol} className={`text-center font-semibold text-xs sm:text-sm ${getTrafficLightClass(config, asset.data?.[key])}`}>
-                                                                    {formatValue(config, asset.data?.[key])}
+                                                            {tableData.map((item) => (
+                                                                <TableCell key={item.symbol} className={`text-center font-semibold text-xs sm:text-sm ${getTrafficLightClass(config, item.values[key])}`}>
+                                                                    {formatValue(config, item.values[key])}
                                                                 </TableCell>
                                                             ))}
                                                         </TableRow>

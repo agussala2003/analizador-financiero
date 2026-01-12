@@ -1,37 +1,9 @@
 // src/features/portfolio/types/portfolio.types.ts
 
-import { HoldingWithMetrics } from "../../../types/portfolio";
+import { HoldingWithMetrics } from '../../../types/portfolio';
 
 /**
- * Props para AddTransactionModal
- */
-export interface AddTransactionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  ticker: string | null;
-  currentPrice: number | null;
-}
-
-/**
- * Props para SellTransactionModal
- */
-export interface SellTransactionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  holding: HoldingWithMetrics | null;
-}
-
-/**
- * Info del modal de agregar transacción
- */
-export interface AddModalInfo {
-  isOpen: boolean;
-  ticker: string | null;
-  price: number | null;
-}
-
-/**
- * Props para PortfolioView
+ * Props para el componente PortfolioView
  */
 export interface PortfolioViewProps {
   holdings: HoldingWithMetrics[];
@@ -41,9 +13,20 @@ export interface PortfolioViewProps {
 }
 
 /**
- * Datos de alocación para el gráfico de torta
+ * Props para el componente AllocationChart
  */
-export interface AllocationDatum {
+export interface AllocationChartProps {
+  data: AllocationData[];
+  title: string;
+  description?: string;
+  type: 'sector' | 'country';
+  isLoading?: boolean;
+}
+
+/**
+ * Estructura de datos para gráficos de alocación
+ */
+export interface AllocationData {
   name: string;
   value: number;
   percentage: number;
@@ -51,35 +34,10 @@ export interface AllocationDatum {
 }
 
 /**
- * Datos de P&L para el gráfico de barras
+ * Props para los chart tooltips tipados
  */
-export interface PlDatum {
-  symbol: string;
-  pl: number;
-  plValue: number;
-}
-
-/**
- * Configuración de colores para los gráficos
- */
-export type ChartConfigFixed = Record<
-  string,
-  { label?: React.ReactNode; color?: string; icon?: React.ComponentType }
->;
-
-/**
- * Métricas calculadas del portfolio
- */
-export interface PortfolioMetrics {
-  totalInvested: number;
-  currentValue: number;
-  currentPL: number;
-  currentPLPercent: number;
-  dailyPL: number;
-  bestPerformer: { symbol: string; plPercent: number };
-  worstPerformer: { symbol: string; plPercent: number };
-  positionsCount: number;
-  portfolioBeta: number | "N/A";
-  sharpeRatio: number | "N/A";
-  avgHoldingDays: number;
+export interface TooltipPayload<TValue = number, TName = string> {
+  name?: TName;
+  value?: TValue;
+  payload?: Record<string, unknown>;
 }

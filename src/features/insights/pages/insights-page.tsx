@@ -4,7 +4,7 @@ import { useInsightsData } from '../hooks/use-insights-data';
 import { useConfig } from '../../../hooks/use-config';
 import { useAuth } from '../../../hooks/use-auth';
 import { InsightsSection } from '../components/insights-section';
-import { DatePeriodSelect, SortSelect, LimitSelect } from '../components/filters';
+import { SortSelect, LimitSelect } from '../components/filters';
 import { SuspenseFallback } from '../../../components/suspense';
 import { FeatureLocked } from '../../../components/shared/feature-locked';
 import { usePlanFeature } from '../../../hooks/use-plan-feature';
@@ -34,7 +34,6 @@ const InsightsPage: React.FC = () => {
   // Analysts tab state
   const [analystLimit, setAnalystLimit] = React.useState<number>(5);
   const [analystSortBy, setAnalystSortBy] = React.useState<'buy' | 'sell'>('buy');
-  const [analystPeriod, setAnalystPeriod] = React.useState<number>(30); // days
 
   const config = useConfig();
   const { profile } = useAuth();
@@ -47,8 +46,8 @@ const InsightsPage: React.FC = () => {
 
   // Data query for valuation tab
   const { data: valuationData, isLoading: isValuationLoading, error: valuationError } = useInsightsData();
-  // Data query for analysts tab (period filter)
-  const { data: analystsData, isLoading: isAnalystsLoading, error: analystsError } = useInsightsData({ periodDays: analystPeriod });
+  // Data query for analysts tab
+  const { data: analystsData, isLoading: isAnalystsLoading, error: analystsError } = useInsightsData();
 
   // Sync limits with role changes
   React.useEffect(() => {
@@ -60,7 +59,6 @@ const InsightsPage: React.FC = () => {
   // Valuation tab data
   const undervalued = valuationData?.undervalued.slice(0, valuationLimit) ?? [];
   const overvalued = valuationData?.overvalued.slice(0, valuationLimit) ?? [];
-  const highRoicLowPe = valuationData?.highRoicLowPe.slice(0, valuationLimit) ?? [];
 
   // Analysts tab data
   const analystItems = React.useMemo(() => {
@@ -98,15 +96,15 @@ const InsightsPage: React.FC = () => {
         description="Descubre oportunidades de inversión analizando activos infravalorados, recomendaciones de analistas profesionales y tendencias del mercado. Información actualizada en tiempo real."
       />
 
-      <Tabs defaultValue="valuation" className="w-full">
+      <Tabs defaultValue="analysts" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="analysts" className="gap-2">
+            <TrendingDown className="h-4 w-4" />
+            Recomendaciones de Analistas
+          </TabsTrigger>
           <TabsTrigger value="valuation" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Valoración
-          </TabsTrigger>
-          <TabsTrigger value="analysts" className="gap-2">
-            <TrendingDown className="h-4 w-4" />
-            Recomendaciones
           </TabsTrigger>
           <TabsTrigger value="screener" className="gap-2">
             <Filter className="h-4 w-4" />
@@ -141,12 +139,6 @@ const InsightsPage: React.FC = () => {
                 items={overvalued}
                 kind="overvalued"
               />
-              <InsightsSection
-                title="ROIC alto y PER bajo"
-                subtitle="Activos con alta rentabilidad sobre capital invertido y baja valoración relativa"
-                items={highRoicLowPe}
-                kind="highRoicLowPe"
-              />
             </>
           )}
         </TabsContent>
@@ -162,15 +154,10 @@ const InsightsPage: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold">Recomendaciones de Analistas</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Basado en {analystPeriod} días de análisis profesionales
+                    Basado en consenso de analistas profesionales
                   </p>
                 </div>
                 <div className="flex gap-2 flex-wrap justify-end">
-                  <DatePeriodSelect
-                    value={analystPeriod}
-                    onChange={setAnalystPeriod}
-                    className="w-[140px]"
-                  />
                   <SortSelect
                     value={analystSortBy}
                     onChange={v => setAnalystSortBy(v as 'buy' | 'sell')}

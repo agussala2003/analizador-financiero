@@ -4,21 +4,17 @@ import type { AssetData } from '../../../types/dashboard';
 
 /**
  * Valida si un símbolo de ticker es válido.
- * 
- * @param ticker - Símbolo a validar
- * @returns true si el ticker es válido
+ * Soporta letras, números, puntos y guiones (ej: GGAL.BA, BTC-USD)
  */
 export function isValidTicker(ticker: string): boolean {
-  // Tickers suelen ser 1-5 caracteres, solo letras y números
-  const tickerRegex = /^[A-Z0-9]{1,5}$/;
-  return tickerRegex.test(ticker.toUpperCase());
+  if (!ticker) return false;
+  // Actualizado: Permite hasta 12 caracteres, puntos y guiones para activos internacionales/crypto
+  const tickerRegex = /^[A-Z0-9.-]{1,12}$/;
+  return tickerRegex.test(ticker.trim().toUpperCase());
 }
 
 /**
  * Normaliza un ticker a uppercase y sin espacios.
- * 
- * @param ticker - Ticker a normalizar
- * @returns Ticker normalizado
  */
 export function normalizeTicker(ticker: string): string {
   return ticker.trim().toUpperCase();
@@ -26,21 +22,15 @@ export function normalizeTicker(ticker: string): string {
 
 /**
  * Filtra activos que han cargado correctamente.
- * 
- * @param assets - Array de activos que pueden ser undefined
- * @returns Array filtrado de activos válidos
  */
 export function filterValidAssets(
   assets: (AssetData | undefined)[]
 ): AssetData[] {
-  return assets.filter((asset): asset is AssetData => asset !== undefined);
+  return assets.filter((asset): asset is AssetData => asset !== undefined && asset !== null);
 }
 
 /**
  * Verifica si hay queries en proceso de carga.
- * 
- * @param queries - Array de queries de React Query
- * @returns true si alguna query está cargando
  */
 export function hasLoadingQueries(
   queries: { isLoading: boolean }[]
@@ -50,10 +40,6 @@ export function hasLoadingQueries(
 
 /**
  * Verifica si es la carga inicial (sin datos previos).
- * 
- * @param isLoading - Si está cargando
- * @param assetsCount - Cantidad de activos cargados
- * @returns true si es carga inicial
  */
 export function isInitialLoad(
   isLoading: boolean,
@@ -64,9 +50,6 @@ export function isInitialLoad(
 
 /**
  * Extrae símbolos únicos de una lista de holdings.
- * 
- * @param holdings - Array de holdings del portfolio
- * @returns Array de símbolos únicos
  */
 export function extractUniqueSymbols(
   holdings: { symbol: string }[]
