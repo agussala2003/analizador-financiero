@@ -7,10 +7,12 @@ import { extractContinents } from '../lib/risk-premium.utils';
 import { RiskPremiumFilters, RiskPremiumTable, RiskPremiumSkeleton } from '../components';
 import { useRiskPremiumQuery } from '../hooks/use-risk-premium-query';
 import { ErrorScreen } from '../../../components/ui/error-screen';
+import { RiskPremiumViewMode } from '../types/risk-premium.types';
 
 export default function RiskPremiumPage() {
   const [countryFilter, setCountryFilter] = useState('');
   const [continentFilter, setContinentFilter] = useState('');
+  const [viewMode, setViewMode] = useState<RiskPremiumViewMode>('percentage');
 
   // Use TanStack Query hook
   const { data = [], isLoading, isError, error, refetch } = useRiskPremiumQuery();
@@ -20,6 +22,7 @@ export default function RiskPremiumPage() {
   const handleClearFilters = () => {
     setCountryFilter('');
     setContinentFilter('');
+    setViewMode('percentage');
   };
 
   if (isLoading) {
@@ -69,9 +72,11 @@ export default function RiskPremiumPage() {
       <RiskPremiumFilters
         countryFilter={countryFilter}
         continentFilter={continentFilter}
+        viewMode={viewMode}
         continents={continents}
         onCountryFilterChange={setCountryFilter}
         onContinentFilterChange={setContinentFilter}
+        onViewModeChange={setViewMode}
         onClearFilters={handleClearFilters}
       />
 
@@ -80,6 +85,7 @@ export default function RiskPremiumPage() {
         data={data}
         countryFilter={countryFilter}
         continentFilter={continentFilter}
+        viewMode={viewMode}
       />
     </motion.div>
   );

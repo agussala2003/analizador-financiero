@@ -21,10 +21,27 @@ import {
   RiskPremiumTableProps,
 } from '../../types/risk-premium.types';
 
+/**
+ * Formats a risk value based on the view mode.
+ * @param value - The numeric risk value to format
+ * @param viewMode - Display mode: 'percentage' shows %, 'points' shows basis points
+ * @returns Formatted risk value string
+ */
+function formatRiskValue(value: number, viewMode: 'percentage' | 'points'): string {
+  if (viewMode === 'points') {
+    // Argentina Style: 15.40% -> 1540 pts (Puntos Básicos)
+    // Multiplicamos por 100 y quitamos decimales
+    return `${Math.round(value * 100).toLocaleString('es-AR')} pts`;
+  }
+  // Default: 15.40%
+  return `${value.toFixed(2)}%`;
+}
+
 export function RiskPremiumTable({
   data,
   countryFilter,
   continentFilter,
+  viewMode, // 'percentage' | 'points'
 }: RiskPremiumTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 15 });
@@ -71,7 +88,7 @@ export function RiskPremiumTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="w-full justify-end"
           >
-            Prima País
+            Riesgo País {viewMode === 'points' ? '(pts)' : '(%)'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -81,7 +98,7 @@ export function RiskPremiumTable({
               row.original.countryRiskPremium
             )}`}
           >
-            {row.original.countryRiskPremium.toFixed(2)}%
+            {formatRiskValue(row.original.countryRiskPremium, viewMode)}
           </div>
         ),
       },
@@ -93,7 +110,7 @@ export function RiskPremiumTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="w-full justify-end"
           >
-            Prima Total
+            Prima Total {viewMode === 'points' ? '(pts)' : '(%)'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -103,12 +120,12 @@ export function RiskPremiumTable({
               row.original.totalEquityRiskPremium
             )}`}
           >
-            {row.original.totalEquityRiskPremium.toFixed(2)}%
+            {formatRiskValue(row.original.totalEquityRiskPremium, viewMode)}
           </div>
         ),
       },
     ],
-    []
+    [viewMode] // Importante: Recalcular columnas si cambia el modo
   );
 
   const table = useReactTable({
@@ -126,7 +143,7 @@ export function RiskPremiumTable({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  // Apply filters to table columns
+  // Filtros
   useEffect(() => {
     table.getColumn('country')?.setFilterValue(debouncedCountryFilter);
     table

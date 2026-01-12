@@ -43,11 +43,7 @@
       "ratios": "stable/ratios",
       "keyMetricsYear": "stable/key-metrics",
       "leveredDiscountedCashFlow": "stable/levered-discounted-cash-flow",
-      "stockPriceChange": "stable/stock-price-change",
-      "availableIndustries": "stable/available-industries",
-      "availableSectors": "stable/available-sectors",
-      "historicalIndustryPerformance": "stable/historical-industry-performance",
-      "historicalSectorPerformance": "stable/historical-sector-performance"
+      "stockPriceChange": "stable/stock-price-change"
     }
   },
   "plans": {

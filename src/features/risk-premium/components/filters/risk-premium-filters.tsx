@@ -10,23 +10,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../../components/ui/select';
-import { Search, X } from 'lucide-react';
+import { Search, X, Percent, Hash } from 'lucide-react';
 import { RiskPremiumFiltersProps } from '../../types/risk-premium.types';
 
 export function RiskPremiumFilters({
   countryFilter,
   continentFilter,
+  viewMode,
   continents,
   onCountryFilterChange,
   onContinentFilterChange,
+  onViewModeChange,
   onClearFilters,
 }: RiskPremiumFiltersProps) {
   return (
     <Card>
       <CardHeader className="p-3 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4">
           {/* Country Search */}
-          <div className="relative w-full sm:flex-1">
+          <div className="relative w-full lg:flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar país..."
@@ -36,30 +38,54 @@ export function RiskPremiumFilters({
             />
           </div>
 
-          {/* Continent Filter */}
-          <Select value={continentFilter} onValueChange={onContinentFilterChange}>
-            <SelectTrigger className="w-full sm:w-[220px] text-sm">
-              <SelectValue placeholder="Filtrar por continente" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los continentes</SelectItem>
-              {continents.map((continent) => (
-                <SelectItem key={continent} value={continent}>
-                  {continent}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Continent Filter */}
+            <Select value={continentFilter} onValueChange={onContinentFilterChange}>
+              <SelectTrigger className="w-full sm:w-[200px] text-sm">
+                <SelectValue placeholder="Continente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los continentes</SelectItem>
+                {continents.map((continent) => (
+                  <SelectItem key={continent} value={continent}>
+                    {continent}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          {/* Clear Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearFilters}
-            className="w-full sm:w-auto text-xs sm:text-sm"
-          >
-            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> Limpiar
-          </Button>
+            {/* View Mode Toggle */}
+            <div className="flex bg-muted rounded-md p-1 gap-1">
+              <Button
+                variant={viewMode === 'percentage' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewModeChange('percentage')}
+                className="flex-1 sm:w-auto h-8 text-xs px-3"
+              >
+                <Percent className="w-3.5 h-3.5 mr-1.5" />
+                Porcentaje
+              </Button>
+              <Button
+                variant={viewMode === 'points' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewModeChange('points')}
+                className="flex-1 sm:w-auto h-8 text-xs px-3"
+              >
+                <Hash className="w-3.5 h-3.5 mr-1.5" />
+                Puntos
+              </Button>
+            </div>
+
+            {/* Clear Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearFilters}
+              className="w-full sm:w-auto text-xs sm:text-sm"
+            >
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
     </Card>
