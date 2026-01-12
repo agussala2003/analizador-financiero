@@ -43,7 +43,11 @@
       "ratios": "stable/ratios",
       "keyMetricsYear": "stable/key-metrics",
       "leveredDiscountedCashFlow": "stable/levered-discounted-cash-flow",
-      "stockPriceChange": "stable/stock-price-change"
+      "stockPriceChange": "stable/stock-price-change",
+      "availableIndustries": "stable/available-industries",
+      "availableSectors": "stable/available-sectors",
+      "historicalIndustryPerformance": "stable/historical-industry-performance",
+      "historicalSectorPerformance": "stable/historical-sector-performance"
     }
   },
   "plans": {
@@ -357,6 +361,12 @@
             "to": "/insights",
             "label": "Insights",
             "icon": "TrendingUp",
+            "requiresAuth": true
+          },
+          {
+            "to": "/sectors-industries",
+            "label": "Sectores e Industrias",
+            "icon": "FactoryIcon",
             "requiresAuth": true
           },
           {

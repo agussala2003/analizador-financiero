@@ -51,6 +51,7 @@ const AdminPage = React.lazy(() => import('./features/admin/pages/admin-page.tsx
 const RetirementCalculatorPage = React.lazy(() => import('./features/retirement/pages/retirement-calculator-page.tsx'));
 const WatchlistPage = React.lazy(() => import('./features/watchlist/pages/watchlist-page.tsx'));
 const InsightsPage = React.lazy(() => import('./features/insights/pages/insights-page.tsx'));
+const SectorsIndustriesPage = React.lazy(() => import('./features/sectors-industries/pages/sectors-industries-page.tsx'));
 const BlogListPage = React.lazy(() => import('./features/blog/pages/blog-list-page.tsx'));
 const BlogPostPage = React.lazy(() => import('./features/blog/pages/blog-post-page.tsx'));
 const CreateBlogPage = React.lazy(() => import('./features/blog/pages/create-blog-page.tsx'));
@@ -172,6 +173,16 @@ const router = createBrowserRouter([
                             <ErrorBoundary level="feature" featureName="Insights">
                                 <Suspense fallback={<SuspenseFallback type="page" message="Cargando insights..." />}>
                                     <InsightsPage />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )
+                    },
+                    {
+                        path: "sectors-industries",
+                        element: (
+                            <ErrorBoundary level="feature" featureName="Sectors & Industries">
+                                <Suspense fallback={<SuspenseFallback type="page" message="Cargando sectores e industrias..." />}>
+                                    <SectorsIndustriesPage />
                                 </Suspense>
                             </ErrorBoundary>
                         )
